@@ -25,7 +25,7 @@ import numpy as np
 
 from tqdm.auto import tqdm
 
-import unidecode
+from unidecode import unidecode
 import re
 
 # These are dictionaries of names that are used throughout the module
@@ -749,15 +749,17 @@ def scrape_standings(seasons = 2022, disable_print = False):
 ############################################## Game info ##############################################
 
 ## [x]Refactored
-def scrape_game_info(game_ids, live_response = None, disable_print = False, session = None, nested = False):
+def scrape_game_info(game_ids, live_response = None, session = None, nested = True):
     
     '''
 
     --------- Info ---------
 
-    Scrapes the game information from the API for a given game ID or list of game IDs. Returns a dataframe.
-    Can be used standalone but is typically nested within other scraping functions.
-    Typically takes <1 second per game.
+    Scrapes the game information from the API for a given game ID or list of game IDs
+    By default returns a dictionary with game IDs as keys and a dictionary of game information as the values.
+
+    Can be used standalone but primarily nested within other scraping functions.
+    If standalone, scrapes 6-12 games per second.
 
     --------- Parameters ---------
 
@@ -766,16 +768,108 @@ def scrape_game_info(game_ids, live_response = None, disable_print = False, sess
     live_response: JSON object; default: None
         When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
 
-    disable_print: boolean; default: False
-        If True, prints progress to the console
-
     session: requests Session object; default = None
         When using in another scrape function, can pass the requests session to improve speed
+
+    nested: boolean; default: True
+        If True, progress bar is disabled and a dictionary with game IDs as keys
+        and lists of players as dictionaries 
+
+        If False, prints progress to the console and returns a dataframe
+
+    --------- Returns ---------
+
+    Default: dict(key(s) = game ID(s), value(s) = dictionary of game info)
+
+    If nested = False, then returns a dataframe, converting the dictionary keys to columns
+
+    The each game info dictionary returned contains the following fields and values:
+
+        season: int
+            8-digit season code, e.g., 20222023
+
+        session: object
+            Regular season or playoffs, e.g., 'R'
+
+        game_id: int
+            10-digit game identifier, e.g., 2022020001
+
+        game_date: object
+            Game date, e.g., 2022-10-07, assuming Eastern timezone start time
+
+        start_time: object
+            Start time, e.g., 14:00:00, assuming Eastern timezone start time
+
+        home_team: object
+            3-letter team code for home team, e.g., NSH
+
+        home_team_name: object
+            Full team name for home team, e.g., NASHVILLE PREDATORS
+
+        away_team: object
+            3-letter team code for away team, e.g., SJS
+
+        away_team_name: object
+            Full team name for away team, e.g., SAN JOSE SHARKS
+
+        game_venue: object
+            Name of the venue where game is / was played, e.g., O2 CZECH REPUBLIC
+
+        end_time: object
+            Start time, e.g., 16:49:33, assuming Eastern timezone end time
+
+        start_time_dt: datetime object
+            Timezone-aware (US/Eastern) datetime object for game start time
+
+        end_time_dt: datetime object
+            Timezone-aware (US/Eastern) datetime object for game end time
+
+        home_team_id: integer
+            Unique franchise identifier for home team, e.g., 34
+
+        home_team_link: object
+            API endpoint for the home team, e.g., /api/v1/franchises/34
+
+        home_team_division: object
+            Division name for the home team, e.g., CENTRAL
+
+        home_team_division_id: integer
+            Unique ID for home team's division, e.g., 16
+
+        home_team_conference: object
+            Name of the home team's conference, e.g., WESTERN
+
+        home_team_conference_id: integer
+            Unique ID for home team's conference, e.g., 5
+
+        away_team_id: integer
+            Unique franchise identifier for away team, e.g., 29
+
+        away_team_link: object
+            API endpoint for the home team, e.g., /api/v1/franchises/29
+
+        away_team_division: object
+            Division name for the home team, e.g., PACIFIC
+
+        away_team_division_id: integer
+            Unique ID for home team's division, e.g., 15
+
+        away_team_conference: object
+            Name of the home team's conference, e.g., WESTERN
+
+        away_team_conference_id: integer
+            Unique ID for home team's conference, e.g., 5
+
+        player_name: object
+            Player's latin-encoded name, e.g., FILIP FORSBERG
+
+        start_time_utc: datetime object
+            Timezone-aware (UTC) datetime object for game start time
+
+        end_time_utc: datetime object
+            Timezone-aware (UTC) datetime object for game end time
+
     '''
-    
-    ## TO DO:
-    ## 1. add comments and edit docstring
-    ## 2. ensure columns returned are in the right order
     
     ## Convert game IDs to list if given a single game ID
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
@@ -793,11 +887,13 @@ def scrape_game_info(game_ids, live_response = None, disable_print = False, sess
 
         s = session
     
-    game_list = []
+    games_dict = {}
     
-    pbar = tqdm(game_ids, disable = disable_print)
+    pbar = tqdm(game_ids, disable = nested)
     
     for game_id in pbar:
+
+        game_data = {}
             
         #if np.logical_or(response == None, number_of_games > 1):
         if live_response == None:
@@ -815,108 +911,65 @@ def scrape_game_info(game_ids, live_response = None, disable_print = False, sess
             response = None
             
             continue
-        
-        info_list = []
-        
-        for key in response['gameData'].keys():
-            
-            info = pd.json_normalize(response['gameData'][key], sep = '_')
 
-            if key == 'game':
+        game_info = response['gameData']['game']
 
-                column_names = {'pk': 'game_id', 'type': 'game_type'}
+        dt_info = response['gameData']['datetime']
 
-                info = info.rename(columns = column_names)
+        status_info = response['gameData']['status']
 
-                info_list.append(info)
+        team_info = response['gameData']['teams']
 
-            if key == 'datetime':
+        venue_info = response['gameData']['venue']
 
-                column_names = {'dateTime': 'game_start_time', 'endDateTime': 'game_end_time'}
+        new_values = {'season': int(game_info['season']),
+                      'session': game_info['type'],
+                      'game_id': int(game_info['pk']),
+                      'game_status': status_info['detailedState'].upper(),
+                      'start_time_dt': pd.to_datetime(dt_info['dateTime']).tz_convert('US/Eastern'),
+                      'end_time_dt': pd.to_datetime(dt_info['endDateTime']).tz_convert('US/Eastern'),
+                      'game_venue': unidecode(venue_info['name']).upper(),
+                      'home_team': team_info['home']['triCode'].upper().replace('PHX', 'ARI'),
+                      'home_team_name': unidecode(team_info['home']['name']).upper().replace('PHOENIX COYOTES', 'ARIZONA COYOTES'),
+                      'home_team_id': int(team_info['home']['franchiseId']),
+                      'home_team_link': team_info['home']['franchise']['link'],
+                      'home_team_division': team_info['home']['division']['name'].upper(),
+                      'home_team_division_id': int(team_info['home']['division']['id']),
+                      'home_team_conference': team_info['home']['conference']['name'].upper(),
+                      'home_team_conference_id': int(team_info['home']['conference']['id']),
+                      'away_team': team_info['away']['triCode'].upper().replace('PHX', 'ARI'),
+                      'away_team_name': unidecode(team_info['away']['name']).upper().replace('PHOENIX COYOTES', 'ARIZONA COYOTES'),
+                      'away_team_id': int(team_info['away']['franchiseId']),
+                      'away_team_link': team_info['away']['franchise']['link'],
+                      'away_team_division': team_info['away']['division']['name'].upper(),
+                      'away_team_division_id': int(team_info['away']['division']['id']),
+                      'away_team_conference': team_info['away']['conference']['name'].upper(),
+                      'away_team_conference_id': int(team_info['away']['conference']['id']),
+                      'start_time_utc': pd.to_datetime(dt_info['dateTime']),
+                      'end_time_utc': pd.to_datetime(dt_info['endDateTime']),
+                     }
 
-                info = info.rename(columns = column_names)
-                
-                #info['game_date'] = pd.to_datetime(info.game_start_time, format = '%Y-%m-%d').dt.date
+        game_data.update(new_values)
 
-                info_list.append(info)
+        game_data['game_date'] = game_data['start_time_dt'].strftime('%Y-%m-%d')
 
-            if key == 'venue':
+        game_data['start_time'] = game_data['start_time_dt'].strftime('%H:%M:%S')
 
-                column_names = {'id': 'game_venue_id', 'name': 'game_venue_name', 'link': 'game_venue_link'}
+        game_data['end_time'] = game_data['end_time_dt'].strftime('%H:%M:%S')
 
-                info = info.rename(columns = column_names)
+        if game_data == {}:
 
-                info_list.append(info)
-        
-        info_df = pd.concat(info_list, axis = 1)
-        
-        ## Creating initial teams dataframe
-        teams_dict = {}
-                
-        for key in response['gameData']['teams'].keys():
+            continue
 
-            team_df = pd.json_normalize(response['gameData']['teams'][key], sep = '_')
-
-            column_names = {'id': 'team_id', 'name': 'team_name', 'link': 'team_link', 'abbreviation': 'team_abbr',
-                            'triCode': 'team_tri_code', 'teamName': 'team_mascot', 'locationName': 'team_location',
-                            'firstYearOfPlay': 'team_first_year_of_play', 'shortName': 'team_short_name',
-                            'officialSiteUrl': 'team_site_url', 'franchiseId': 'team_franchise_id', 'active': 'team_franchise_active',
-                            'venue_id': 'team_venue_id', 'venue_name': 'team_venue_name', 'venue_link': 'team_venue_link',
-                            'venue_city': 'team_venue_city', 'venue_timeZone_id': 'team_venue_tz_id',
-                            'venue_timeZone_offset': 'team_venue_tz_offset', 'venue_timeZone_tz': 'team_venue_tz_name',
-                            'division_id': 'team_division_id', 'division_name': 'team_division_name', 'division_link': 'team_division_link',
-                            'conference_id': 'team_conference_id', 'conference_name': 'team_conference_name',
-                            'conference_link': 'team_conference_link', 'franchise_link': 'team_franchise_link',
-                            'franchise_teamName': 'team_franchise_mascot', 'division_nameShort': 'team_div_short_name'}
-
-            team_df = team_df.rename(columns = column_names).drop('franchise_franchiseId', axis = 1, errors = 'ignore')
-
-            team_df.team_name = team_df.team_name.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8').str.upper()
-
-            team_df.team_name = np.where(team_df.team_name == 'PHOENIX COYOTES', 'ARIZONA COYOTES', team_df.team_name)
-
-            team_df.team_abbr = np.where(team_df.team_abbr == 'PHX', 'ARI', team_df.team_abbr)
-            
-            if 'team_tri_code' not in team_df.columns:
-            
-                team_df['team_tri_code'] = np.nan
-
-            team_df.team_tri_code = np.where(team_df.team_tri_code == 'PHX', 'ARI', team_df.team_tri_code)
-
-            team_df['status'] = key
-
-            teams_dict.update({key: team_df})
-
-        teams_list = list()
-
-        merge_dict = {'home': 'away', 'away': 'home'}
-
-        for key, value in merge_dict.items():
-
-            column_names = {x: 'opp_' + x for x in teams_dict[value].columns}
-            
-            teams_list.append(teams_dict[key].merge(teams_dict[value].rename(columns = column_names),
-                                                    left_index = True, right_index = True))
-            
-        teams_df = pd.concat(teams_list)
-        
-        teams_df = pd.concat([info_df, teams_df], axis = 1).reset_index(drop = True)
-
-        teams_df['game_id'] = game_id
-        
-        teams_df['season'] = str(game_id)[:4] + str(int(str(game_id)[:4]) + 1)
-        
-        teams_df['game_date_dt'] = pd.to_datetime(teams_df.game_start_time).dt.tz_convert('US/Eastern')
-        
-        teams_df['start_time'] = teams_df.game_date_dt.dt.strftime("%H:%M")
-        
-        teams_df['game_date'] = teams_df.game_date_dt.dt.strftime('%Y-%m-%d')
-
-        game_list.append(teams_df)
+        games_dict.update({game_id: game_data})
         
         if game_id == game_ids[-1]:
             
             pbar.set_description(f'Finished scraping game info data')
+
+            if nested == False:
+
+                s.close()
             
         else:
         
@@ -930,63 +983,449 @@ def scrape_game_info(game_ids, live_response = None, disable_print = False, sess
         
         pbar.set_postfix_str(postfix_str)
     
-    if game_list != []:
+    if games_dict == {}:
 
-        game_info = pd.concat(game_list, ignore_index = True)
-        
-        columns = ['game_id', 'season', 'game_type', 'game_date_dt', 'game_date', 'start_time', 'team_id', 'team_name',
-                   'team_link', 'team_abbr', 'team_tri_code', 'team_mascot', 'team_location',
-                   'team_first_year_of_play', 'team_short_name', 'team_site_url', 'team_franchise_id',
-                   'team_franchise_active', 'team_venue_id', 'team_venue_name', 'team_venue_link',
-                   'team_venue_city', 'team_venue_tz_id', 'team_venue_tz_offset', 'team_venue_tz_name',
-                   'team_division_id', 'team_division_name', 'team_division_link', 'team_conference_id',
-                   'team_conference_name', 'team_conference_link', 'team_franchise_mascot', 'team_franchise_link',
-                   'status', 'opp_team_id', 'opp_team_name', 'opp_team_link', 'opp_team_abbr', 'opp_team_tri_code',
-                   'opp_team_mascot', 'opp_team_location', 'opp_team_first_year_of_play', 'opp_team_short_name',
-                   'opp_team_site_url', 'opp_team_franchise_id', 'opp_team_franchise_active', 'opp_team_venue_id',
-                   'opp_team_venue_name', 'opp_team_venue_link', 'opp_team_venue_city', 'opp_team_venue_tz_id', 
-                   'opp_team_venue_tz_offset', 'opp_team_venue_tz_name', 'opp_team_division_id', 'opp_team_division_name',
-                   'opp_team_division_link', 'opp_team_conference_id', 'opp_team_conference_name', 'opp_team_conference_link',
-                   'opp_team_franchise_mascot', 'opp_team_franchise_link', 'opp_status']
-        
-        columns = [x for x in columns if x in game_info.columns]
-        
-        game_info = game_info[columns]
+        if nested == True:
+
+            return {}
+
+        else:
+
+            return None
 
     if nested == False:
 
-        s.close()
-    
-    if game_list == []:
-        
-        return pd.DataFrame()
+        df = pd.DataFrame(list(games_dict.values()))
+
+        columns = ['season', 'session', 'game_id', 'game_date', 'start_time',
+                    'home_team', 'home_team_name', 'away_team', 'away_team_name',
+                    'game_venue', 'end_time', 'start_time_dt', 'end_time_dt', 'home_team_id',
+                    'home_team_link', 'home_team_division', 'home_team_division_id',
+                    'home_team_conference', 'home_team_conference_id', 'away_team_id',
+                    'away_team_link', 'away_team_divison', 'away_team_division_id',
+                    'away_team_conference', 'away_team_conference_id', 'start_time_utc',
+                    'end_time_utc',
+                    ]
+
+        columns = [x for x in columns if x in df.columns]
+
+        df = df[columns]
+
+        return df
     
     else:
         
-        return game_info
+        return games_dict
 
-############################################## HTML rosters ##############################################
+############################################## API rosters ##############################################
 
 ## [x]Refactored
-def scrape_html_rosters(game_ids, disable_print = False, session = None, nested = False):
+def scrape_api_rosters(game_ids, live_response = None, session = None, nested = True):
     
     '''
 
     --------- Info ---------
 
-    Scrapes the rosters from the HTML endpoint for a given game ID or list of game IDs. Returns a dataframe.
-    Can be used standalone but is typically nested within other scraping functions.
-    Typically scrapes 6-10 games per second.
+    Scrapes the game information from the API for a given game ID or list of game IDs
+    By default returns a dictionary with game IDs as keys and a dictionary of game information as the values.
+
+    Can be used standalone but primarily nested within other scraping functions.
+    If standalone, scrapes 6-12 games per second.
 
     --------- Parameters ---------
 
     game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
 
-    disable_print: boolean; default: False
-        If True, prints progress to the console
+    live_response: JSON object; default: None
+        When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
 
     session: requests Session object; default = None
         When using in another scrape function, can pass the requests session to improve speed
+
+    nested: boolean; default: True
+        If True, progress bar is disabled and a dictionary with game IDs as keys
+        and lists of players as dictionaries 
+
+        If False, prints progress to the console and returns a dataframe
+
+    --------- Returns ---------
+
+    Default: dict(key(s) = game ID(s), value(s) = dictionary of game info)
+
+    If nested = False, then returns a dataframe, converting the dictionary keys to columns
+
+    The each game info dictionary returned contains the following fields and values:
+
+        season: int
+            8-digit season code, e.g., 20222023
+
+        session: object
+            Regular season or playoffs, e.g., R
+
+        game_id: int
+            10-digit game identifier, e.g., 2022020001
+
+        player_name: object
+            Player's full name, e.g., FILIP FORSBERG
+
+        api_id: integer
+            Unique 7-digit player identifier, e.g., 8476887
+
+        eh_id: object
+            Unique identifier that matches Evolving Hockey, e.g., FILIP.FORSBERG
+
+        position: object
+            Player's position, e.g., L
+
+        position_type: object
+            Player's position group, e.g., F
+
+        birth_date: object
+            Player's birth date, e.g., 1994-08-13
+
+        birth_city: object
+            Player's birth city, e.g., OSTERVALA
+
+        birth_state_province: object
+            U.S. state or Canadian province where player was born, if applicable, e.g., NaN
+
+        birth_country: object
+            Country where player was born, e.g., SWE
+
+        nationality: float
+            Player's nationality, e.g., SWE
+
+        height: float
+            Player's height in feet, e.g., 6.083333
+
+        weight: int
+            Players weight in pounds, e.g., 205
+
+        shoots: object
+            Skater's shooting hand, e.g., R
+
+        catches: object
+            Goalie's catching hand, e.g., NaN
+
+        first_name: object
+            Player's first name, e.g., FILIP
+
+        last_name: object
+            Player's last name, e.g., FORSBERG
+
+        roster_status: integer
+            Whether player is active for game, e.g., 1
+
+        active: integer
+            Whether player is currently active, e.g., 1
+
+        rookie: integer
+            Whether player is a rookie, e.g., 0
+
+        alternate_captain: integer
+            Whether player is designated an alternate captain, e.g., 0
+
+        captain: integer
+            Whether player is designated the captain, e.g., 0
+
+    '''
+    
+    ## Convert game IDs to list if given a single game ID
+    game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
+    
+    number_of_games = len(game_ids)
+    
+    ## Important lists
+    bad_game_list = []
+        
+    if session == None:
+
+        s = s_session()
+
+    else:
+
+        s = session
+    
+    rosters_dict = {}
+    
+    pbar = tqdm(game_ids, disable = nested)
+    
+    for game_id in pbar:
+
+        year = int(str(game_id)[0:4])
+
+        season = int(f'{year}{year + 1}')
+
+        game_session = str(game_id)[4:6]
+
+        if game_session == '01':
+            
+            game_session = 'PR'
+            
+        if game_session == '02':
+            
+            game_session = 'R'
+            
+        if game_session == '03':
+            
+            game_session = 'P'
+
+        game_rosters = []
+            
+        #if np.logical_or(response == None, number_of_games > 1):
+        if live_response == None:
+            
+            response = s.get(f'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live').json()
+
+        else:
+
+            response = live_response
+        
+        if response['gameData'] == []:
+                
+            bad_game_list.append(game_id)
+            
+            response = None
+            
+            continue
+
+        roster_info = response['gameData']['players']
+
+        players = list(roster_info.values())
+
+        for player in players:
+            
+            player_data = {}
+            
+            new_values = {'season': int(season),
+                          'session': game_session,
+                          'game_id': int(game_id),
+                          'player_name': unidecode(player['fullName']).upper(),
+                          'api_id': int(player['id']),
+                          #'eh_id': f'{first_name}.{last_name}',
+                          'position': player['primaryPosition']['code'],
+                          'position_type': player['primaryPosition']['type'].upper(),
+                          'birth_date': player['birthDate'],
+                          'birth_city': unidecode(player['birthCity']).upper(),
+                          'birth_state_province': unidecode(player.get('birthStateProvince', '')).upper(),
+                          'birth_country': unidecode(player['birthCountry']).upper(),
+                          'nationality': player['nationality'],
+                          'height': player['height'],
+                          'weight': int(player['weight']),
+                          'active': player['active'],
+                          'alternate_captain': player.get('alternateCaptain', False),
+                          'captain': player.get('captain', False),
+                          'rookie': player['rookie'],
+                          'roster_status': player['rosterStatus'],
+                          'first_name': unidecode(player['firstName']).upper(),
+                          'last_name': unidecode(player['lastName']).upper(),
+                         }
+            
+            player_data.update(new_values)
+
+            ## Replacing certain names
+
+            player_data['player_name'] = correct_names_dict.get(player_data['player_name'], player_data['player_name'])
+
+            name_keys = ['player_name', 'first_name']
+
+            replace_names = {'AlEXANDRE' : 'ALEX',
+                             'ALEXANDER' : 'ALEX',
+                             'CHRISTOPHER' : 'CHRIS',
+                            }
+
+            for name_key in name_keys:
+
+                for old_name, new_name in replace_names.items():
+            
+                    player_data[name_key] = player_data[name_key].replace(old_name, new_name)
+
+            player_data['eh_id'] = f"{player_data['first_name']}.{player_data['last_name']}"
+
+            player_data['eh_id'] = correct_api_names_dict.get(player_data['api_id'], player_data['eh_id'])
+
+            player_data['eh_id'] = player_data['eh_id'].replace('..', '.')
+            
+            if player_data['position'] == 'G':
+                
+                player_data['catches'] = player['shootsCatches']
+                
+            else:
+                
+                player_data['shoots'] = player['shootsCatches']
+                
+            cols = ['active', 'alternate_captain', 'captain', 'rookie', 'roster_status']
+            
+            for col in cols:
+                
+                if player_data[col] == True or player_data[col] == 'Y':
+                    
+                    player_data[col] = 1
+                    
+                elif player_data[col] == False or player_data[col] != 'Y':
+                    
+                    player_data[col] = 0
+                    
+            height_split = player_data['height'].split("' ")
+            
+            height_ft = int(height_split[0])
+            
+            height_in = int(height_split[1].replace('''"''', ''))
+            
+            player_data['height'] = height_ft + (height_in / 12)
+            
+            position_types = {'FORWARD': 'F', 'DEFENSEMAN': 'D', 'GOALIE': 'G'}
+            
+            player_data['position_type'] = position_types.get(player_data['position_type'])
+            
+            if player_data['birth_state_province'] == '':
+                
+                player_data['birth_state_province'] = np.nan
+            
+            game_rosters.append(player_data)
+
+        if game_rosters == []:
+
+            continue
+
+        rosters_dict.update({game_id: game_rosters})
+        
+        if game_id == game_ids[-1]:
+            
+            pbar.set_description(f'Finished scraping game info data')
+
+            if nested == False:
+
+                s.close()
+            
+        else:
+        
+            pbar.set_description(f'Finished scraping {game_id}')
+        
+        now = datetime.now()
+
+        current_time = now.strftime("%H:%M:%S")
+
+        postfix_str = f'{current_time}'
+        
+        pbar.set_postfix_str(postfix_str)
+    
+    if rosters_dict == {}:
+
+        if nested == True:
+
+            return {}
+
+        else:
+
+            return None
+
+    if nested == False:
+
+        roster_data = [player for players in list(rosters_dict.values()) for player in players]
+
+        df = pd.DataFrame(roster_data)
+
+        columns = ['season', 'session', 'game_id', 'player_name', 'api_id', 'eh_id',
+                    'position', 'position_type', 'birth_date', 'birth_city',
+                    'birth_state_province', 'birth_country', 'nationality', 'height',
+                    'weight', 'shoots', 'catches', 'first_name', 'last_name', 
+                    'roster_status', 'active', 'rookie', 'alternate_captain',
+                    'captain', ]
+
+        #columns = ['season', 'session', 'game_id', 'game_date', 'start_time',
+        #            'home_team', 'home_team_name', 'away_team', 'away_team_name',
+        #            'game_venue', 'end_time', 'start_time_dt', 'end_time_dt', 'home_team_id',
+        #            'home_team_link', 'home_team_division', 'home_team_division_id',
+        #            'home_team_conference', 'home_team_conference_id', 'away_team_id',
+        #           'away_team_link', 'away_team_divison', 'away_team_division_id',
+        #            'away_team_conference', 'away_team_conference_id', 'start_time_utc',
+        #            'end_time_utc',
+        #            ]
+
+        columns = [x for x in columns if x in df.columns]
+
+        df = df[columns]
+
+        return df
+    
+    else:
+        
+        return rosters_dict
+
+############################################## HTML rosters ##############################################
+
+## [x]Refactored
+def scrape_html_rosters(game_ids, session = None, nested = True):
+    
+    '''
+
+    --------- Info ---------
+
+    Scrapes the rosters from the HTML endpoint for a given game ID or list of game IDs.
+    By default returns a dictionary with game IDs as keys and lists of players as dictionaries as the values.
+
+    Can be used standalone but primarily nested within other scraping functions.
+    If standalone, scrapes 4-8 games per second.
+
+    --------- Parameters ---------
+
+    game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
+
+    session: requests Session object; default = None
+        When using in another scrape function, can pass the requests session to improve speed
+
+    nested: boolean; default: True
+        If True, progress bar is disabled and a dictionary with game IDs as keys
+        and lists of players as dictionaries 
+
+        If False, prints progress to the console and returns a dataframe
+
+    --------- Returns ---------
+
+    Default: dict(key(s) = game ID(s), value(s) = list(players))
+
+    If nested = False, then returns a dataframe, converting the dictionary keys to columns
+
+    Each player in each game list is a dictionary with the following fields and values:
+
+        season: integer
+            8-digit season code, e.g., 20222023
+
+        session: object
+            Regular season or playoffs, e.g., 'R'
+
+        game_id: integer
+            10-digit game identifier, e.g., 2022020001
+
+        team: object
+            3-letter team code, e.g., NSH
+
+        team_name: object
+            Full team name, e.g., NASHVILLE PREDATORS
+
+        team_venue: object
+            Whether team is home or away, e.g., home
+
+        player_name: object
+            Player's latin-encoded name, e.g., FILIP FORSBERG
+
+        eh_id: object
+            Identifier that can be used to match with Evolving Hockey data, e.g., FILIP.FORSBERG
+
+        team_jersey: object
+            3-letter team code plus player's jersey number, e.g., NSH9
+            Used for identification in other functions
+
+        jersey: integer
+            Player's jersey number, e.g., 9
+
+        position: object
+            Player's position, e.g., F
+
+        status: object
+            Player's status, e.g., ACTIVE
+
     '''
     
     
@@ -1000,19 +1439,33 @@ def scrape_html_rosters(game_ids, disable_print = False, session = None, nested 
         
         s = session
         
-    if len(game_ids) == 1:
+    #if len(game_ids) == 1:
         
-        disable_print = True
+    #    disable_print = True
     
-    game_list = []
+    games_dict = {}
     
-    pbar = tqdm(game_ids, disable = disable_print)
+    pbar = tqdm(game_ids, disable = nested)
     
     for game_id in pbar:
         
-        html_season_id, html_game_id = convert_ids(game_id)
+        season, html_game_id = convert_ids(game_id)
+
+        game_session = str(game_id)[4:6]
+
+        if game_session == '01':
+
+            game_session = 'PR'
+
+        if game_session == '02':
+
+            game_session = 'R'
+
+        if game_session == '03':
+
+            game_session == 'P'
     
-        url = f'http://www.nhl.com/scores/htmlreports/{html_season_id}/RO0{html_game_id}.HTM'
+        url = f'http://www.nhl.com/scores/htmlreports/{season}/RO0{html_game_id}.HTM'
         
         page = s.get(url)
         
@@ -1032,165 +1485,276 @@ def scrape_html_rosters(game_ids, disable_print = False, session = None, nested 
             
             continue
         
-        td_dict = {'align':'center', 'class':['teamHeading + border', 'teamHeading + border '], 'width':'50%'}
-            
-        table_dict = {'align':'center', 'border':'0', 'cellpadding':'0', 'cellspacing':'0', 'width':'100%', 'xmlns:ext':''}
-        
-        soup = BeautifulSoup(page.content.decode('ISO-8859-1'), 'lxml', multi_valued_attributes = None)
+        ## Dictionaries for reading the HTML data
 
         td_dict = {'align':'center', 'class':['teamHeading + border', 'teamHeading + border '], 'width':'50%'}
+
+        table_dict = {'align':'center', 'border':'0', 'cellpadding':'0', 'cellspacing':'0', 'width':'100%', 'xmlns:ext':''}
+
+        ## Reading the HTML file sing beautiful soup package
+
+        soup = BeautifulSoup(page.content.decode('ISO-8859-1'), 'lxml', multi_valued_attributes = None)
+
+        ## Information for reading the HTML data
+
+        td_dict = {'align':'center', 'class':['teamHeading + border', 'teamHeading + border '], 'width':'50%'}
+
+        ## Finding all active players in the html file
 
         teamsoup = soup.find_all('td', td_dict)
 
+        ## Dictionary for finding each team's table in the HTML file
+
         table_dict = {'align':'center', 'border':'0', 'cellpadding':'0', 'cellspacing':'0', 'width':'100%', 'xmlns:ext':''}
+
+        ## Dictionary to collect the team names
 
         team_names = {}
 
+        ## Dictionary to collect the team tables from the HTML data for iterating
+
         team_soup_list = []
+
+        ## List of teams for iterating
 
         team_list = ['away', 'home']
 
-        html_roster_list = []
+        ## List to collect the player dictionaries during iteration
+
+        player_list = []
+
+        ## Iterating through the home and away teams to collect names and tables
 
         for idx, team in enumerate(team_list):
+            
+            ## Collecting team names
+            
+            team_name = unidecode(teamsoup[idx].get_text().encode('latin-1').decode('utf-8')).upper()
+            
+            ## Correcting the Coyotes team name
+            
+            if team_name == 'PHOENIX COYOTES':
+                
+                team_name = 'ARIZONA COYOTES'
 
-            team_names.update({team : teamsoup[idx].get_text()})
+            team_names.update({team : team_name})
+            
+            ## Collecting tables of active players
 
             team_soup_list.append((soup.find_all('table', table_dict))[idx].find_all('td'))
+            
+        ## Itereating through the team's tables of active players
 
         for idx, team_soup in enumerate(team_soup_list):
+            
+            ## Getting length to create numpy array
 
             length = int(len(team_soup) / 3)
+            
+            ## Creating a numpy array from the data, chopping off the headers to create my own
+            
+            active_array = np.array(team_soup).reshape(length, 3)
+            
+            ## Getting original headers
+            
+            og_headers = active_array[0]
+            
+            if 'Name' not in og_headers and 'Nom/Name' not in og_headers:
+                
+                continue
+            
+            ## Chop off the headers to create my own
+            
+            actives = active_array[1:]
+            
+            ## Iterating through each player, or row in the array
+            
+            for player in actives:
+                
+                ## New headers for the data. Original headers | ['#', 'Pos', 'Name']
+                
+                if len(player) == 3:
 
-            df = pd.DataFrame(np.array(team_soup).reshape(length, 3))
+                    headers = ['jersey', 'position', 'player_name']
+                    
+                ## Sometimes headers are missing
+                
+                elif len(player) == 2:
+                    
+                    headers = ['jersey', 'player_name']
+                
+                ## Creating dictionary with headers as keys from the player data
+                
+                player = dict(zip(headers, player))
+                
+                ## Adding new values to the player dictionary
+                
+                new_values = {'team_name': team_names.get(team_list[idx]),
+                              'team_venue': team_list[idx],
+                              'status': 'ACTIVE'}
+                
+                if 'position' not in headers:
 
-            df.columns = df.iloc[0]
-
-            df = df.assign(team = team_list[idx], team_name = team_names.get(team_list[idx]), status = 'active').drop(0)
-
-            html_roster_list.append(df)
+                    player['position'] = np.nan
+                
+                ## Update the player's dictionary with new values
+                
+                player.update(new_values)
+                
+                ## Append player dictionary to list of players
+                
+                player_list.append(player)
+                
+        ## Check if scratches are present
 
         if len(soup.find_all('table', table_dict)) > 2:
-
-            scratch_soups = []
+            
+            ## If scratches are present, iterate through the team's scratch tables
 
             for idx, team in enumerate(team_list):
+                
+                ## Getting team's scratches from HTML
 
-                team_scratch = (soup.find_all('table', table_dict))[idx + 2].find_all('td')
+                scratch_soup = (soup.find_all('table', table_dict))[idx + 2].find_all('td')
+                
+                ## Checking to see if there is at least one set of scratches (first row are headers)
 
-                if len(team_scratch) > 1:
+                if len(scratch_soup) > 1:
+                    
+                    ## Getting the number of scratches
 
-                    length = int(len(team_scratch) / 3)
+                    length = int(len(scratch_soup) / 3)
+                    
+                    ## Creating numpy array of scratches, removing headers
 
-                    df = pd.DataFrame(np.array(team_scratch).reshape(length, 3))
+                    scratches = np.array(scratch_soup).reshape(length, 3)[1:]
+                    
+                    ## Iterating through the array
+            
+                    for player in scratches:
+                    
+                        ## New headers for the data. Original headers | ['#', 'Pos', 'Name']
+                
+                        if len(player) == 3:
 
-                    df.columns = df.iloc[0]
+                            headers = ['jersey', 'position', 'player_name']
+                            
+                        ## Sometimes headers are missing
+                        
+                        elif len(player) == 2:
+                            
+                            headers = ['jersey', 'player_name']
+                        
+                        ## Creating dictionary with headers as keys from the player data
+                        
+                        player = dict(zip(headers, player))
+                        
+                        ## Adding new values to the player dictionary
+                        
+                        new_values = {'team_name': team_names.get(team_list[idx]),
+                                      'team_venue': team_list[idx],
+                                      'status': 'SCRATCH'}
+                        
+                        if 'position' not in headers:
 
-                    df = df.assign(team = team_list[idx], team_name = team_names.get(team_list[idx]), status = 'scratch').drop(0)
+                            player['position'] = np.nan
+                        
+                        ## Updating player dictionary
 
-                    html_roster_list.append(df)
+                        player.update(new_values)
+                        
+                        ## Appending the player dictionary to the player list
 
-                else:
+                        player_list.append(player)
+                    
+        for player in player_list:
 
-                    html_roster_list.append(pd.DataFrame())
+            ## Fixing jersey data type
 
-        game_df = pd.concat(html_roster_list, ignore_index = True)
+            player['jersey'] = int(player['jersey'])
+            
+            ## Adding new values in a batch
 
-        game_df['game_id'] = game_id
+            new_values = {'season': int(season),
+                          'session': game_session,
+                          'game_id': game_id}
+            
+            player.update(new_values)
+            
+            ## Correcting player names
+            
+            player['player_name'] = re.sub('\(\s?(.*)\)', '', player['player_name'])\
+                                        .strip()\
+                                        .encode('latin-1')\
+                                        .decode('utf-8')\
+                                        .upper()
+            
+            ## Replacing certain names
 
-        game_df['season'] = html_season_id
-        
-        game_df.team_name = game_df.team_name.str.normalize('NFKD') \
-                                                    .str.encode('ascii', errors='ignore').str.decode('utf-8').str.upper()
-        
-        replace_teams = {'MONTRAAL CANADIENS': 'MONTREAL CANADIENS', 'CANADIENS MONTREAL': 'MONTREAL CANADIENS',
-                         'PHOENIX COYOTES': 'ARIZONA COYOTES'}
-        
-        game_df.team_name.replace(replace_teams, regex = False, inplace = True)
+            player['player_name'] = correct_names_dict.get(player['player_name'], player['player_name'])
 
-        ## Rename columns
-        new_cols = {'#' : 'player_jersey',
-                    'Pos' : 'player_position',
-                    'status' : 'player_status',
-                    'Nom/Name' : 'player_name',
-                    'Name' : 'player_name'}
+            replace_names = {'AlEXANDRE' : 'ALEX',
+                             'ALEXANDER' : 'ALEX',
+                             'CHRISTOPHER' : 'CHRIS',
+                            }
 
-        game_df.rename(columns = new_cols, inplace = True)
+            for old_name, new_name in replace_names.items():
+                
+                player['player_name'] = player['player_name'].replace(old_name, new_name)
+            
+            ## Creating Evolving Hockey ID
+            
+            player['eh_id'] = unidecode(player['player_name'])
 
-        if 'player_name' not in list(game_df.columns):
+            ## List of names and fixed from Evolving Hockey Scraper.
+            #player['eh_id'] = correct_names_dict.get(player['eh_id'], player['eh_id'])
+            
+            name_split = player['eh_id'].split(' ', maxsplit = 1)
+            
+            player['eh_id'] = f'{name_split[0]}.{name_split[1]}'
 
-            continue
+            player['eh_id'] = player['eh_id'].replace('..', '.')
+            
+            ## Correcting Evolving Hockey IDs for duplicates
+            
+            duplicates = {'SEBASTIAN.AHO': player['player_position'] == 'D',
+                          'COLIN.WHITE': player['season'] >= 20162017,
+                          'SEAN.COLLINS': player['player_position'] != 'D',
+                          'ALEX.PICARD': player['player_position'] != 'D',
+                          'ERIK.GUSTAFSSON': player['season'] >= 20152016,
+                          'MIKKO.LEHTONEN': player['season'] >= 20202021,
+                          'NATHAN.SMITH': player['season'] >= 20212022,
+                          'DANIIL.TARASOV': player['player_position'] == 'G'
+                         }
+            
+            ## Iterating through the duplicate names and conditions
+            
+            for duplicate_name, condition in duplicates.items():
+                
+                if player['eh_id'] == duplicate_name and condition:
+                    
+                    player['eh_id'] = f'{duplicate_name}2'
+                    
+            ## Something weird with Colin White
+            
+            if player['eh_id'] == 'COLIN.':
+                
+                player['eh_id'] = 'COLIN.WHITE2'
 
-        if 'player_position' not in list(game_df.columns):
+            player['team'] = team_codes.get(player['team_name'])
 
-            game_df['player_position'] = np.nan
+            player['team_jersey'] = f"{player['team']}{player['player_jersey']}"
 
-        ## Full names, then fixing
-        #game_df.player_name = game_df.player_name.str.split('(').str[0].str.strip()
-        
-        game_df.player_name = game_df.player_name.str.replace('\(\s?(.*)\)', '', regex = True).str.strip()
-        
-        game_df.player_name = game_df.player_name.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8').str.upper()
-
-        # Max Pacioretty doesn't exist in ESPN in 2009-2010, sadly.
-        replace_dict = {'AlEXANDRE ' : 'ALEX ',
-                        'ALEXANDER ' : 'ALEX ',
-                        'CHRISTOPHER ' : 'CHRIS ',
-                       }
-
-        for old_name, new_name in replace_dict.items():
-
-            game_df.player_name = game_df.player_name.str.replace(old_name, new_name, regex = False, case = False)
-
-        # List of names and fixed from Evolving Hockey Scraper.
-        game_df.player_name = game_df.player_name.map(correct_names_dict).fillna(game_df.player_name)
-
-        player_names = ['player_first_name', 'player_last_name']
-
-        for idx, player_name in enumerate(player_names):
-
-            game_df[player_name] = game_df.player_name.str.split(' ', n = 1).str[idx]
-
-        game_df['api_name'] = game_df.player_first_name + '.' + game_df.player_last_name
-
-        double_names_fix = {'SEBASTIAN.AHO2' : np.logical_and(game_df.api_name == 'SEBASTIAN.AHO', game_df.player_position == 'D'),
-                            'COLIN.WHITE2': np.logical_and(game_df.api_name == 'COLIN.WHITE', int(html_season_id) >= 20162017), 
-                            'SEAN.COLLINS2' : np.logical_and(game_df.api_name == 'SEAN.COLLINS', game_df.player_position != 'D'),
-                            'ALEX.PICARD2' : np.logical_and(game_df.api_name == 'ALEX.PICARD', game_df.player_position != 'D'),
-                            'ERIK.GUSTAFSSON2' : np.logical_and(game_df.api_name == 'ERIK.GUSTAFSSON', int(html_season_id) >= 20152016),
-                            'MIKKO.LEHTONEN2' : np.logical_and(game_df.api_name == 'MIKKO.LEHTONEN', int(html_season_id) >= 20202021),
-                            'NATHAN.SMITH2': np.logical_and(game_df.api_name == 'NATHAN.SMITH', int(html_season_id) >= 20212022),
-                            'DANIIL.TARASOV2': np.logical_and(game_df.api_name == 'DANIIL.TARASOV', game_df.player_position == 'G')
-                           }
-
-        for fix, condition in double_names_fix.items():
-
-            game_df.api_name = np.where(condition, fix, game_df.api_name)
-
-        game_df.api_name = np.where(game_df.api_name == 'COLIN.', 'COLIN.WHITE2', game_df.api_name)
-        
-        game_df['team_code'] = game_df.team_name.map(team_codes)
-        
-        game_df['player_abbr'] = game_df.team_code + game_df.player_jersey.astype(str)
-
-        if str(game_id)[4:6] == '01':
-
-            game_df['session'] = 'PR'
-
-        if str(game_id)[4:6] == '02':
-
-            game_df['session'] = 'R'
-
-        if str(game_id)[4:6] == '03':
-
-            game_df['session'] = 'P'
-
-        game_list.append(game_df)
+        games_dict.update({game_id: player_list})
         
         if game_id == game_ids[-1]:
             
             pbar.set_description(f'Finished scraping roster data')
-            
+
+            if nested == False:
+
+                s.close()
+
         else:
         
             pbar.set_description(f'Finished scraping {game_id}')
@@ -1202,21 +1766,28 @@ def scrape_html_rosters(game_ids, disable_print = False, session = None, nested 
         postfix_str = f'{current_time}'
         
         pbar.set_postfix_str(postfix_str)
-        
-    df = pd.concat(game_list, ignore_index = True)
     
-    columns = ['season', 'session', 'game_id', 'team_name', 'team', 'team_code', 'player_name', 'api_name',
-               'player_abbr', 'player_jersey', 'player_position', 'player_status']
-    
-    columns = [x for x in columns if x in df]
-    
-    df = df[columns]
-
     if nested == False:
 
-        s.close()
+        roster_data = [player for players in list(games_dict.values()) for player in players]
+
+        df = pd.DataFrame(roster_data)
+
+        column_order = ['season', 'session', 'game_id', 'team', 'team_name', 'team_venue',
+                        'player_name', 'eh_id', 'team_jersey', 'player_jersey', 'player_position',
+                        'player_status']
+
+        column_order = [x for x in column_order if x in df.columns]
+
+        df = df[column_order]
+
+        return df
+
+    else:
+
+        return games_dict
         
-    return df
+    #return df
 
 ############################################## HTML shifts ##############################################
 
