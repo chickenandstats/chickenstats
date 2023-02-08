@@ -7,6 +7,12 @@
 # The two most important functions are: (1) scrape_schedule; and (2) scrape_pbp
 # The play-by-play function takes game IDs, which can be sourced using the schedule scraper
 
+
+############################################## Things to keep track of ##############################################
+
+# 1. Ensure correct data types are returned by each scraper
+# 2. QC names against Evolving Hockey to ensure EH IDs match
+
 ############################################## Dependencies ##############################################
 
 import requests
@@ -164,7 +170,9 @@ def convert_ids(api_game_id):
 
 ############################################## Schedule ##############################################
 
-## [x]Refactored
+## []Refactored
+## [x]Docstring
+## []Comments
 def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_only = False, live_only = False, teams = None, disable_print = False):
     
     
@@ -172,17 +180,19 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
     
     --------- Info ---------
 
-    Scrapes the NHL schedule API and returns a DataFrame for the given year or years.
-    By default, returns entire 2022 schedule, including playoffs.
+    Scrapes schedule from the NHL API for a given four-digit year or list-like object of four-digit years. Returns a Pandas DataFrame.
+    By default, returns entire 2022 schedule, including playoffs, if applicable. 
     NHL historical data supported, 1917-present.
-    Typically takes 2-5 seconds per seasons, but can increase if scraping multiple seasons. 
 
-    --------- Parameters ---------
+    Typically takes 2-5 seconds per seasons, but can increase if scraping multiple seasons.
 
-    seasons: a four-digit year, or list-like object consisting of four-digit years
+    --------- Optional parameters ---------
 
-    game_types: list; default: ['R', 'P']
-        Determines the types of games that are returned. Not all game types are supported or have adequate data.
+    seasons | integer or list-like object: default = 2022
+        Four-digit year (e.g., 2022), or list-like object consisting of four-digit years (e.g., generator or Pandas Series)
+
+    game_types | list: default = ['R', 'P']
+        Determines the types of games that are returned. Not all game types are supported or have adequate data
         The following are available:
         'R': regular season
         'P': playoffs
@@ -190,23 +200,22 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
         'A': all star game (not supported)
         'all': all game types
 
-    date: Date in 'YYYY-MM-DD' format or 'today'; default: None
+    date | object: default = None
+        Date in 'YYYY-MM-DD' format or 'today'
         If not None, scrapes games from the date given, or today, in your system's local time
 
-    final_only: boolean; default: False
+    final_only | boolean: default = False
         If True, scrapes only the games that have finished
 
-    live_only: boolean; default: False
+    live_only | boolean: default = False
         If True, scrapes only live games
 
-    teams: list of team names; default: None
+    teams | list of team names: default = None
         If not none, filters the schedule to include only the given teams
 
-    disable_print: boolean; default: False
-        If False, prints progress to the console using tqdm
-
-    nested: boolean; default: False
-        If False, closes session object when finished
+    disable_print | boolean: default = False
+        If True, progress bar is disabled
+        If False, prints progress bar
 
     --------- Returns ---------
     
@@ -496,25 +505,29 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
 
 ############################################## Standings ##############################################
 
-## [x]Refactored
+## []Refactored
+## [x]Docstring
+## []Comments
 def scrape_standings(seasons = 2022, disable_print = False):
     
     '''
     
     --------- Info ---------
 
-    Scrapes the NHL standings API and returns a DataFrame for the given year or years.
-    By default, the standings are for 2022 and are of the moment the function is run,
-    e.g., anything in the past will be historical.
-    NHL historical data supported, 1917-present. 
-    Typically takes ~1 second per season.
+    Scrapes standings from the NHL API for a given four-digit year or list-like object of four-digit years. Returns a Pandas DataFrame.
+    By default, the standings are for 2022 and are of the moment the function is run, e.g., anything in the past will be historical. 
+    NHL historical data supported, 1917-present.
 
-    --------- Parameters ---------
+    Scrapes approximately 1 season per second.
 
-    seasons: a four-digit year, or list-like object consisting of four-digit years
+    --------- Optional parameters ---------
 
-    disable_print: boolean; default: False
-        If False, prints progress to the console using tqdm
+    seasons | integer or list-like object: default = 2022
+        Four-digit year (e.g., 2022), or list-like object consisting of four-digit years (e.g., generator or Pandas Series)
+
+    disable_print | boolean: default = False
+        If True, disables progress bar
+        If False, prints progress bar
 
     --------- Returns ---------
 
@@ -749,39 +762,44 @@ def scrape_standings(seasons = 2022, disable_print = False):
 ############################################## Game info ##############################################
 
 ## [x]Refactored
+## [x]Docstring
+## [x]Comments
 def scrape_game_info(game_ids, live_response = None, session = None, nested = True):
     
     '''
 
     --------- Info ---------
 
-    Scrapes the game information from the API for a given game ID or list of game IDs
+    Scrapes game information from the API for a given game ID or list-like object of game IDs.
+    Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
+
     By default returns a dictionary with game IDs as keys and a dictionary of game information as the values.
+    If nested is False, returns a Pandas DataFrame.
 
-    Can be used standalone but primarily nested within other scraping functions.
-    If standalone, scrapes 6-12 games per second.
+    Scrapes approximately 8-12 games per second.
 
-    --------- Parameters ---------
+    --------- Required parameters ---------
 
-    game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
+    game_ids | integer or list-like object
+        A single 1--digit API game ID (e.g., 2021020001) or list-like object of game IDs (e.g., generator or Pandas Series)
 
-    live_response: JSON object; default: None
+    --------- Optional parameters ---------
+
+    live_response | JSON object: default = None
         When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
 
-    session: requests Session object; default = None
+    session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
 
-    nested: boolean; default: True
-        If True, progress bar is disabled and a dictionary with game IDs as keys
-        and lists of players as dictionaries 
-
-        If False, prints progress to the console and returns a dataframe
+    nested | boolean: default = True
+        If True, progress bar is disabled and a dictionary with game IDs as keys and lists of players as dictionaries
+        If False, prints progress to the console and returns a Pandas DataFrame
 
     --------- Returns ---------
 
-    Default: dict(key(s) = game ID(s), value(s) = dictionary of game info)
+    Default: Dictionary with game IDs as keys and a dictionaries of game information as the values
 
-    If nested = False, then returns a dataframe, converting the dictionary keys to columns
+    If nested is False, then returns a Pandas DataFrame, converting the dictionary keys to columns
 
     The each game info dictionary returned contains the following fields and values:
 
@@ -789,7 +807,7 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
             8-digit season code, e.g., 20222023
 
         session: object
-            Regular season or playoffs, e.g., 'R'
+            Regular season or playoffs, e.g., R
 
         game_id: int
             10-digit game identifier, e.g., 2022020001
@@ -872,12 +890,14 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
     '''
     
     ## Convert game IDs to list if given a single game ID
+
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
     
-    number_of_games = len(game_ids)
-    
-    ## Important lists
+    ## List to collect the bad games that don't work
+
     bad_game_list = []
+
+    ## Creating session object to speed up the scraper
         
     if session == None:
 
@@ -886,16 +906,25 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
     else:
 
         s = session
+
+    ## Creating a dictionary to collect all of the information to eventually be returned
     
     games_dict = {}
+
+    ## Creating progress bar and disabling if function is nested
     
     pbar = tqdm(game_ids, disable = nested)
+
+    ## Iterating through game IDs
     
     for game_id in pbar:
 
+        ## Dictionary to collect all of the game information to be added to the dictionary to be returned 
+
         game_data = {}
-            
-        #if np.logical_or(response == None, number_of_games > 1):
+
+        ## Scraping live endpoint if not already scraped
+
         if live_response == None:
             
             response = s.get(f'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live').json()
@@ -903,6 +932,8 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
         else:
 
             response = live_response
+
+        ## If there is no information in the API, continue and add game to the bad list
         
         if response['gameData'] == []:
                 
@@ -912,15 +943,27 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
             
             continue
 
+        ## Game information dictionary
+
         game_info = response['gameData']['game']
+
+        ## Datetime information dictionary
 
         dt_info = response['gameData']['datetime']
 
+        ## Game status information dictionary
+
         status_info = response['gameData']['status']
+
+        ## Team information dictionary
 
         team_info = response['gameData']['teams']
 
+        ## Venue information dictionary
+
         venue_info = response['gameData']['venue']
+
+        ## New values to be created for the game information dictionary 
 
         new_values = {'season': int(game_info['season']),
                       'session': game_info['type'],
@@ -949,11 +992,17 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
                       'end_time_utc': pd.to_datetime(dt_info.get('endDateTime', np.nan)),
                      }
 
+         ## Adding the new values to the game data dictionary 
+
         game_data.update(new_values)
+
+        ## Creating dates in string format based on datetime fields
 
         game_data['game_date'] = game_data['start_time_dt'].strftime('%Y-%m-%d')
 
         game_data['start_time'] = game_data['start_time_dt'].strftime('%H:%M:%S')
+
+        ## Creating end time in string format based on datetime field, if exists
 
         if 'endDateTime' not in dt_info.keys():
 
@@ -963,15 +1012,23 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
 
             game_data['end_time'] = game_data['end_time_dt'].strftime('%H:%M:%S')
 
+        ## If the game data dictionary is empty, continue
+
         if game_data == {}:
 
             continue
 
+        ## Update the games dictionary, which is eventually returned, with the game ID and the list of game information 
+
         games_dict.update({game_id: game_data})
+
+        ## If this is the last game ID, update progress bar information
         
         if game_id == game_ids[-1]:
             
             pbar.set_description(f'Finished scraping game info data')
+
+            ## If this function is not nested, close the session object
 
             if nested == False:
 
@@ -980,6 +1037,8 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
         else:
         
             pbar.set_description(f'Finished scraping {game_id}')
+
+        ## Adding time information to the progress bar information 
         
         now = datetime.now()
 
@@ -988,6 +1047,8 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
         postfix_str = f'{current_time}'
         
         pbar.set_postfix_str(postfix_str)
+
+    ## If games dictionary is empty, return empty dictionary or None, based on nested parameter
     
     if games_dict == {}:
 
@@ -998,6 +1059,8 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
         else:
 
             return None
+
+    ## If function is not nested, convert dictionary to a dataframe
 
     if nested == False:
 
@@ -1018,6 +1081,8 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
         df = df[columns]
 
         return df
+
+    ## Else, return the game dictionary 
     
     else:
         
@@ -1026,39 +1091,45 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
 ############################################## API rosters ##############################################
 
 ## [x]Refactored
-def scrape_api_rosters(game_ids, live_response = None, session = None, nested = True):
+## [x]Docstring
+## [x]Comments
+def scrape_api_roster(game_ids, live_response = None, session = None, nested = True):
     
     '''
 
     --------- Info ---------
 
-    Scrapes the game information from the API for a given game ID or list of game IDs
-    By default returns a dictionary with game IDs as keys and a dictionary of game information as the values.
+    Scrapes the game roster from the API for a given game ID or list-like object of game IDs.
+    Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
 
-    Can be used standalone but primarily nested within other scraping functions.
-    If standalone, scrapes 8-12 games per second.
+    By default returns a dictionary with game IDs as keys and lists of player-dictionaries as values.
+    If nested is False, returns a Pandas DataFrame.
 
-    --------- Parameters ---------
+    Scrapes approximately 8-12 games per second.
 
-    game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
+    --------- Required parameters ---------
 
-    live_response: JSON object; default: None
+    game_ids | integer or list-like object
+        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+
+    --------- Optional parameters ---------
+
+    live_response | JSON object: default = None
         When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
 
-    session: requests Session object; default = None
+    session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
 
-    nested: boolean; default: True
-        If True, progress bar is disabled and a dictionary with game IDs as keys
-        and lists of players as dictionaries 
+    nested | boolean: default = True
+        If True, progress bar is disabled and a dictionary with game IDs as keys and lists of players as dictionaries
+        If False, prints progress to the console and returns a Pandas DataFrame
 
-        If False, prints progress to the console and returns a dataframe
 
     --------- Returns ---------
 
-    Default: dict(key(s) = game ID(s), value(s) = dictionary of game info)
+    Default: Dictionary with game IDs as keys and lists of player-dictionaries as the values.
 
-    If nested = False, then returns a dataframe, converting the dictionary keys to columns
+    If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
 
     The each game info dictionary returned contains the following fields and values:
 
@@ -1137,26 +1208,38 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
     '''
     
     ## Convert game IDs to list if given a single game ID
+
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
     
-    number_of_games = len(game_ids)
-    
-    ## Important lists
+    ## List to collect games that don't have API information 
+
     bad_game_list = []
+
+    ## Creating session object if doesn't exist
         
     if session == None:
 
         s = s_session()
 
+    ## Else reusing session object to speed up scraper
+
     else:
 
         s = session
+
+    ## Creating dictionary to collect information that will eventually be returned
     
-    rosters_dict = {}
+    games_dict = {}
+
+    ## Creating progress bar
     
     pbar = tqdm(game_ids, disable = nested)
+
+    ## Iterating through game IDs
     
     for game_id in pbar:
+
+        ## Creating basic information from game ID
 
         year = int(str(game_id)[0:4])
 
@@ -1176,9 +1259,12 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
             
             game_session = 'P'
 
+        ## Creating list to collect the rosters for the game
+
         game_rosters = []
-            
-        #if np.logical_or(response == None, number_of_games > 1):
+
+        ## Scraping live endpoint if have not already done so 
+
         if live_response == None:
             
             response = s.get(f'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live').json()
@@ -1186,6 +1272,8 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
         else:
 
             response = live_response
+
+        ## If no information in the live response, continue
         
         if response['gameData'] == []:
                 
@@ -1195,24 +1283,35 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
             
             continue
 
+        ## Roster information dictionary with API IDs as keys as player information dictionaries as values
+
         roster_info = response['gameData']['players']
+
+        ## Creating list of player dictionaries 
 
         players = list(roster_info.values())
 
+        ## Iterating through the player dictionaries
+
         for player in players:
+
+            ## If no name in player, continue
 
             if ' ' not in player['fullName']:
 
                 continue
+
+            ## Creating new dictionary to hold player information
             
             player_data = {}
+
+            ## Values to update the player dictionary
             
             new_values = {'season': int(season),
                           'session': game_session,
                           'game_id': int(game_id),
                           'player_name': unidecode(player['fullName']).upper(),
                           'api_id': int(player['id']),
-                          #'eh_id': f'{first_name}.{last_name}',
                           'position': player.get('primaryPosition', {}).get('code', ''),
                           'position_type': player.get('primaryPosition', {}).get('type', '').upper(),
                           'birth_date': player.get('birthDate', ''),
@@ -1237,24 +1336,23 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
 
             player_data['player_name'] = correct_names_dict.get(player_data['player_name'], player_data['player_name'])
 
+            ## Changing to Alex and Chris
+
             name_keys = ['player_name', 'first_name']
 
-            replace_names = {'AlEXANDRE' : 'ALEX',
-                             'ALEXANDER' : 'ALEX',
-                             'CHRISTOPHER' : 'CHRIS',
-                            }
-
             for name_key in name_keys:
-
-                for old_name, new_name in replace_names.items():
             
-                    player_data[name_key] = player_data[name_key].replace(old_name, new_name)
+                player_data[name_key] = player_data[name_key].replace('ALEXANDRE', 'ALEX').replace('ALEXANDER', 'ALEX').replace('CHRISTOPHER', 'CHRIS')
+
+            ## Creating ID that matches Evolving Hockey data
 
             player_data['eh_id'] = f"{player_data['first_name']}.{player_data['last_name']}"
 
             player_data['eh_id'] = correct_api_names_dict.get(player_data['api_id'], player_data['eh_id'])
 
             player_data['eh_id'] = player_data['eh_id'].replace('..', '.')
+
+            ## Adding player handedness information, if exists
             
             if player_data['position'] == 'G':
                 
@@ -1263,6 +1361,8 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
             else:
                 
                 player_data['shoots'] = player.get('shootsCatches', np.nan)
+
+            ## Changing certain columns to binary values
                 
             cols = ['active', 'alternate_captain', 'captain', 'rookie', 'roster_status']
             
@@ -1276,6 +1376,8 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
                     
                     player_data[col] = 0
 
+            ## Calculating player height in feet as a decimal
+
             if player_data['height'] != '':
                     
                 height_split = player_data['height'].split("' ")
@@ -1285,22 +1387,34 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
                 height_in = int(height_split[1].replace('''"''', ''))
 
                 player_data['height'] = height_ft + (height_in / 12)
+
+            ## Shorting position types
             
             position_types = {'FORWARD': 'F', 'DEFENSEMAN': 'D', 'GOALIE': 'G'}
             
             player_data['position_type'] = position_types.get(player_data['position_type'])
+
+            ## Appending the player data to the game roster list
             
             game_rosters.append(player_data)
+
+        ## If no game rosters, continue
 
         if game_rosters == []:
 
             continue
 
-        rosters_dict.update({game_id: game_rosters})
+        ## Adding the game data to the dictionary that is ultimately returned
+
+        games_dict.update({game_id: game_rosters})
+
+        ## If this is the last game ID, changing progress bar information
         
         if game_id == game_ids[-1]:
             
             pbar.set_description(f'Finished scraping game info data')
+
+            ## If function is not nested, closing the session object
 
             if nested == False:
 
@@ -1309,6 +1423,8 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
         else:
         
             pbar.set_description(f'Finished scraping {game_id}')
+
+        ## Adding current time to the progress bar
         
         now = datetime.now()
 
@@ -1317,8 +1433,10 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
         postfix_str = f'{current_time}'
         
         pbar.set_postfix_str(postfix_str)
+
+    ## Continuing if rosters dict is empty and returning values based on nested parameter
     
-    if rosters_dict == {}:
+    if games_dict == {}:
 
         if nested == True:
 
@@ -1328,9 +1446,11 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
 
             return None
 
+    ## If not nested, return a dataframe
+
     if nested == False:
 
-        roster_data = [player for players in list(rosters_dict.values()) for player in players]
+        roster_data = [player for players in list(games_dict.values()) for player in players]
 
         df = pd.DataFrame(roster_data)
 
@@ -1358,44 +1478,51 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
         df = df.replace('', np.nan)
 
         return df
+
+    ## Else return a dictionary with game IDs as keys and lists of player-dictionaries as values
     
     else:
         
-        return rosters_dict
+        return games_dict
 
 ############################################## HTML rosters ##############################################
 
 ## [x]Refactored
-def scrape_html_rosters(game_ids, session = None, nested = True):
+## [x]Docstring
+## [x]Comments
+def scrape_html_roster(game_ids, session = None, nested = True):
     
     '''
 
     --------- Info ---------
 
-    Scrapes the rosters from the HTML endpoint for a given game ID or list of game IDs.
-    By default returns a dictionary with game IDs as keys and lists of players as dictionaries as the values.
+    Scrapes the rosters from the HTML endpoint for a given game ID or list-like object of game IDs.
+    Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
 
-    Can be used standalone but primarily nested within other scraping functions.
-    If standalone, scrapes 4-8 games per second.
+    By default returns a dictionary with game IDs as keys and lists of player-dictionaries as values.
+    If nested is False, returns a Pandas DataFrame.
 
-    --------- Parameters ---------
+    Scrapes approximately 4-8 games per second.
 
-    game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
+    --------- Required parameters ---------
 
-    session: requests Session object; default = None
+    game_ids | integer or list-like object
+        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+
+    --------- Optional parameters ---------
+
+    session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
 
-    nested: boolean; default: True
-        If True, progress bar is disabled and a dictionary with game IDs as keys
-        and lists of players as dictionaries 
-
-        If False, prints progress to the console and returns a dataframe
+    nested | boolean: default = True
+        If True, progress bar is disabled and a dictionary with game IDs as keys and lists of players as dictionaries
+        If False, prints progress to the console and returns a Pandas DataFrame
 
     --------- Returns ---------
 
-    Default: dict(key(s) = game ID(s), value(s) = list(players))
+    Default: Dictionary with game IDs as keys and lists of player-dictionaries as the values
 
-    If nested = False, then returns a dataframe, converting the dictionary keys to columns
+    If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
 
     Each player in each game list is a dictionary with the following fields and values:
 
@@ -1403,7 +1530,7 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
             8-digit season code, e.g., 20222023
 
         session: object
-            Regular season or playoffs, e.g., 'R'
+            Regular season or playoffs, e.g., R
 
         game_id: integer
             10-digit game identifier, e.g., 2022020001
@@ -1438,28 +1565,39 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
 
     '''
     
-    
+    ## Converting game IDs to a list if it is a single game ID
+
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
     
+    ## Creating session object if doesn't already exist
+
     if session == None:
     
         s = s_session()
+
+    ## Else reusing session object to speed up scraper
         
     else:
         
         s = session
-        
-    #if len(game_ids) == 1:
-        
-    #    disable_print = True
+
+    ## Creating dictionary to collect values that will eventually be returned
     
     games_dict = {}
+
+    ## Creating progress bar
     
     pbar = tqdm(game_ids, disable = nested)
+
+    ## Iterating through game IDs
     
     for game_id in pbar:
+
+        ## Creating season and html_game_id from game_id
         
         season, html_game_id = convert_ids(game_id)
+
+        ## Creating game session information from game_id
 
         game_session = str(game_id)[4:6]
 
@@ -1474,10 +1612,14 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
         if game_session == '03':
 
             game_session == 'P'
+
+        ## URL and scraping url
     
         url = f'http://www.nhl.com/scores/htmlreports/{season}/RO0{html_game_id}.HTM'
         
         page = s.get(url)
+
+        ## Continue if status code is bad
         
         page_status = page.status_code
         
@@ -1676,6 +1818,8 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
                         ## Appending the player dictionary to the player list
 
                         player_list.append(player)
+
+        ## Iterating through each player to change information
                     
         for player in player_list:
 
@@ -1701,16 +1845,11 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
             
             ## Replacing certain names
 
+            player['player_name'] = unidecode(player['player_name'])
+
+            player['player_name'] = player['player_name'].replace('ALEXANDRE', 'ALEX').replace('ALEXANDER', 'ALEX').replace('CHRISTOPHER', 'CHRIS')
+
             player['player_name'] = correct_names_dict.get(player['player_name'], player['player_name'])
-
-            replace_names = {'AlEXANDRE' : 'ALEX',
-                             'ALEXANDER' : 'ALEX',
-                             'CHRISTOPHER' : 'CHRIS',
-                            }
-
-            for old_name, new_name in replace_names.items():
-                
-                player['player_name'] = player['player_name'].replace(old_name, new_name)
             
             ## Creating Evolving Hockey ID
             
@@ -1755,11 +1894,17 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
 
             player['team_jersey'] = f"{player['team']}{player['jersey']}"
 
+        ## Adding roster information to dictionary that is eventually returned
+
         games_dict.update({game_id: player_list})
+
+        ## Changing progress bar information if this is the last game ID
         
         if game_id == game_ids[-1]:
             
             pbar.set_description(f'Finished scraping roster data')
+
+            ## Closing session object if not nested
 
             if nested == False:
 
@@ -1768,6 +1913,8 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
         else:
         
             pbar.set_description(f'Finished scraping {game_id}')
+
+        ## Adding time information to progress bar
         
         now = datetime.now()
 
@@ -1776,6 +1923,8 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
         postfix_str = f'{current_time}'
         
         pbar.set_postfix_str(postfix_str)
+
+    ## If not nested, returns a dataframe
     
     if nested == False:
 
@@ -1793,55 +1942,885 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
 
         return df
 
+    ## Else returns a dictionary with game IDs as keys and lists of player-dictionaries as values
+
     else:
 
         return games_dict
-        
-    #return df
 
 ############################################## HTML shifts ##############################################
 
-## []Refactored
-def scrape_html_shifts(game_ids, disable_print = False, roster_data = None, game_data = None, session = None, pbp = False, nested = False):
+## [x]Refactored
+## [x]Docstring
+## [x]Comments
+def scrape_html_shifts(game_ids, roster_data = None, session = None, nested = True):
     
     '''
 
     --------- Info ---------
 
-    Scrapes the shifts from the HTML endpoint for a given game or game IDs. Returns a dictionary with the keys: 'shifts' & 'changes'
-    Each dictionary value is a dataframe. 
-    Typically takes 1-2 seconds per game
+    Scrapes the shifts from the HTML endpoint for a given game ID or list-like object of game IDs.
+    Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
 
-    Can be used standalone but is typically nested within other scraping functions.
+    By default returns a dictionary with game IDs as keys and lists of shift-dictionaries as values.
+    If nested is False, returns a Pandas DataFrame.
 
-    --------- Parameters ---------
+    Scrapes approximately 1-2 games per second.   
 
-    game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
+    --------- Required parameters ---------
 
-    disable_print: boolean; default: False
-        If False, prints progress to the console
+    game_ids | integer or list-like object
+        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
-    roster: dataframe; default: None
-        Can pass a dataframe of roster information to prevent re-scraping from the same endpoint.
-        If None, scrapes roster data from the HTML endpoint
+    --------- Optional parameters ---------
 
-    game_data: dataframe, or dataframe; default: None
-        Can pass a dataframe of game information to prevent re-scraping from the same endpoint.
-        If None, scrapes game information data from the API endpoint
-
-    session: requests Session object; default: None
+    session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
 
-    pbp: boolean; default: False
-        If True, additional columns are added for use in the pbp scraper
+    nested | boolean: default = True
+        If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of shifts as dictionaries 
+        If False, prints progress to the console and returns a dataframe
+        
+    --------- Returns ---------
+
+    Default: Dictionary with game IDs as keys and lists of shift-dictionaries as the values
+
+    If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
+
+    Each shift in each game list is a dictionary with the following fields and values:
+
+        season: integer
+            8-digit season code, e.g., 20222023
+
+        session: object
+            Regular season or playoffs, e.g., R
+
+        game_id: integer
+            10-digit game identifier, e.g., 2022020001
+
+        team: object
+            3-letter team code, e.g., NSH
+
+        team_name: object
+            Full team name, e.g., NASHVILLE PREDATORS
+
+        team_venue: object
+            Whether team is home or away, e.g., home
+
+        player_name: object
+            Player's latin-encoded name, e.g., FILIP FORSBERG
+
+        eh_id: object
+            Identifier that can be used to match with Evolving Hockey data, e.g., FILIP.FORSBERG
+
+        team_jersey: object
+            3-letter team code plus player's jersey number, e.g., NSH9
+            Used for identification in other functions
+
+        position: object
+            Player's position, e.g., L
+
+        jersey: integer
+            Player's jersey number, e.g., 9
+
+        shift_number: integer
+            Cumulative number of shifts, e.g., 1
+
+        period: integer
+            Game period, e.g., 1
+
+        start_time: object
+            Clock time (ascending) shift was started, e.g., 0:00
+
+        end_time: object
+            Clock time (ascending) shift was ended, e.g., 0:24
+
+        duration: object
+            Clock time (ascending) of shift duration, e.g., 0:24
+
+        start_time_seconds: integer
+            Start time of shift in seconds, e.g., 0
+
+        end_time_seconds: integer
+            End time of shift in seconds, e.g., 24
+
+        duration_seconds: integer
+            Duration of shifts in seconds, e.g., 24
+
+        shift_start: object
+            Ascending and descending clock times for shift start, e.g, 0:00 / 20:00
+
+        shift_end: object
+            Ascending and descending clock times for shift end, e.g, 0:24 / 19:36
+
+        goalie: integer
+            Whether player is a goalie or not, e.g., 0
+
+        home: integer
+            Wehther player is home or not, e.g., 1
+
     '''
+
     
-    ## TO DO:
-    ## 1. Add comments and doc string
-    ## 2. Ensure columns returned make sense and are in the correct order
-    ## 3. Move functionality from pbp scrape to here, but have as a return option
-    ## 4. Add season column
-    ## 5. TDH had some goalie thing in there that was fucking up my shifts? I think it was only meant for live games?
+    ## Convert game IDs to list if given a single game ID
+
+    game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
+
+    ## Dictionary to collect values that will eventually be returned
+
+    games_dict = {}
+
+    ## Creating session object if doesn't already exist
+    
+    if session == None:
+    
+        s = s_session()
+
+    ## Else reusing session object to speed up scraper
+        
+    else:
+        
+        s = session
+
+    ## Creating progress bar
+        
+    pbar = tqdm(game_ids, disable = nested)
+
+    ## Iterating through game IDs
+    
+    for game_id in pbar:
+
+        ## If no roster data, scrape the HTML rosters
+            
+        if roster_data is None:
+            
+            roster = scrape_html_roster(game_id, session = s, nested = True)[game_id]
+
+        ## If already exists, reuse roster data to prevent redundant hits
+            
+        else:
+            
+            roster = roster_data[game_id].copy(deep = True)
+
+        ## Get active players and store them in a new dictionary with team jersey as key and other info as a value-dictionary
+
+        actives = {x['team_jersey']: x for x in roster if x['status'] == 'ACTIVE'}
+
+        ## Creating basic information from game ID
+            
+        year = int(str(game_id)[0:4])
+
+        season = int(f'{year}{year + 1}')
+
+        html_game_id = str(game_id)[5:]
+
+        game_session = str(game_id)[4:6]
+
+        if game_session == '01':
+            
+            game_session = 'PR'
+            
+        if game_session == '02':
+            
+            game_session = 'R'
+            
+        if game_session == '03':
+            
+            game_session == 'P'
+
+        ## This is the list for collecting all of the game information for the end
+
+        game_list = []
+
+        ## Dictionary of urls for scraping
+
+        urls_dict = {'HOME': f'http://www.nhl.com/scores/htmlreports/{season}/TH0{html_game_id}.HTM',
+                     'AWAY': f'http://www.nhl.com/scores/htmlreports/{season}/TV0{html_game_id}.HTM'}
+
+        ## Iterating through the url dictionary 
+
+        for team_venue, url in urls_dict.items():
+
+            response = requests.get(url)
+
+            soup = BeautifulSoup(response.content.decode('ISO-8859-1'), 'lxml', multi_valued_attributes = None)
+
+            ## Getting team names from the HTML Data
+
+            team_name = soup.find('td', {'align':'center', 'class':'teamHeading + border'})
+
+            ## Converting team names to proper format
+
+            team_name = unidecode(team_name.get_text())
+            
+            if team_name == 'PHOENIX COYOTES':
+                
+                team_name = 'ARIZONA COYOTES'
+                
+            elif 'CANADIENS' in team_name:
+                
+                team_name = 'MONTREAL CANADIENS'
+
+            ## Getting players from the HTML data
+
+            players = soup.find_all('td', {'class':['playerHeading + border', 'lborder + bborder']})
+
+            ## Creating a dictionary to collect the players' information
+
+            players_dict = {}
+
+            ## Iterating through the players
+
+            for player in players:
+
+                ## Getting player's data
+
+                data = player.get_text()
+
+                ## If there is a name in the data, get the information
+
+                if ', ' in data:
+
+                    name = data.split(',', 1)
+
+                    jersey = name[0].split(' ')[0].strip()
+
+                    last_name = name[0].split(' ', 1)[1].strip()
+
+                    first_name = re.sub('\(\s?(.+)\)', '', name[1]).strip()
+
+                    full_name = f'{first_name} {last_name}'
+
+                    if full_name == ' ': 
+
+                        continue
+                        
+                    new_values = {full_name: {'player_name': full_name,
+                                              'jersey': jersey,
+                                              'shifts': [],
+                                             }}
+
+                    players_dict.update(new_values)
+
+                ## If there is not a name it is likely because these are shift information, not player information
+
+                else:
+
+                    ## However, if it is a player info row, without a name, then continue
+
+                    if full_name == ' ': 
+
+                        continue
+
+                    ## Extend the player's shift information with the shift data 
+
+                    players_dict[full_name]['shifts'].extend([data])
+
+            ## Iterating through the player's dictionary, which has a key of the player's name and an array of shift-arrays
+
+            for player, shifts in players_dict.items():
+
+                ## Getting the number of shifts
+
+                length = int(len(np.array(shifts['shifts'])) / 5)
+
+                ## Reshaping the shift data into fields and values
+
+                for number, shift in enumerate(np.array(shifts['shifts']).reshape(length, 5)):
+
+                    ## Adding header values to the shift data
+
+                    headers = ['shift_number', 'period', 'shift_start', 'shift_end', 'duration']
+
+                    ## Creating a dictionary from the headers and the shift data
+
+                    shift_dict = dict(zip(headers, shift.flatten()))
+
+                    ## Adding other data to the shift dictionary
+                    
+                    new_values = {'season': season,
+                                  'session': game_session,
+                                  'game_id': game_id,
+                                  'team_name': team_name,
+                                  'team': team_codes[team_name],
+                                  'team_venue': team_venue,
+                                  'player_name': shifts['player_name'],
+                                  'eh_id': actives[f"{team_codes[team_name]}{shifts['jersey']}"]['eh_id'],
+                                  'team_jersey': f"{team_codes[team_name]}{shifts['jersey']}",
+                                  'position': actives[f"{team_codes[team_name]}{shifts['jersey']}"]['position'],
+                                  'jersey': int(shifts['jersey']),
+                                  'shift_number': int(shift_dict['shift_number']),
+                                  'shift_start': unidecode(shift_dict['shift_start']).strip(),
+                                  'start_time': unidecode(shift_dict['shift_start']).strip().split('/', 1)[0],
+                                  'shift_end': unidecode(shift_dict['shift_end']).strip(),
+                                  'end_time': unidecode(shift_dict['shift_end']).strip().split('/', 1)[0],
+                                 }
+                    
+                    shift_dict.update(new_values)
+
+                    ## Appending the shift dictionary to the list of shift dictionaries
+
+                    game_list.append(shift_dict)
+
+        ## Iterating through the lists of shifts
+                    
+        for shift in game_list:
+
+            ## Replacing some player names
+
+            shift['player_name'] = shift['player_name'].replace('ALEXANDRE', 'ALEX').replace('ALEXANDER', 'ALEX').replace('CHRISTOPHER', 'CHRIS')
+
+            shift['player_name'] = shift.get(shift['player_name'], shift['player_name'])
+
+            ## Replacing period information
+
+            shift['period'] = int(shift['period'].replace('OT', '4').replace('SO', '5'))
+
+            ## Adding player identifying information
+            
+            shift['team_jersey'] = shift['team'] + str(shift['jersey'])
+
+            ## Adding seconds columns
+
+            cols = ['start_time', 'end_time', 'duration']
+
+            for col in cols:
+
+                time_split = shift[col].split(':', 1)
+
+                ## Sometimes the shift value can be blank, if it is, we'll skip the field and fix later
+
+                try:
+
+                    shift[f'{col}_seconds'] = 60 * int(time_split[0]) + int(time_split[1])
+
+                except ValueError:
+
+                    continue
+
+            ## Fixing end time if it is blank or empty
+
+            if shift['end_time'] == ' ' or shift['end_time'] == '':
+
+                ## Calculating end time based on duration seconds
+
+                shift['end_time_seconds'] = shift['start_time_seconds'] + shift['duration_seconds']
+
+                ## Creating end time based on time delta
+
+                shift['end_time'] = str(timedelta(seconds=shift['end_time_seconds'])).split(':', 1)[1]
+
+            ## If the shift start is after the shift end, we need to fix the error
+
+            if shift['start_time_seconds'] > shift['end_time_seconds']:
+
+                ## Creating new values based on game session and period
+
+                if shift['period'] < 4:
+
+                    ## Setting the end time
+
+                    shift['end_time'] = '20:00'
+
+                    ## Setting the end time in seconds
+
+                    shift['end_time_seconds'] = 1200
+
+                    ## Setting the shift end
+
+                    shift['shift_end'] = '20:00 / 0:00'
+
+                    ## Setting duration and duration in seconds
+
+                    shift['duration_seconds'] = shift['end_time_seconds'] - shift['start_time_seconds'] 
+
+                    shift['duration'] = str(timedelta(seconds = shift['duration_seconds'])).split(':', 1)[1]
+
+                else:
+
+                    if game_session != 'P':
+                            
+                            total_seconds = 300
+                            
+                    elif game_session == 'P':
+                        
+                        total_seconds = 1200
+
+                    ## Need to get the end period to get the end time in seconds
+
+                    max_period = max([shift['period'] for shift in game_list])
+
+                    ## Getting the end time in seconds for the final period
+
+                    max_seconds = max([shift['end_time_seconds'] for shift in game_list if shift['period'] == max_period])
+
+                    shift['end_time_seconds'] = max_seconds
+
+                    ## Setting end time
+
+                    end_time = str(timedelta(seconds = max_seconds)).split(':', 1)[1]
+
+                    ## Setting remainder time
+                                
+                    remainder = str(timedelta(seconds = (total_seconds - max_seconds))).split(':', 1)[1]
+
+                    shift['end_time'] = end_time
+
+                    shift['shift_end'] = f'{end_time} / {remainder}'
+
+            ## Setting goalie values
+
+            if shift['position'] == 'G':
+
+                shift['goalie'] = 1
+
+            else:
+
+                shift['goalie'] = 0
+
+            ## Setting home and away values
+
+            if shift['team_venue'] == 'HOME':
+
+                shift['home'] = 1
+
+                shift['away'] = 0
+
+            else:
+
+                shift['home'] = 0
+
+                shift['away'] = 1
+
+        ## Getting list of periods to iterate through
+
+        periods = np.unique([x['period'] for x in game_list]).tolist()
+
+        ## Setting list of teams to iterate through while iterating through the periods
+
+        teams = ['HOME', 'AWAY']
+
+        for period in periods:
+
+            ## Getting max seconds for the period
+            
+            max_seconds = max([int(x['end_time_seconds']) for x in game_list if x['period'] == period])
+
+            ## Iterating through home and away teams
+            
+            for team in teams:
+
+                ## Getting the team's goalies for the game
+                
+                team_goalies = [x for x in game_list if x['goalie'] == 1 and x['team_venue'] == team]
+
+                ## Getting the goalies for the period
+                
+                goalies = [x for x in game_list if x['goalie'] == 1 and x['team_venue'] == team and x['period'] == period]
+
+                ## If there are no goalies changing during the period, we need to add them
+                
+                if len(goalies) < 1:
+                    
+                    if period == 1:
+
+                        first_goalie = team_goalies[0]
+
+                        ## Initial dictionary is set using data from the first goalie to appear
+
+                        goalie_shift = dict(first_goalie)
+
+                    else:
+
+                        ## Initial dictionary is set using data from the pervious goalie to appear
+
+                        prev_goalie = [x for x in team_goalies if x['period'] == (period - 1)][-1]
+
+                        goalie_shift = dict(prev_goalie)
+
+                    ## Setting goalie shift number so we can identify later
+                        
+                    goalie_shift['number'] = 0
+
+                    ## Setting the period for the current period
+                        
+                    goalie_shift['period'] = period
+
+                    ## Setting the start time
+
+                    goalie_shift['start_time'] = '0:00'
+
+                    ## Setting the start time in seconds
+
+                    goalie_shift['start_time_seconds'] = 0
+
+                    ## If during regular time
+                        
+                    if period < 4:
+
+                        ## Setting shift start value
+                        
+                        goalie_shift['shift_start'] = '0:00 / 20:00'
+
+                        ## Setting end time value
+                        
+                        goalie_shift['end_time'] = '20:00'
+
+                        ## Setting end time in seconds
+                        
+                        goalie_shift['end_time_seconds'] = 1200
+
+                        ## Setting the duration, assuming they were out there the whole time
+                        
+                        goalie_shift['duration'] = '20:00'
+
+                        ## Setting the duration in seconds, assuming they were out there the whole time
+                        
+                        goalie_shift['duration_seconds'] = 1200
+
+                        ## Setting the shift end value
+
+                        goalie_shift['shift_end'] = '20:00 / 0:00'
+
+                    ## If the period is greater than 3
+                        
+                    else:
+
+                        ## Need to account for whether regular season or playoffs
+                        
+                        if game_session != 'P':
+                            
+                            goalie_shift['shift_start'] = '0:00 / 5:00'
+                            
+                            total_seconds = 300
+                            
+                        elif game_session == 'P':
+                            
+                            goalie_shift['shift_start'] = '0:00 / 20:00'
+                            
+                            total_seconds = 1200
+
+                        ## Getting end time
+                        
+                        end_time = str(timedelta(seconds = max_seconds)).split(':', 1)[1]
+
+                        ## Getting remainder time
+                                
+                        remainder = str(timedelta(seconds = (total_seconds - max_seconds))).split(':', 1)[1]
+
+                        ## Setting values
+                        
+                        goalie_shift['end_time_seconds'] = max_seconds
+
+                        goalie_shift['end_time'] = end_time
+
+                        goalie_shift['shift_end'] = f'{end_time} / {remainder}'
+
+                    ## Appending the new goalie shift to the game list
+                        
+                    game_list.append(goalie_shift)
+
+            ## Iterating through the shifts
+                    
+            for shift in game_list:
+
+                ## Fixing goalie errors 
+                
+                if shift['goalie'] == 1 and shift['period'] == period and shift['shift_end'] == '0:00 / 0:00':
+                    
+                    if period < 4:
+                        
+                        shift['shift_end'] = '20:00 / 0:00'
+                        
+                        shift['end_time'] = '20:00'
+                        
+                        shift['end_time_seconds'] = 1200
+                        
+                    else:
+                        
+                        if game_session == 'R':
+                            
+                            total_seconds = 300
+                            
+                        else:
+                            
+                            total_seconds = 1200
+                            
+                        end_time = str(timedelta(seconds = max_seconds)).split(':', 1)[1]
+                                
+                        remainder = str(timedelta(seconds = (total_seconds - max_seconds))).split(':', 1)[1]
+                        
+                        shift['end_time_seconds'] = max_seconds
+
+                        shift['end_time'] = end_time
+
+                        shift['shift_end'] = f'{end_time} / {remainder}'
+
+        ## Sorting values
+
+        game_list = sorted(game_list, key = lambda k: (k['away'], k['goalie'], k['jersey'], k['shift_number']))
+
+        ## Adding the game data to the dictionary that will eventually be returned
+
+        games_dict.update({game_id: game_list})
+
+        ## Changing progress bar if this is the last game
+
+        if game_id == game_ids[-1]:
+            
+            pbar.set_description(f'Finished scraping shifts data')
+
+            ## Closing session object if function is not nested
+
+            if nested == False:
+
+                s.close()
+            
+        else:
+        
+            pbar.set_description(f'Finished scraping {game_id}')
+
+        ## Adding current time to progress bar
+        
+        now = datetime.now()
+
+        current_time = now.strftime("%H:%M:%S")
+
+        postfix_str = f'{current_time}'
+        
+        pbar.set_postfix_str(postfix_str)
+
+    ## Returning dataframe if not nested
+
+    if nested == False:
+
+        shifts_data = [shift for shifts in games_dict.values() for shift in shifts]
+
+        df = pd.DataFrame(shifts_data)
+
+        column_order = ['season', 'session', 'game_id', 'team', 'team_name', 'team_venue',
+                        'player_name', 'eh_id', 'team_jersey', 'position', 'jersey',
+                        'shift_number', 'period', 'start_time', 'end_time', 'duration',
+                        'start_time_seconds', 'end_time_seconds', 'duration_seconds',
+                        'shift_start', 'shift_end', 'goalie', 'home']
+
+        column_order = [x for x in column_order if x in df.columns]
+
+        df = df[column_order]
+
+        return df
+
+    ## Returning dictionary if nested
+
+    else:
+
+        return games_dict
+############################################## HTML changes ##############################################
+
+## [x]Refactored
+## [x]Docstring
+## []Comments
+def scrape_html_changes(game_ids, shifts_data = None, roster_data = None, session = None, nested = True):
+    
+    '''
+
+    --------- Info ---------
+
+    Scrapes the changes from the HTML shifts endpoint for a given game ID or list-like object of game IDs.
+    Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
+
+    By default returns a dictionary with game IDs as keys and lists of change-dictionaries as values.
+    If nested is False, returns a Pandas DataFrame.
+
+    Scrapes approximately 1-2 games per second. 
+
+    --------- Required parameters ---------
+
+    game_ids | integer or list-like object
+        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+
+    --------- Optional parameters ---------
+
+    shifts_data | dictionary: default = None
+        If nested in other functions, can provide shifts data from scrape function to prevent redundant hits to endpoints
+        If standalone, will scrape shifts data for each game automatically
+
+    roster_data | dictionary: default = None
+        If nested in other functions, can provide roster data from scrape function to prevent redundant hits to endpoints
+        If standalone, will scrape roster data for each game automatically
+
+    session | requests Session object: default = None
+        When using in another scrape function, can pass the requests session to improve speed
+
+    nested | boolean: default = True
+        If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of changes as dictionaries 
+        If False, prints progress to the console and returns a dataframe
+
+    --------- Returns ---------
+
+    Default: Dictionary with game IDs as keys and lists of change-dictionaries as the values
+
+    If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
+
+    Each change in each game list is a dictionary with the following fields and values:
+
+        season: integer
+            8-digit season code, e.g., 20222023
+
+        session: object
+            Regular season or playoffs, e.g., R
+
+        game_id: integer
+            10-digit game identifier, e.g., 2022020001
+
+        team: object
+            3-letter team code, e.g., NSH
+
+        team_name: object
+            Full team name, e.g., NASHVILLE PREDATORS
+
+        team_venue: object
+            Whether team is home or away, e.g., home
+
+        period: integer
+            Game period, e.g., 1
+
+        period_time: object
+            Clock time (ascending), e.g., 0:00
+
+        period_seconds: integer
+            Period time in seconds, e.g., 0
+
+        number_on: integer
+            Number of players entering the ice, e.g., 6
+
+        number_off: integer
+            Number of players exiting the ice, e.g., 0
+
+        players_on: tuple
+            Abbreviations of players on, in jersey order, e.g., (NSH9, NSH45, NSH59, NSH64, NSH74, NSH95)
+            If returning a DataFrame, will be a string, e.g., NSH9, NSH45, NSH59, NSH64, NSH74, NSH95
+
+        players_on_names: tuple
+            Names of players on, in jersey order, e.g., (FILIP FORSBERG, ALEX CARRIER, ROMAN JOSI, MIKAEL GRANLUND, JUUSE SAROS, MATT DUCHENE)
+            If returning a DataFrame, will be a string, e.g., FILIP FORSBERG, ALEX CARRIER, ROMAN JOSI, MIKAEL GRANLUND, JUUSE SAROS, MATT DUCHENE
+
+        players_on_eh_id: tuple
+            Evolving Hockey IDs of players on, in jersey order, e.g., (FILIP.FORSBERG, ALEX.CARRIER, ROMAN.JOSI, MIKAEL.GRANLUND, JUUSE.SAROS, MATT.DUCHENE)
+            If returning a DataFrame, will be a string, e.g., FILIP.FORSBERG, ALEX.CARRIER, ROMAN.JOSI, MIKAEL.GRANLUND, JUUSE.SAROS, MATT.DUCHENE 
+
+        players_on_positions: tuple
+            Positions of players on, in jersey order, e.g., (L, D, D, C, G, C)
+            If returning a DataFrame, will be a string, e.g., L, D, D, C, G, C
+
+        players_off: tuple
+            Abbreviations of players off, in jersey order
+            If returning a DataFrame, will be a string
+
+        players_off_names: tuple
+            Names of players off, in jersey order
+            If returning a DataFrame, will be a string
+
+        players_off_eh_id: tuple
+            Evolving Hockey IDs of players off, in jersey order
+            If returning a DataFrame, will be a string
+
+        players_off_positions: tuple
+            Positions of players off, in jersey order
+            If returning a DataFrame, will be a string
+
+        number_on_forwards: integer
+            Number of forwards entering the ice, e.g., 6
+
+        number_off_forwards: integer
+            Number of forwards exiting the ice, e.g., 0
+
+        forwards_on: tuple
+            Abbreviations of forwards on, in jersey order, e.g., (NSH9, NSH64, NSH95)
+            If returning a DataFrame, will be a string, e.g., NSH9, NSH64, NSH95
+
+        forwards_on_names: tuple
+            Names of forwards on, in jersey order, e.g., (FILIP FORSBERG, MIKAEL GRANLUND, MATT DUCHENE)
+            If returning a DataFrame, will be a string, e.g., FILIP FORSBERG, MIKAEL GRANLUND, MATT DUCHENE
+
+        forwards_on_eh_id: tuple
+            Evolving Hockey IDs of forwards on, in jersey order, e.g., (FILIP.FORSBERG, MIKAEL.GRANLUND, MATT.DUCHENE)
+            If returning a DataFrame, will be a string, e.g., FILIP.FORSBERG, MIKAEL.GRANLUND, MATT.DUCHENE
+
+        forwards_off: tuple
+            Abbreviations of forwards off, in jersey order
+            If returning a DataFrame, will be a string
+
+        forwards_off_name: tuple
+            Names of forwards off, in jersey order
+            If returning a DataFrame, will be a string
+
+        forwards_off_eh_id: tuple
+            Evolving Hockey IDs of forwards off, in jersey order
+            If returning a DataFrame, will be a string
+
+        number_on_defense: integer
+            Number of players entering the ice, e.g., 6
+
+        number_off_defense: integer
+            Number of players exiting the ice, e.g., 0
+
+        defense_on: tuple
+            Abbreviations of defense on, in jersey order, e.g., (NSH45, NSH59)
+            If returning a DataFrame, will be a string, e.g., NSH45, NSH59
+
+        defense_on_names: tuple
+            Names of defense on, in jersey order, e.g., (ALEX CARRIER, ROMAN JOSI)
+            If returning a DataFrame, will be a string, e.g., ALEX CARRIER, ROMAN JOSI
+
+        defense_on_eh_id: tuple
+            Evolving Hockey IDs of defense on, in jersey order, e.g., (ALEX.CARRIER, ROMAN.JOSI)
+            If returning a DataFrame, will be a string, e.g., ALEX.CARRIER, ROMAN.JOSI
+
+        defense_off: tuple
+            Abbreviations of defense off, in jersey order
+            If returning a DataFrame, will be a string
+
+        defense_off_names: tuple
+            Names of defense off, in jersey order
+            If returning a DataFrame, will be a string
+
+        defense_off_eh_id: tuple
+            Evolving Hockey IDs of defense off, in jersey order
+            If returning a DataFrame, will be a string
+
+        number_on_goalies: integer
+            Number of goalies entering the ice, e.g., 6
+
+        number_off_goalies: integer
+            Number of goalies exiting the ice, e.g., 0
+
+        goalies_on: tuple
+            Abbreviations of goalies on, in jersey order, e.g., (NSH74)
+            If returning a DataFrame, will be a string, e.g., NSH74
+
+        goalies_on_names: tuple
+            Names of goalies on, in jersey order, e.g., (JUUSE SAROS)
+            If returning a DataFrame, will be a string, e.g., JUUSE SAROS
+
+        goalies_on_eh_id: tuple
+            Evolving Hockey IDs of goalies on, in jersey order, e.g., (JUUSE.SAROS)            
+            If returning a DataFrame, will be a string, e.g., JUUSE.SAROS
+
+        goalies_off: tuple
+            Abbreviations of goalies off, in jersey order
+            If returning a DataFrame, will be a string
+
+        goalies_off_names: tuple
+            Names of goalies off, in jersey order
+            If returning a DataFrame, will be a string
+
+        goalies_off_eh_id: tuple
+            Evolving Hockey IDs of players off, in jersey order
+            If returning a DataFrame, will be a string
+
+
+    '''
     
     ## Convert game IDs to list if given a single game ID
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
@@ -1849,10 +2828,7 @@ def scrape_html_shifts(game_ids, disable_print = False, roster_data = None, game
     number_of_games = len(game_ids)
     
     ## Important lists
-    shifts_concat = []
-    changes_concat = []
-    
-    scrape_dict = {}
+    games_dict = {}
     
     if session == None:
     
@@ -1862,420 +2838,233 @@ def scrape_html_shifts(game_ids, disable_print = False, roster_data = None, game
         
         s = session
         
-    pbar = tqdm(game_ids, disable = disable_print)
+    pbar = tqdm(game_ids, disable = nested)
     
     for game_id in pbar:
-        
-        if game_data is None:
             
-            game_info = scrape_game_info(game_id, disable_print = True, session = s, nested = True)
+        if shifts_data is None:
             
-        else:
-            
-            game_info = game_data[game_data.game_id == game_id].copy(deep = True)
-
-        GAME_SESSION = game_info.game_type.iloc[0]
-            
-        if roster_data is None:
-            
-            roster = scrape_html_rosters(game_id, disable_print = True, session = s, nested = True)
+            shifts = scrape_html_shifts(game_id, roster_data = roster_data, session = s, nested = True)[game_id]
             
         else:
             
-            roster = roster_data[roster_data.game_id == game_id].copy(deep = True)
+            shifts = shifts_data[game_id].copy(deep = True)
+
+        year = int(str(game_id)[0:4])
+
+        season = int(f'{year}{year + 1}')
+
+        game_session = str(game_id)[4:6]
+
+        if game_session == '01': 
             
-        roster = roster[roster.player_status != 'scratch'].copy(deep = True)
+            game_session = 'PR'
             
-        api_names_dict = dict(zip(roster.player_abbr, roster.api_name))
-
-        positions_dict = dict(zip(roster.player_abbr, roster.player_position))
-
-        html_season_id, html_game_id = convert_ids(game_id)
-
-        urls_dict = {'home': f'http://www.nhl.com/scores/htmlreports/{html_season_id}/TH0{html_game_id}.HTM',
-                     'away': f'http://www.nhl.com/scores/htmlreports/{html_season_id}/TV0{html_game_id}.HTM'}
-
-        concat_list = []
-
-        for team, url in urls_dict.items():
-
-            response = requests.get(url)
-
-            soup = BeautifulSoup(response.content.decode('ISO-8859-1'), 'lxml', multi_valued_attributes = None)
-
-            team_name = soup.find('td', {'align':'center', 'class':'teamHeading + border'})
-
-            team_name = unidecode.unidecode(team_name.get_text())
-
-            players = soup.find_all('td', {'class':['playerHeading + border', 'lborder + bborder']})
-
-            players_dict = {}
-
-            for player in players:
-
-                data = player.get_text()
-
-                if ', ' in data:
-
-                    name = data.split(',', 1)
-
-                    number = name[0].split(' ')[0].strip()
-
-                    last_name = name[0].split(' ', 1)[1].strip()
-
-                    first_name = re.sub('\(\s?(.+)\)', '', name[1]).strip()
-
-                    full_name = f'{first_name} {last_name}'
-                    
-                    if full_name == ' ': 
-                        
-                        continue
-
-                    players_dict[full_name] = {}
-
-                    players_dict[full_name]['number'] = number
-
-                    players_dict[full_name]['name'] = full_name
-
-                    players_dict[full_name]['shifts'] = []
-                    
-                else:
-                    
-                    if full_name == ' ': 
-                        
-                        continue
-
-                    players_dict[full_name]['shifts'].extend([data])
-
-            for player, shifts in players_dict.items():
-
-                length = int(len(np.array(shifts['shifts'])) / 5)
-
-                for number, shift in enumerate(np.array(shifts['shifts']).reshape(length, 5)):
-
-                    column_names = ['shift_number', 'period', 'shift_start', 'shift_end', 'duration']
-
-                    shift_dict = dict(zip(column_names, shift.flatten()))
-
-                    shift_dict['shift_number'] = int(shift_dict['shift_number'])
-
-                    shift_dict['team'] = team_name
-
-                    conds_dict = {'CANADIENS' in shift_dict['team']: 'MONTREAL CANADIENS',
-                                  shift_dict['team'] == 'PHOENIX COYOTES': 'ARIZONA COYOTES'}
-
-                    for condition, value in conds_dict.items():
-
-                        if condition:
-
-                            shift_dict['team'] = value
-
-                    shift_dict['team_code'] = team_codes[shift_dict['team']]
-
-                    shift_dict['venue'] = team
-
-                    shift_dict['player_name'] = shifts['name']
-
-                    shift_dict['player_jersey'] = int(shifts['number'])
-
-                    shift_dict['player_abbr'] = shift_dict['team_code'] + str(shift_dict['player_jersey'])
-
-                    cols = ['shift_start', 'shift_end']
-
-                    for col in cols:
-
-                        shift_dict[col] = unidecode.unidecode(shift_dict[col]).strip()
-
-                        new_col = f"{col.split('_')[1]}_time"
-
-                        shift_dict[new_col] = shift_dict[col].split('/', 1)[0]
-
-                    cols = ['start_time', 'end_time', 'duration']
-
-                    for col in cols:
-
-                        time_split = shift_dict[col].split(':', 1)
-                        
-                        try:
-
-                            shift_dict[f'{col}_seconds'] = 60 * int(time_split[0]) + int(time_split[1])
-                            
-                        except ValueError:
-                            
-                            continue
-
-                    if shift_dict['end_time'] == ' ' or shift_dict['end_time'] == '':
-
-                        shift_dict['end_time_seconds'] = shift_dict['start_time_seconds'] + shift_dict['duration_seconds']
-
-                        shift_dict['end_time'] = str(timedelta(seconds=shift_dict['end_time_seconds'])).split(':', 1)[1]
-
-                    conds_dict = {'OT': 4, 'SO': 5}
-
-                    for old_period, new_period in conds_dict.items():
-
-                        if shift_dict['period'] == old_period:
-
-                            shift_dict['period'] = new_period
-
-                    shift_dict['period'] = int(shift_dict['period'])
-
-                    replace_dict = {'ALEXANDRE ': 'ALEX ', 'ALEXANDER ': 'ALEX ', 'CHRISTOPHER ': 'CHRIS ', 'DE LEO': 'DELEO'}
-
-                    for old_name, new_name in replace_dict.items():
-
-                        shift_dict['player_name'] = shift_dict['player_name'].replace(old_name, new_name)
-
-                    shift_dict['player_name'] = correct_names_dict.get(shift_dict['player_name'], shift_dict['player_name'])
-
-                    #shifts_df.player_name = shifts_df.player_name.map(correct_names_dict).fillna(shifts_df.player_name)
-
-                    shift_dict['api_name'] = api_names_dict.get(shift_dict['player_abbr'])
-
-                    shift_dict['position'] = positions_dict.get(shift_dict['player_abbr'])
-
-                    shift_dict['goalie'] = np.where(shift_dict['position'] == 'G', 1, 0)
-
-                    concat_list.append(shift_dict)
-                    
-        if concat_list == []:
+        if game_session == '02':
             
-            continue
+            game_session = 'R'
+            
+        if game_session == '03':
+            
+            game_session = 'P'
 
-        shifts_df = pd.DataFrame(concat_list)
-        
-        periods = list(shifts_df.period.unique())
-        
-        teams = list(shifts_df.team.unique())
-        
+        game_list = []
+
+        periods = np.unique([x['period'] for x in shifts]).tolist()
+
+        teams = ['HOME', 'AWAY'] 
+
         for period in periods:
+            
+            max_seconds = max([x['end_time_seconds'] for x in shifts if x['period'] == period])
             
             for team in teams:
                 
-                mask = np.logical_and(shifts_df.team == team, shifts_df.period == period)
+                changes_dict = {}
+            
+                changes_on = np.unique([x['start_time_seconds'] for x in shifts
+                                        if x['period'] == period
+                                        and x['team_venue'] == team
+                                       ]).tolist()
                 
-                if shifts_df[mask].goalie.sum() < 1:
+                for change_on in changes_on:
+
+                    players_on = [x for x in shifts
+                                  if x['period'] == period
+                                  and x['start_time_seconds'] == change_on
+                                  and x['team_venue'] == team]
+
+                    players_on = sorted(players_on, key = lambda k: (k['jersey']))
+
+                    f_positions = ['L', 'C', 'R']
+
+                    forwards_on = [x for x in shifts if x['period'] == period
+                                    and x['start_time_seconds'] == change_on
+                                    and x['team_venue'] == team
+                                    and x['position'] in f_positions]
+
+                    forwards_on = sorted(forwards_on, key = lambda k: (k['jersey']))
+
+                    defense_on = [x for x in shifts
+                                  if x['period'] == period
+                                  and x['start_time_seconds'] == change_on
+                                  and x['team_venue'] == team
+                                  and x['position'] == 'D']
+
+                    defense_on = sorted(defense_on, key = lambda k: (k['jersey']))
+
+                    goalies_on = [x for x in shifts
+                                  if x['period'] == period
+                                  and x['start_time_seconds'] == change_on
+                                  and x['team_venue'] == team
+                                  and x['position'] == 'G']
                     
-                    goalie_mask = np.logical_and(shifts_df.team == team, shifts_df.goalie == 1)
+                    goalies_on = sorted(goalies_on, key = lambda k: (k['jersey']))
+
+                    new_values = {'season': season,
+                                  'session': game_session,
+                                  'game_id': game_id,
+                                  'team_name': players_on[0]['team_name'],
+                                  'team': players_on[0]['team'],
+                                  'home': players_on[0]['home'],
+                                  'away': players_on[0]['away'],
+                                  'team_venue': team,
+                                  'period': period,
+                                  'period_time': players_on[0]['start_time'],
+                                  'period_seconds': players_on[0]['start_time_seconds'],
+                                  'number_on': len(players_on),
+                                  'number_off': 0,
+                                  'players_on': tuple([x['team_jersey'] for x in players_on]),
+                                  'players_on_names': tuple([x['player_name'] for x in players_on]),
+                                  'players_on_eh_id': tuple([x['eh_id'] for x in players_on]),
+                                  'players_on_positions': tuple([x['position'] for x in players_on]),
+                                  'players_off': '',
+                                  'players_off_names': '',
+                                  'players_off_eh_id': '',
+                                  'players_off_positions': '',
+                                  'number_on_forwards': len(forwards_on),
+                                  'number_off_forwards': 0,
+                                  'forwards_on': tuple([x['team_jersey'] for x in forwards_on]),
+                                  'forwards_on_names': tuple([x['player_name'] for x in forwards_on]),
+                                  'forwards_on_eh_id': tuple( [x['eh_id'] for x in forwards_on]),
+                                  'forwards_off': '',
+                                  'forwards_off_names': '',
+                                  'forwards_off_eh_id': '',
+                                  'number_on_defense': len(defense_on),
+                                  'number_off_defense': 0,
+                                  'defense_on': tuple([x['team_jersey'] for x in defense_on]),
+                                  'defense_on_names': tuple([x['player_name'] for x in defense_on]),
+                                  'defense_on_eh_id': tuple([x['eh_id'] for x in defense_on]),
+                                  'defense_off': '',
+                                  'defense_off_names': '',
+                                  'defense_off_eh_id': '',
+                                  'number_on_goalies': len(goalies_on),
+                                  'number_off_goalies': 0,
+                                  'goalies_on': tuple([x['team_jersey'] for x in goalies_on]),
+                                  'goalies_on_names': tuple([x['player_name'] for x in goalies_on]),
+                                  'goalies_on_eh_id': tuple([x['eh_id'] for x in goalies_on]),
+                                  'goalies_off': '',
+                                  'goalies_off_names': '',
+                                  'goalies_off_eh_id': '',
+                                 }
                     
-                    goalies = shifts_df[goalie_mask].copy(deep = True)
+                    changes_dict.update({change_on: new_values})
                     
-                    if period == 1:
-                        
-                        goalie = dict(goalies.iloc[0])
-                        
-                        goalie = pd.DataFrame(goalie, index = [0])
+                changes_off = np.unique([x['end_time_seconds'] for x in shifts
+                                         if x['period'] == period
+                                         and x['team_venue'] == team
+                                       ]).tolist()
+                
+                for change_off in changes_off:
+                    
+                    players_off = [x for x in shifts
+                                   if x['period'] == period
+                                   and x['end_time_seconds'] == change_off
+                                   and x['team_venue'] == team]
+                    
+                    players_off = sorted(players_off, key = lambda k: (k['jersey']))
+
+                    f_positions = ['L', 'C', 'R']
+
+                    forwards_off = [x for x in shifts if x['period'] == period
+                                    and x['end_time_seconds'] == change_off
+                                    and x['team_venue'] == team
+                                    and x['position'] in f_positions]
+
+                    forwards_off = sorted(forwards_off, key = lambda k: (k['jersey']))
+
+                    defense_off = [x for x in shifts
+                                  if x['period'] == period
+                                  and x['end_time_seconds'] == change_off
+                                  and x['team_venue'] == team
+                                  and x['position'] == 'D']
+
+                    defense_off = sorted(defense_off, key = lambda k: (k['jersey']))
+
+                    goalies_off = [x for x in shifts
+                                  if x['period'] == period
+                                  and x['end_time_seconds'] == change_off
+                                  and x['team_venue'] == team
+                                  and x['position'] == 'G']
+                    
+                    goalies_off = sorted(goalies_off, key = lambda k: (k['jersey']))
+
+                    new_values = {'season': season,
+                                  'session': game_session,
+                                  'game_id': game_id,
+                                  'team_name': players_off[0]['team_name'],
+                                  'team': players_off[0]['team'],
+                                  'team_venue': team,
+                                  'home': players_off[0]['home'],
+                                  'away': players_off[0]['away'],
+                                  'period': period,
+                                  'period_time': players_off[0]['end_time'],
+                                  'period_seconds': players_off[0]['end_time_seconds'],
+                                  'number_off': len(players_off),
+                                  'players_off': tuple([x['team_jersey'] for x in players_off]),
+                                  'players_off_names': tuple([x['player_name'] for x in players_off]),
+                                  'players_off_eh_id': tuple([x['eh_id'] for x in players_off]),
+                                  'players_off_positions': tuple([x['position'] for x in players_off]),
+                                  'number_off_forwards': len(forwards_off),
+                                  'forwards_off': tuple([x['team_jersey'] for x in forwards_off]),
+                                  'forwards_off_names': tuple([x['player_name'] for x in forwards_off]),
+                                  'forwards_off_eh_id': tuple([x['eh_id'] for x in forwards_off]),
+                                  'number_off_defense': len(defense_off),
+                                  'defense_off': tuple([x['team_jersey'] for x in defense_off]),
+                                  'defense_off_names': tuple([x['player_name'] for x in defense_off]),
+                                  'defense_off_eh_id': tuple([x['eh_id'] for x in defense_off]),
+                                  'number_off_goalies': len(goalies_off),
+                                  'goalies_off': tuple([x['team_jersey'] for x in goalies_off]),
+                                  'goalies_off_names': tuple([x['player_name'] for x in goalies_off]),
+                                  'goalies_off_eh_id': tuple([x['eh_id'] for x in goalies_off]),
+                                 }
+                    
+                    if change_off in changes_on:
+                    
+                        changes_dict[change_off].update(new_values)
                         
                     else:
-                        
-                        goalie = goalies[goalies.period == period - 1].copy(deep = True)
-                        
-                    if period < 4:
 
-                        goalie.start_time = '0:00'
-
-                        goalie.end_time = '20:00'
-
-                        goalie.duration = '20:00'
-
-                        goalie.shift_start = '0:00 / 20:00'
-
-                        goalie.shift_end = '20:00 / 0:00'
+                        new_values.update({'number_on': 0,
+                                            'number_on_forwards': 0,
+                                            'number_on_defense': 0,
+                                            'number_on_goalies': 0})
                         
-                    else:
-                        
-                        goalie.start_time = '0:00'
-                        
-                        total_seconds = 300
-                        
-                        if str(game_id)[4:6] == '03':
-                            
-                            goalie.shift_start = '0:00 / 20:00'
-                            
-                            total_seconds = 1200
-                            
-                        goalie.shift_start = '0:00 / 5:00'
-                            
-                        end_time_seconds = shifts_df[shifts_df.period == period].end_time_seconds.max()
-                        
-                        end_time_minutes = str(timedelta(seconds=end_time_seconds)).split(':', 1)[1]
-                        
-                        remainder_minutes = str(timedelta(seconds=(total_seconds - end_time_seconds))).split(':', 1)[1]
-                        
-                        goalie.end_time = end_time_minutes
-                        
-                        goalie.shift_end = f'{end_time_minutes} / {remainder_minutes}'
-        
-                    goalie.period = period
-                            
-                    shifts_df = pd.concat([shifts_df, goalie], ignore_index = True)
+                        changes_dict[change_off] = new_values
                     
-                    shifts_df.shift_number = np.where(shifts_df.goalie == 1,
-                                                      shifts_df.groupby('player_abbr').cumcount() + 1,
-                                                      shifts_df.shift_number)
+                game_list.extend(list(changes_dict.values()))
             
-            if period < 4:
-                
-                end_time_long = '20:00 / 0:00'
-                
-                end_time_minutes = '20:00'
-                
-                end_time_seconds = 1200
-                
-            else:
-                
-                total_seconds = 300
-                        
-                if str(game_id)[4:6] == '03':
+        game_list = sorted(game_list, key = lambda k: (k['period'], k['period_seconds'], k['away']))
 
-                    total_seconds = 1200
-                
-                end_time_seconds = shifts_df[shifts_df.period == period].end_time_seconds.max()
+        games_dict.update({game_id: game_list})
 
-                end_time_minutes = str(timedelta(seconds=end_time_seconds)).split(':', 1)[1]
-
-                remainder_minutes = str(timedelta(seconds=(total_seconds - end_time_seconds))).split(':', 1)[1]
-
-                end_time_long = f'{end_time_minutes} / {remainder_minutes}'
-                
-            goalie_cond = np.logical_and(shifts_df.goalie == 1, shifts_df.period == period)
-
-            conditions = np.logical_and(goalie_cond, shifts_df.shift_end == '0:00 / 0:00')
-
-            shifts_df.shift_end = np.where(conditions, end_time_long, shifts_df.shift_end)
-            
-            shifts_df.end_time = np.where(conditions, end_time_minutes, shifts_df.end_time)
-            
-            shifts_df.end_time_seconds = np.where(conditions, end_time_seconds, shifts_df.end_time_seconds)
-
-        columns = ['start_time', 'end_time', 'duration']
-
-        for column in columns: 
-
-            time_split = shifts_df[column].astype(str).str.split(':')
-            
-            shifts_df[f'{column}_seconds'] = 60 * time_split.str[0].astype(int) + time_split.str[1].astype(int)
-            
-        cond = shifts_df.start_time_seconds > shifts_df.end_time_seconds
-        
-        shifts_df.end_time = np.where(cond, '20:00', shifts_df.end_time)
-        
-        shifts_df.end_time_seconds = np.where(cond, 1200, shifts_df.end_time_seconds)
-        
-        shifts_df.shift_end = np.where(cond, '20:00 / 0:00', shifts_df.shift_end)
-        
-        shifts_df.duration_seconds = shifts_df.end_time_seconds - shifts_df.start_time_seconds
-        
-        shifts_df.duration = pd.to_datetime(shifts_df.duration_seconds, unit = 's').dt.strftime('%M:%S')
-        
-        shifts_df = shifts_df.copy().sort_values(by = ['venue', 'player_name', 'shift_number']).reset_index(drop = True)
-
-        group_dict = {'on': ['team', 'team_code', 'period', 'start_time', 'start_time_seconds'], 
-                      'off': ['team', 'team_code', 'period', 'end_time', 'end_time_seconds']}
-
-        times_dict = {'on': {'start_time': 'time'}, 
-                      'off': {'end_time': 'time'}}
-
-        changes_dict = {}
-
-        for change_type, group_list in group_dict.items():
-
-            column_names = times_dict[change_type]
-
-            sort_list = ['team', 'period', 'time']
-
-            if change_type == 'on':
-
-                df = shifts_df.groupby(group_list, as_index = False)\
-                        .agg(players_on = ('player_name', tuple),
-                             players_on_abbr = ('player_abbr', tuple),
-                             players_on_api = ('api_name', tuple),
-                             positions_on = ('position', tuple),
-                             number_on = ('player_name', 'count'))\
-                        .rename(columns = column_names)\
-                        .sort_values(by = sort_list)
-
-            if change_type == 'off':
-
-                df = shifts_df.groupby(group_list, as_index = False)\
-                        .agg(players_off = ('player_name', tuple),
-                             players_off_abbr = ('player_abbr', tuple),
-                             players_off_api = ('api_name', tuple),
-                             positions_off = ('position', tuple),
-                             number_off = ('player_name', 'count'))\
-                        .rename(columns = column_names)\
-                        .sort_values(by = sort_list)
-
-            changes_dict.update({change_type: df.reset_index(drop = True)})
-
-        merge_list = ['team', 'team_code', 'period', 'time']
-
-        changes_on = changes_dict['on'].merge(changes_dict['off'], on = merge_list, how = 'left')
-        changes_off = changes_dict['off'].merge(changes_dict['on'], on = merge_list, how = 'left')
-
-        changes_df = pd.concat([changes_on, changes_off], ignore_index = True)\
-                            .sort_values(by = ['period', 'start_time_seconds'], ascending = True)\
-                            .drop_duplicates().reset_index(drop = True)
-        
-        changes_df.start_time_seconds = changes_df.start_time_seconds.fillna(1200)
-        
-        changes_df.end_time_seconds = changes_df.end_time_seconds.fillna(0)
-        
-        changes_df = changes_df.sort_values(by = ['period', 'start_time_seconds'], ascending = True).reset_index(drop = True)
-
-        time_split = changes_df.time.astype(str).str.split(':')
-
-        changes_df['period_seconds'] = 60 * time_split.str[0].astype(int) + time_split.str[1].astype(int)
-
-        changes_df['game_seconds'] = (changes_df.period - 1) * 1200 + changes_df.period_seconds
-        
-        shifts_df['game_id'] = game_id
-        shifts_df['season'] = str(game_id)[:4] + str(int(str(game_id)[:4]) + 1)
-        
-        changes_df['game_id'] = game_id
-        changes_df['season'] = str(game_id)[:4] + str(int(str(game_id)[:4]) + 1)
-
-        changes_df['session'] = GAME_SESSION
-        shifts_df['session'] = GAME_SESSION
-
-        group_list = ['season', 'session', 'game_id', 'team', 'team_code'] 
-
-        changes_df['team_shift_idx'] = changes_df.groupby(group_list).transform('cumcount') + 1
-        
-        #if pbp == True:
-
-        changes_df['event'] = 'CHANGE'
-
-        changes_df['description'] = 'Players on: ' + changes_df.players_on.str.join(', ') + \
-                                            ' / Players off: ' + changes_df.players_off.str.join(', ')
-
-        #team_type_dict = dict(zip(game_info.status, game_info.team_tri_code))
-
-        #columns = ['event_team', 'home_team_abbr', 'away_team_abbr']
-
-        #changes_df['event_team'] = changes_df.venue.map(team_type_dict)
-
-        #changes_df['home_team_abbreviated'] = np.where(changes_df.venue == 'home', team_type_dict['home'], team_type_dict['away'])
-
-        #changes_df['away_team_abbreviated'] = np.where(changes_df.venue == 'away', team_type_dict['away'], team_type_dict['home'])
-
-        #team_name_df = changes_df[['event_team', 'team']].drop_duplicates()
-
-        #team_name_dict = dict(zip(team_name_df.event_team, team_name_df.team))
-
-        #team_types = ['home', 'away']
-
-        #for team in team_types:
-
-        #    changes_df[team + '_team'] = changes_df[team + '_team_abbreviated'].map(team_name_dict)
-        
-        shifts_concat.append(shifts_df)
-        
-        changes_concat.append(changes_df)
-        
         if game_id == game_ids[-1]:
             
-            pbar.set_description(f'Finished scraping shifts data')
+            pbar.set_description(f'Finished scraping changes data')
+
+            if nested == False:
+
+                s.close()
             
         else:
         
@@ -2288,53 +3077,56 @@ def scrape_html_shifts(game_ids, disable_print = False, roster_data = None, game
         postfix_str = f'{current_time}'
         
         pbar.set_postfix_str(postfix_str)
-        
-    if shifts_concat == []:
-        
-        shifts_df = pd.DataFrame()
-        
-    else:
-        
-        shifts_df = pd.concat(shifts_concat, ignore_index = True)
-        
-        columns = ['season', 'session', 'game_id', 'team', 'team_code', 'venue', 'player_name', 'player_jersey', 'player_abbr',
-                   'shift_number', 'period', 'shift_start', 'shift_end', 'duration', 'start_time', 'end_time',
-                   'start_time_seconds', 'end_time_seconds', 'duration_seconds', 'api_name', 'goalie', 'position']
-        
-        columns = [x for x in columns if x in shifts_df.columns]
-                   
-        shifts_df = shifts_df[columns]
-        
-    if changes_concat == []:
-        
-        changes_df = pd.DataFrame()
-        
-    else:
-        
-        changes_df = pd.concat(changes_concat, ignore_index = True)
-                   
-        columns = ['season', 'session', 'game_id', 'team', 'team_code', 'team_shift_idx', 'period', 'time',
-                    'period_seconds',  'game_seconds', 'number_on',
-                   'players_on', 'players_on_api', 'positions_on', 'number_off', 'players_off', 'players_off_api', 
-                   'positions_off', 'players_on_abbr', 'players_off_abbr', 'event', 'description', 'event_team',
-                   'home_team_abbreviated', 'away_team_abbreviated']
-        
-        columns = [x for x in columns if x in changes_df.columns]
-        
-        changes_df = changes_df[columns]
 
     if nested == False:
 
-        s.close()
-        
-    scrape_dict.update({'shifts': shifts_df, 
-                       'changes': changes_df})
-    
-    return scrape_dict
+        changes_data = [change for changes in games_dict.values() for change in changes]
+
+        tuple_fields = ['players_on', 'players_off', 'players_on_names', 'players_off_names',
+                        'players_on_eh_id', 'players_off_eh_id', 'players_on_positions',
+                        'players_off_positions', 'forwards_on', 'forwards_off', 'forwards_on_names',
+                        'forwards_off_names', 'forwards_on_eh_id', 'forwards_off_eh_id', 'defense_on',
+                        'defense_off', 'defense_on_names', 'defense_off_names', 'defense_on_eh_id',
+                        'defense_off_eh_id', 'goalies_on', 'goalies_on_names', 'goalies_on_eh_id', 
+                        'goalies_off', 'goalies_off_names', 'goalies_off_eh_id']
+
+        for change in changes_data:
+
+            for tuple_field in tuple_fields:
+
+                change[tuple_field] = ', '.join(change.get(tuple_field, ''))
+
+        df = pd.DataFrame(changes_data)
+
+        column_order = ['season', 'session', 'game_id', 'team', 'team_name', 'team_venue',
+                        'period', 'period_time', 'period_seconds', 'number_on', 'number_off',
+                        'players_on', 'players_on_names', 'players_on_eh_id', 'players_on_positions',
+                        'players_off', 'players_off_names', 'players_off_eh_id', 'players_off_positions',
+                        'number_on_forwards', 'number_off_forwards', 'forwards_on', 'forwards_on_names',
+                        'forwards_on_eh_id', 'forwards_off', 'forwards_off_names', 'forwards_off_eh_id',
+                        'number_on_defense', 'number_off_defense', 'defense_on', 'defense_on_names',
+                        'defense_on_eh_id', 'defense_off', 'defense_off_names', 'defense_off_eh_id',
+                        'number_on_goalies', 'number_off_goalies', 'goalies_on', 'goalies_on_names',
+                        'goalies_on_eh_id', 'goalies_off', 'goalies_off_names', 'goalies_off_eh_id',
+                        ]
+
+        column_order = [x for x in column_order if x in df.columns]
+
+        df = df[column_order]
+
+        df = df.replace('', np.nan)
+
+        return df
+
+    else:
+
+        return games_dict
 
 ############################################## API events ##############################################
 
 ## []Refactored
+## []Docstring
+## []Comments
 def scrape_api_events(game_ids, live_response = None, session = None, disable_print = False):
     '''
     Scrapes the event data from the API endpoint. Returns a dataframe. Data do not exist before 2010-2011 season
@@ -2499,13 +3291,9 @@ def scrape_api_events(game_ids, live_response = None, session = None, disable_pr
                     
                     player = player['player']
                     
-                    play[f'player_{num}'] = unidecode.unidecode(player['fullName'].upper())
-                    
-                    replace_dict = {'ALEXANDRE ': 'ALEX ', 'ALEXANDER ': 'ALEX ', 'CHRISTOPHER ': 'CHRIS '}
-                    
-                    for old_name, new_name in replace_dict.items():
+                    play[f'player_{num}'] = unidecode(player['fullName'].upper())
                         
-                        play[f'player_{num}'] = play[f'player_{num}'].replace(old_name, new_name)
+                    play[f'player_{num}'] = play[f'player_{num}'].replace('ALEXANDRE', 'ALEX').replace('ALEXANDER', 'ALEX').replace('CHRISTOPHER', 'CHRIS')
                     
                     play[f'player_{num}'] = correct_names_dict.get(play[f'player_{num}'], play[f'player_{num}'])
                     
@@ -2755,6 +3543,8 @@ def scrape_api_events(game_ids, live_response = None, session = None, disable_pr
 ############################################## HTML events ##############################################
 
 ## []Refactored
+## []Docstring
+## []Comments
 def scrape_html_events(game_ids, disable_print = False, game_data = None, roster_data = None, session = None):
     '''
     Scrapes the event data from the HTML endpoint. Returns a dataframe.
@@ -2820,7 +3610,7 @@ def scrape_html_events(game_ids, disable_print = False, game_data = None, roster
             
         if roster_data is None:
             
-            roster = scrape_html_rosters(game_id, disable_print = True, session = s)
+            roster = scrape_html_roster(game_id, disable_print = True, session = s)
             
         else:
             
