@@ -212,97 +212,97 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
     
     Pandas DataFrame with columns:
         
-        1. season: string
+        season: string
             Season as 8-digit number, e.g., 20222023 for 2022-23 season
 
-        2. game_id: integer
+        game_id: integer
             Unique game ID assigned by the NHL
 
-        3. game_date_dt: datetime
+        game_date_dt: datetime
             Datetime in Eastern time zone for game start
 
-        4. game_date: string
+        game_date: string
             Date game is / was played (Eastern time)
 
-        5. start_time: string
+        start_time: string
             Time game is / was started (Eastern time)
     
-        6. game_type: string
+        game_type: string
             Whether game is regular season, playoffs, or other, e.g., all-star
 
-        7. game_status: string
+        game_status: string
             Whether game is final, currently being played, or scheduled
 
-        8. home_team: string
+        home_team: string
             Team name in upper case, no accents (sorry MONTREAL)
 
-        9. home_team_code: string
+        home_team_code: string
             Three-letter team code
 
-        10. home_team_score: integer
+        home_team_score: integer
             Goals scored by home team - shootout win is a goal
 
-        11. away_team: string:
+        away_team: string:
             Team name in upper case, no accents (sorry MONTREAL)
 
-        12. away_team_code: string
+        away_team_code: string
             Three-letter team code
 
-        13. away_team_score: string
+        away_team_score: string
             Goals scored by away team - shootout win is a goal
 
-        14. detailed_game_status: string
+        detailed_game_status: string
             Whether game is final, currently being played, or scheduled
 
-        15. start_time_tbd: bool
+        start_time_tbd: bool
             If start time is to be determined, then True
 
-        16. home_team_wins: integer
+        home_team_wins: integer
             Number of wins by home team entering game if not yet played, and exiting game if already played
 
-        17. home_team_losses: integer
+        home_team_losses: integer
             Number of losses by home team entering game if not yet played, and exiting game if already played
 
-        18. home_team_otl: integer
+        home_team_otl: integer
             Number of overtime losses by home team entering game if not yet played, and exiting game if already played
 
-        19. away_team_wins: integer
+        away_team_wins: integer
             Number of wins by away team entering game if not yet played, and exiting game if already played
 
-        20. away_team_losses: integer
+        away_team_losses: integer
             Number of losses by away team entering game if not yet played, and exiting game if already played
 
-        21. away_team_otl: integer
+        away_team_otl: integer
             Number of overtime losses by away team entering game if not yet played, and exiting game if already played
 
-        22. home_team_id: integer
+        home_team_id: integer
             Unique team / franchise identifier given by NHL
 
-        23. home_team_link: string
+        home_team_link: string
             Link to team information via the NHL API
 
-        24. away_team_id: integer
+        away_team_id: integer
             Unique team / franchise identifier given by NHL
 
-        25. away_team_link: integer
+        away_team_link: integer
             Link to team information via the NHL API
 
-        26. venue_name: string
+        venue_name: string
             Name of the venue where game is played 
 
-        27. venue_id: string
+        venue_id: string
             Unique venue identifier given by the NHL. Will be np.nan if not a venue with regular games
 
-        28. venue_link: string
+        venue_link: string
             Link to venue information via the NHL API. Will be null if not a venue with regular games
 
-        29. game_link: string
+        game_link: string
             Link to detailed game information via the NHL API 
 
-        30. game_content_link: string
+        game_content_link: string
             Link to additional game content via the NHL API
 
-        31. status_code: string
+        status_code: string
             Code to indicate whether game has been played, is currently being played, or is scheduled 
 
     '''
@@ -520,97 +520,97 @@ def scrape_standings(seasons = 2022, disable_print = False):
 
     Pandas DataFrame with columns:
         
-        1. season: integer
+        season: integer
             Season as 8-digit number, e.g., 20222023 for 2022-23 season
 
-        2. team: string
+        team: string
             Team name in upper case, no accents (sorry MONTREAL)
 
-        3. team_code: string
+        team_code: string
             Three-letter team code
     
-        4. games_played: integer
+        games_played: integer
             Total number of games played
 
-        5. points: integer
+        points: integer
             Standings points earned
 
-        6. points_percentage: float
+        points_percentage: float
             Standings points earned as a percentage of total standings points possible
 
-        7. win: integer
+        win: integer
             Number of wins earned by team
 
-        8. loss: integer
+        loss: integer
             Number of losses incurred by team
 
-        9. otl: integer
+        otl: integer
             Number of overtime losses incurred by team
 
-        10. streak: string
+        streak: string
             Streak of games team has lost, won, or tied
 
-        11. league_rank: integer
+        league_rank: integer
             League rank by points percentage
 
-        12. conference_rank: integer
+        conference_rank: integer
             Conference rank by points percentage
 
-        13. division_rank: integer
+        division_rank: integer
             Division rank by points percentage
 
-        14. wildcard_rank: integer
+        wildcard_rank: integer
             Ranking for wild card playoff spot
 
-        15. goals_scored: integer
+        goals_scored: integer
             Number of goals scored
 
-        16. goals_against: integer
+        goals_against: integer
             Number of goals allowed
 
-        17. team_id: integer
+        team_id: integer
             Unique team ID assigned by the NHL
 
-        18. team_link: integer
+        team_link: integer
             Link to team information via the NHL API
 
-        19. division_rank_home: integer
+        division_rank_home: integer
             Division ranking by home points percentage
 
-        20. division_rank_road: integer
+        division_rank_road: integer
             Division ranking by road points percentage
 
-        21. division_rank_last10: integer
+        division_rank_last10: integer
             Division ranking by points percentage in the last ten games
 
-        22. conference_rank_home: integer
+        conference_rank_home: integer
             Conference ranking by home points percentage
 
-        23. conference_rank_road: integer
+        conference_rank_road: integer
             Conference ranking by road points percentage
 
-        24. conference_rank_last10: integer
+        conference_rank_last10: integer
             Conference ranking by points percentage in the last ten games
 
-        25. league_rank_home: integer
+        league_rank_home: integer
             League ranking by home points percentage
 
-        26. league_rank_road: integer
+        league_rank_road: integer
             League ranking by road points percentage
 
-        27. league_rank_last10: integer
+        league_rank_last10: integer
             League ranking by points percentage in the last ten games
 
-        28. pp_rank_division: integer
+        pp_rank_division: integer
             Powerplay ranking within division
 
-        29. pp_rank_conference: integer
+        pp_rank_conference: integer
             Powerplay ranking within conference
 
-        30. pp_rank_league: integer
+        pp_rank_league: integer
             Powerplay ranking within league
 
-        31. last_updated: string
+        last_updated: string
             Datetime standings were last updated
 
     '''
@@ -926,8 +926,8 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
                       'session': game_info['type'],
                       'game_id': int(game_info['pk']),
                       'game_status': status_info['detailedState'].upper(),
-                      'start_time_dt': pd.to_datetime(dt_info['dateTime']).tz_convert('US/Eastern'),
-                      'end_time_dt': pd.to_datetime(dt_info['endDateTime']).tz_convert('US/Eastern'),
+                      'start_time_dt': pd.to_datetime(dt_info.get('dateTime', np.nan)).tz_convert('US/Eastern'),
+                      'end_time_dt': pd.to_datetime(dt_info.get('endDateTime', np.nan)).tz_convert('US/Eastern'),
                       'game_venue': unidecode(venue_info['name']).upper(),
                       'home_team': team_info['home']['triCode'].upper().replace('PHX', 'ARI'),
                       'home_team_name': unidecode(team_info['home']['name']).upper().replace('PHOENIX COYOTES', 'ARIZONA COYOTES'),
@@ -946,7 +946,7 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
                       'away_team_conference': team_info['away']['conference']['name'].upper(),
                       'away_team_conference_id': int(team_info['away']['conference']['id']),
                       'start_time_utc': pd.to_datetime(dt_info['dateTime']),
-                      'end_time_utc': pd.to_datetime(dt_info['endDateTime']),
+                      'end_time_utc': pd.to_datetime(dt_info.get('endDateTime', np.nan)),
                      }
 
         game_data.update(new_values)
@@ -955,7 +955,13 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
 
         game_data['start_time'] = game_data['start_time_dt'].strftime('%H:%M:%S')
 
-        game_data['end_time'] = game_data['end_time_dt'].strftime('%H:%M:%S')
+        if 'endDateTime' not in dt_info.keys():
+
+            game_data['end_time'] = ''
+
+        else:
+
+            game_data['end_time'] = game_data['end_time_dt'].strftime('%H:%M:%S')
 
         if game_data == {}:
 
@@ -1030,7 +1036,7 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
     By default returns a dictionary with game IDs as keys and a dictionary of game information as the values.
 
     Can be used standalone but primarily nested within other scraping functions.
-    If standalone, scrapes 6-12 games per second.
+    If standalone, scrapes 8-12 games per second.
 
     --------- Parameters ---------
 
@@ -1194,6 +1200,10 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
         players = list(roster_info.values())
 
         for player in players:
+
+            if ' ' not in player['fullName']:
+
+                continue
             
             player_data = {}
             
@@ -1203,22 +1213,22 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
                           'player_name': unidecode(player['fullName']).upper(),
                           'api_id': int(player['id']),
                           #'eh_id': f'{first_name}.{last_name}',
-                          'position': player['primaryPosition']['code'],
-                          'position_type': player['primaryPosition']['type'].upper(),
-                          'birth_date': player['birthDate'],
-                          'birth_city': unidecode(player['birthCity']).upper(),
+                          'position': player.get('primaryPosition', {}).get('code', ''),
+                          'position_type': player.get('primaryPosition', {}).get('type', '').upper(),
+                          'birth_date': player.get('birthDate', ''),
+                          'birth_city': unidecode(player.get('birthCity', '')).upper(),
                           'birth_state_province': unidecode(player.get('birthStateProvince', '')).upper(),
-                          'birth_country': unidecode(player['birthCountry']).upper(),
-                          'nationality': player['nationality'],
-                          'height': player['height'],
-                          'weight': int(player['weight']),
-                          'active': player['active'],
-                          'alternate_captain': player.get('alternateCaptain', False),
-                          'captain': player.get('captain', False),
-                          'rookie': player['rookie'],
-                          'roster_status': player['rosterStatus'],
-                          'first_name': unidecode(player['firstName']).upper(),
-                          'last_name': unidecode(player['lastName']).upper(),
+                          'birth_country': unidecode(player.get('birthCountry', '')).upper(),
+                          'nationality': player.get('nationality', ''),
+                          'height': player.get('height', ''),
+                          'weight': float(player.get('weight', np.nan)),
+                          'active': player.get('active', 0),
+                          'alternate_captain': player.get('alternateCaptain', 0),
+                          'captain': player.get('captain', 0),
+                          'rookie': player.get('rookie', 0),
+                          'roster_status': player.get('rosterStatus', 0),
+                          'first_name': unidecode(player.get('firstName', '')).upper(),
+                          'last_name': unidecode(player.get('lastName', '')).upper(),
                          }
             
             player_data.update(new_values)
@@ -1248,11 +1258,11 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
             
             if player_data['position'] == 'G':
                 
-                player_data['catches'] = player['shootsCatches']
+                player_data['catches'] = player.get('shootsCatches', np.nan)
                 
             else:
                 
-                player_data['shoots'] = player['shootsCatches']
+                player_data['shoots'] = player.get('shootsCatches', np.nan)
                 
             cols = ['active', 'alternate_captain', 'captain', 'rookie', 'roster_status']
             
@@ -1265,22 +1275,20 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
                 elif player_data[col] == False or player_data[col] != 'Y':
                     
                     player_data[col] = 0
+
+            if player_data['height'] != '':
                     
-            height_split = player_data['height'].split("' ")
-            
-            height_ft = int(height_split[0])
-            
-            height_in = int(height_split[1].replace('''"''', ''))
-            
-            player_data['height'] = height_ft + (height_in / 12)
+                height_split = player_data['height'].split("' ")
+                
+                height_ft = int(height_split[0])
+                
+                height_in = int(height_split[1].replace('''"''', ''))
+
+                player_data['height'] = height_ft + (height_in / 12)
             
             position_types = {'FORWARD': 'F', 'DEFENSEMAN': 'D', 'GOALIE': 'G'}
             
             player_data['position_type'] = position_types.get(player_data['position_type'])
-            
-            if player_data['birth_state_province'] == '':
-                
-                player_data['birth_state_province'] = np.nan
             
             game_rosters.append(player_data)
 
@@ -1346,6 +1354,8 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
         columns = [x for x in columns if x in df.columns]
 
         df = df[columns]
+
+        df = df.replace('', np.nan)
 
         return df
     
@@ -1717,14 +1727,14 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
             
             ## Correcting Evolving Hockey IDs for duplicates
             
-            duplicates = {'SEBASTIAN.AHO': player['player_position'] == 'D',
+            duplicates = {'SEBASTIAN.AHO': player['position'] == 'D',
                           'COLIN.WHITE': player['season'] >= 20162017,
-                          'SEAN.COLLINS': player['player_position'] != 'D',
-                          'ALEX.PICARD': player['player_position'] != 'D',
+                          'SEAN.COLLINS': player['position'] != 'D',
+                          'ALEX.PICARD': player['position'] != 'D',
                           'ERIK.GUSTAFSSON': player['season'] >= 20152016,
                           'MIKKO.LEHTONEN': player['season'] >= 20202021,
                           'NATHAN.SMITH': player['season'] >= 20212022,
-                          'DANIIL.TARASOV': player['player_position'] == 'G'
+                          'DANIIL.TARASOV': player['position'] == 'G'
                          }
             
             ## Iterating through the duplicate names and conditions
@@ -1743,7 +1753,7 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
 
             player['team'] = team_codes.get(player['team_name'])
 
-            player['team_jersey'] = f"{player['team']}{player['player_jersey']}"
+            player['team_jersey'] = f"{player['team']}{player['jersey']}"
 
         games_dict.update({game_id: player_list})
         
@@ -1769,13 +1779,13 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
     
     if nested == False:
 
-        roster_data = [player for players in list(games_dict.values()) for player in players]
+        roster_data = [player for players in games_dict.values() for player in players]
 
         df = pd.DataFrame(roster_data)
 
         column_order = ['season', 'session', 'game_id', 'team', 'team_name', 'team_venue',
-                        'player_name', 'eh_id', 'team_jersey', 'player_jersey', 'player_position',
-                        'player_status']
+                        'player_name', 'eh_id', 'team_jersey', 'jersey', 'position',
+                        'status']
 
         column_order = [x for x in column_order if x in df.columns]
 
