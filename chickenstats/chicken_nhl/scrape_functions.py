@@ -41,6 +41,8 @@ from chickenstats.chicken_nhl.info import correct_names_dict, correct_api_names_
 
 # This function & the timeout class are used for scraping throughout
 
+## []Docstring
+## []Comments
 class TimeoutHTTPAdapter(HTTPAdapter):
     
     def __init__(self, *args, **kwargs):
@@ -65,6 +67,8 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
         return super().send(request, **kwargs)
 
+## []Docstring
+## []Comments
 def s_session():
     '''Creates a requests Session object using the HTTPAdapter from above'''
 
@@ -85,6 +89,8 @@ def s_session():
 
 # These are used in other functions throughout the module
 
+## []Docstring
+## []Comments
 def scrape_live_endpoint(game_id, session):
     '''Scrapes the live NHL API endpoint. Used to prevent multiple hits to same endpoint during PBP scrape'''
 
@@ -96,6 +102,8 @@ def scrape_live_endpoint(game_id, session):
     
     return response
 
+## []Docstring
+## []Comments
 def convert_to_list(obj, object_type):
     '''If the object is not a list, converts the object to a list of length one'''
 
@@ -115,6 +123,8 @@ def convert_to_list(obj, object_type):
     
     return obj
 
+## []Docstring
+## []Comments
 def hs_strip_html(td):
     """
     Function from Harry Shomer's Github, which I took from Patrick Bacon
@@ -159,6 +169,8 @@ def hs_strip_html(td):
 
     return td
 
+## []Docstring
+## []Comments
 def convert_ids(api_game_id):
     '''Takes an NHL API ID and converts it to an HTML season and game ID'''
 
@@ -3124,18 +3136,66 @@ def scrape_html_changes(game_ids, shifts_data = None, roster_data = None, sessio
 
 ############################################## API events ##############################################
 
-## []Refactored
+## [x]Refactored
 ## []Docstring
 ## []Comments
-def scrape_api_events(game_ids, live_response = None, session = None, disable_print = False):
+def scrape_api_events(game_ids, live_response = None, session = None, nested = True):
     '''
+
+    --------- Info ---------
+    
+    Scrapes the event data from the API endpoint. Returns a dataframe. Data do not exist before 2010-2011 season
+
+    Scrapes the event data from the NHL API for a given game ID or list-like object of game IDs.
+    Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
+
+    By default returns a dictionary with game IDs as keys and lists of change-dictionaries as values.
+    If nested is False, returns a Pandas DataFrame.
+
+    Scrapes approximately x-y games per second. 
+
+    --------- Required parameters ---------
+
+    game_ids | integer or list-like object
+        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+
+    --------- Optional parameters ---------
+
+    live_response | JSON object: default = None
+        When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
+
+    session | requests Session object: default = None
+        When using in another scrape function, can pass the requests session to improve speed
+
+    nested | boolean: default = True
+        If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of changes as dictionaries 
+        If False, prints progress to the console and returns a dataframe
+
+    --------- Returns ---------
+
+    Default: Dictionary with game IDs as keys and lists of change-dictionaries as the values
+
+    If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
+
+    Each change in each game list is a dictionary with the following fields and values:
+
+        season: integer
+            8-digit season code, e.g., 20222023
+
+        session: object
+            Regular season or playoffs, e.g., R
+
+        game_id: integer
+            10-digit game identifier, e.g., 2022020001
+
+
     Scrapes the event data from the API endpoint. Returns a dataframe. Data do not exist before 2010-2011 season
 
     Used within the main play-by-play scraper
     Parameters:
     game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
 
-    response_data: JSON object; default: None
+    live_response: JSON object; default: None
         When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
 
     disable_print: boolean; default: False
@@ -3156,8 +3216,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, disable_pr
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
     
     ## Important lists
-    bad_list = []
-    concat_list = []
+    games_dict = {}
     
     if live_response == None:
         
@@ -3169,11 +3228,32 @@ def scrape_api_events(game_ids, live_response = None, session = None, disable_pr
             
             s = session
     
-    pbar = tqdm(game_ids, disable = disable_print)
+    pbar = tqdm(game_ids, disable = nested)
     
     for game_id in pbar:
+
+        year = int(str(game_id)[0:4])
+
+        season = int(f'{year}{year + 1}')
+
+        game_session = str(game_id)[4:6]
+
+        if game_session == '01':
+            
+            game_session = 'PR'
+            
+        if game_session == '02':
+            
+            game_session = 'R'
+            
+        if game_session == '03':
+            
+            game_session = 'P'
         
-        if str(game_id).isdigit() == False or len(str(game_id)) != 10 or int(str(game_id)[:4]) < 2010 or str(game_id)[4:6] not in ['02', '03']:
+        if (str(game_id).isdigit() == False
+            or len(str(game_id)) != 10
+            or year < 2010
+            or game_session not in ['R', 'P']):
             
             pbar.set_description(f'{game_id} not a valid game_id')
 
@@ -3196,49 +3276,11 @@ def scrape_api_events(game_ids, live_response = None, session = None, disable_pr
         else:
             
             response = live_response
-            
-        season = str(game_id)[:4] + str(int(str(game_id)[:4]) + 1)
-        
-        conds_dict = {str(game_id)[4:6] == '01': 'PR', str(game_id)[4:6] == '02': 'R', str(game_id)[4:6] == '03': 'P'}
-            
-        for condition, value in conds_dict.items():
 
-            if condition:
-
-                session = value
-        
-        teams = response['gameData']['teams']
-        
-        teams_info = {}
-        
-        for team, info in teams.items():
-                
-            teams_info[f'{team}_team'] = info['triCode']
-
-            teams_info[f'{team}_team_name'] = info['name'].upper()
-
-            conditions = ['CANADIENS' in teams_info[f'{team}_team_name'], teams_info[f'{team}_team_name'] == 'PHOENIX COYOTES']
-
-            values = ['MONTREAL CANADIENS', 'ARIZONA COYOTES']
-
-            for condition, value in zip(conditions, values):
-
-                if condition:
-
-                    teams_info[f'{team}_team_name'] = value
-
-            if teams_info[f'{team}_team'] == 'PHX':
-
-                teams_info[f'{team}_team'] = 'ARI'
-        
-        start_dt = pd.to_datetime(response['gameData']['datetime']['dateTime'])
-        
-        start_date = start_dt.tz_convert('US/Eastern').strftime('%Y-%m-%d')
-        
-        start_time = start_dt.tz_convert('US/Eastern').strftime('%H:%M')
+        game_info = scrape_game_info(game_id, live_response = response, nested = True)[game_id]
         
         plays = response['liveData']['plays']['allPlays']
-        
+
         if plays == []:
             
             pbar.set_description(f'{game_id} not available')
@@ -3254,277 +3296,221 @@ def scrape_api_events(game_ids, live_response = None, session = None, disable_pr
             bad_list.append(game_id)
             
             continue
+
+        game_list = []
             
         for play in plays:
-            
+                    
             result = play['result']
-            
+
             about = play['about']
             
+            time_split = about['periodTime'].split(':', 1)
+
             coordinates = play['coordinates']
             
-            play['season'] = season
+            event_team = play.get('team', {})
             
-            play['game_id'] = int(game_id)
-            
-            play['session'] = session
-            
-            play['start_date'] = start_date
-            
-            play['start_time'] = start_time
-            
-            play['date_time'] = about['dateTime']
-            
-            for key, value in teams_info.items():
+            if event_team.get('name') == 'PHOENIX COYOTES':
                 
-                play[key] = value
-            
-            if 'players' in play.keys():
+                event_team['name'] = 'ARIZONA COYOTES'
                 
-                players = play['players']
+                event_team['triCode'] = 'ARI'
                 
-                for idx, player in enumerate(players):
-                    
-                    num = idx + 1
-                    
-                    play[f'player_{num}_type'] = player['playerType'].upper()
-                    
-                    player = player['player']
-                    
-                    play[f'player_{num}'] = unidecode(player['fullName'].upper())
-                        
-                    play[f'player_{num}'] = play[f'player_{num}'].replace('ALEXANDRE', 'ALEX').replace('ALEXANDER', 'ALEX').replace('CHRISTOPHER', 'CHRIS')
-                    
-                    play[f'player_{num}'] = correct_names_dict.get(play[f'player_{num}'], play[f'player_{num}'])
-                    
-                    play[f'player_{num}_id'] = player['id']
-                    
-                    name_split = play[f'player_{num}'].split(' ', 1)
-                    
-                    play[f'player_{num}_api'] = name_split[0].strip() + '.' + name_split[1].strip()
-                    
-                    play[f'player_{num}_api'] = correct_api_names_dict.get(play[f'player_{num}_id'], play[f'player_{num}_api'])
-                    
-                del play['players']
-                    
-            play['event_idx'] = int(about['eventIdx'])
-            
-            play['period'] = int(about['period'])
-            
-            play['period_type'] = about['periodType']
-            
-            play['period_time'] = about['periodTime']
-            
-            play['period_time_remaining'] = about['periodTimeRemaining']
-            
-            keys = ['period_time', 'period_time_remaining']
-            
-            for key in keys:
+            if 'CANADIENS' in event_team.get('name', ''):
                 
-                time_split = play[key].split(':', 1)
+                event_team['name'] = 'MONTREAL CANADIENS'
                 
-                new_key = key.replace('time', 'seconds')
+            if event_team.get('triCode') == game_info['home_team']:
+                
+                home = 1
+                
+            elif event_team.get('triCode') == game_info['away_team']:
+                
+                home = 0
+                
+            else:
+                
+                home = np.nan
             
-                play[new_key] = int(time_split[0]) * 60 + int(time_split[1])
+            event_types = {'BLOCKED_SHOT': 'BLOCK', 'BLOCKEDSHOT': 'BLOCK', 'MISSED_SHOT': 'MISS', 'FACEOFF': 'FAC',
+                           'PENALTY': 'PENL', 'GIVEAWAY': 'GIVE', 'TAKEAWAY': 'TAKE', 'MISSEDSHOT': 'MISS', 
+                           'PERIOD_START': 'PSTR', 'PERIOD_END': 'PEND', 'PERIOD_OFFICIAL': 'POFF', 'GAME_OFFICIAL': 'GOFF',
+                           'GAME_SCHEDULED': 'GSCH', 'GAME_END': 'GEND', 'CHALLENGE': 'CHL', 'SHOOTOUT_COMPLETE': 'SOC',
+                           'EARLY_INT_START': 'EISTR', 'EARLY_INT_END': 'EIEND', 'PERIOD_READY': 'PREADY'}
+            
+            new_values = {'season': season,
+                          'session': game_session,
+                          'game_id': game_id,
+                          'game_date': game_info['game_date'],
+                          'event_idx': int(about['eventIdx']),
+                          'period': int(about['period']),
+                          'period_time': about['periodTime'],
+                          'period_seconds': (int(time_split[0]) * 60) + int(time_split[1]),
+                          'event': result['event'].upper(),
+                          'event_type': event_types.get(result['eventTypeId'], result['eventTypeId']),
+                          'event_code': result['eventCode'],
+                          'description': result['description'].upper(),
+                          'event_team': event_team.get('triCode', ''), 
+                          'event_team_name': unidecode(event_team.get('name', '').upper()),
+                          'x_coords': float(coordinates.get('x', np.nan)),
+                          'y_coords': float(coordinates.get('y', np.nan)),
+                          'home': home,
+                          'home_score': int(about['goals']['home']),
+                          'away_score': int(about['goals']['away']),
+                          'event_detail': result.get('secondaryType', '').upper(),
+                          'strength_code': result.get('strength_code', ''),
+                          'strength_name': result.get('strength_name', ''),
+                          'game_winning_goal': int(result.get('gameWinningGoal', 0)),
+                          'empty_net_goal': int(result.get('emptyNet', 0)), 
+                          'penalty_severity': result.get('penaltySeverity', '').upper(),
+                          'penalty_minutes': float(result.get('penaltyMinutes', np.nan)),
+                          'event_dt': pd.to_datetime(about['dateTime']).tz_convert('US/Eastern'),
+                          
+                         }
+            
+            play.update(new_values)
+            
+            if about['periodType'] != 'SHOOTOUT':
                 
-            if play['period_type'] != 'SHOOTOUT':
-                
-                play['game_seconds'] = (int(play['period']) - 1) * 1200 + play['period_seconds']
+                play['game_seconds'] = ((play['period'] - 1) * 1200) + play['period_seconds']
                 
             else:
                 
                 play['game_seconds'] = 3900 + play['period_seconds']
             
-            play['event'] = result['eventTypeId']
+            players = play.get('players')
             
-            event_dict = {'BLOCKED_SHOT': 'BLOCK', 'BLOCKEDSHOT': 'BLOCK', 'MISSED_SHOT': 'MISS', 'FACEOFF': 'FAC',
-                          'PENALTY': 'PENL', 'GIVEAWAY': 'GIVE', 'TAKEAWAY': 'TAKE', 'MISSEDSHOT': 'MISS', 
-                          'PERIOD_START': 'PSTR', 'PERIOD_END': 'PEND', 'PERIOD_OFFICIAL': 'POFF', 'GAME_OFFICIAL': 'GOFF',
-                          'GAME_SCHEDULED': 'GSCH', 'GAME_END': 'GEND', 'CHALLENGE': 'CHL', 'SHOOTOUT_COMPLETE': 'SOC', 
-                          'EARLY_INT_START': 'EISTR', 'EARLY_INT_END': 'EIEND', 'PERIOD_READY': 'PREADY'}
-            
-            play['event'] = event_dict.get(play['event'], play['event'])
-            
-            play['event_type'] = result['event'].upper()
-            
-            play['event_description'] = result['description']
-            
-            play['event_code'] = result['eventCode']
-            
-            for key, value in coordinates.items():
-                    
-                    play[f'coords_{key}'] = value
-                    
-            for key, value in about['goals'].items():
+            if players is not None:
                 
-                play[f'{key}_score'] = value
-                
-            if 'team' in play.keys():
-                
-                for key, value in play['team'].items():
+                if play['event_type'] == 'BLOCK' and players[1]['playerType'].upper() == 'BLOCKER':
                     
-                    new_key = f'event_team_{key}'
+                    players[0], players[1] = players[1], players[0]
                     
-                    if key == 'triCode':
-                        
-                        new_key = 'event_team'
-                
-                    play[new_key] = value
-                    
-                play['event_team_name'] = play['event_team_name'].upper()
-                
-                conditions = ['CANADIENS' in play['event_team_name'], play['event_team_name'] == 'PHOENIX COYOTES']
-                
-                values = ['MONTREAL CANADIENS', 'ARIZONA COYOTES']
-                
-                for condition, value in zip(conditions, values):
-                    
-                    if condition:
-                        
-                        play['event_team_name'] = value
-                        
-                if play['event_team'] == 'PHX':
-                    
-                    play['event_team'] = 'ARI'
-                
-                del play['team']
-                
-            else:
-                    
-                team_keys = ['event_team_id', 'event_team_name', 'event_team_link', 'event_team_code']
-                    
-                for key in team_keys:
+                    if play['event_team'] == game_info['home_team']:
 
-                    play[key] = None
-                    
-            ## Swapping the players for blocked shots
-            
-            if play['event'] == 'BLOCK' and play['player_1_type'] == 'BLOCKER':
-                
-                play['player_1'], play['player_2'] = play['player_2'], play['player_1']
-                play['player_1_id'], play['player_2_id'] = play['player_2_id'], play['player_1_id']
-                play['player_1_api'], play['player_2_api'] = play['player_2_api'], play['player_1_api']
-                play['player_1_type'], play['player_2_type'] = play['player_2_type'], play['player_1_type']
-                
-                if play['event_team'] == play['home_team']:
-                    
-                    play['event_team'] = play['away_team']
-                    
-                elif play['event_team'] == play['away_team']:
-                    
-                    play['event_team'] = play['home_team']
-                    
-            keys_dict = {'secondaryType': 'event_detail_api', 'strength_code': 'strength_code',
-                         'strength_name': 'strength_name', 'gameWinningGoal': 'game_winning_goal',
-                         'emptyNet': 'empty_net_goal', 'penaltySeverity': 'penalty_severity',
-                         'penaltyMinutes': 'penalty_minutes'}
-            
-            for old_key, new_key in keys_dict.items():
-                
-                if old_key in result.keys():
-                
-                    play[new_key] = result[old_key]
-                    
-            if play['event'] == 'PENL' and 'too many men' in play['event_description'].lower():
-                
-                cols = {'player_1': 'player_2', 'player_1_id': 'player_2_id',
-                        'player_1_api': 'player_2_api'}
-                
-                for old, new in cols.items():
-                    
-                    play[new] = play[old]
-                    
-                    play[old] = 'BENCH'
-                    
-                play['player_2_type'] = 'SERVED BY'
-                
-            if play['event'] == 'PSTR' and play['period'] == 1:
-                
-                game_start = pd.to_datetime(play['date_time'])
-                    
-            del play['result']
-            
-            del play['about']
-            
-            del play['coordinates']
-        
-        for play in plays:
-            
-            time_elapsed = pd.to_datetime(play['date_time']) - game_start
-            
-            play['time_elapsed'] = str(time_elapsed)
-            
-            play['time_elapsed_seconds'] = time_elapsed.total_seconds()
-            
-            play['game_start'] = game_start.tz_convert('US/Eastern').strftime('%H:%M')
-            
-        #plays = pd.DataFrame(plays)
-        
-        ## Creating opposition team columns, after swapping out the teams in blocked shots
-        
-        #columns = ['team_id', 'team_name', 'team_link', 'team']
-        
-        #for column in columns:
-            
-        #    teams_dict = {}
-            
-        #    teams_list = plays['event_' + column].unique()
-            
-        #    teams_dict.update({teams_list[1]: teams_list[2],
-        #                       teams_list[2]: teams_list[1]})
-            
-        #    plays['event_' + column] = np.where(plays.event_type == 'BLOCK',
-        #                                        plays['event_' + column].map(teams_dict).fillna(plays['event_' + column]),
-        #                                        plays['event_' + column])
-            
-        #    plays['opp_' + column] = plays['event_' + column].map(teams_dict)
-        
-        ## Swapping out event players 1 and 2 for blocked shots
-        #players_dict = {}
-        
-        #players_dict.update({'player_1': 'player_2',
-        #                     'player_2': 'player_1'})
-        
-        #columns = ['link', 'type', 'id', 'api']
-        
-        #for column in columns:
-            
-        #    players_dict.update({'player_1_' + column: 'player_2_' + column,
-        #                         'player_2_' + column: 'player_1_' + column})
-            
-        #mask = plays.event_type == 'BLOCK'
-        
-        #plays.update(plays.loc[mask].rename(players_dict, axis = 1))
-            
-        ## Finishing up
+                        play['event_team'] = game_info['away_team']
 
-        concat_list.extend(plays)
+                        play['event_team_name'] = game_info['away_team_name']
+                        
+                    else:
+                        
+                        play['event_team'] = game_info['home_team']
+
+                        play['event_team_name'] = game_info['home_team_name']
+                        
+                if play['event_type'] == 'FAC' and players[1]['playerType'].upper() == 'WINNER':
+                    
+                    players[0], players[1] = players[1], players[0]
+                    
+                    if play['event_team'] == game_info['home_team']:
+
+                        play['event_team'] = game_info['away_team']
+
+                        play['event_team_name'] = game_info['away_team_name']
+                        
+                    else:
+                        
+                        play['event_team'] = game_info['home_team']
+
+                        play['event_team_name'] = game_info['home_team_name']
+                        
+                if play['event_type'] == 'PENL' and 'too many men' in play['description'].lower():
+                    
+                    players.append(players[0].copy())
+                    
+                    players[0]['fullName'] = 'BENCH'
+                    
+                    players[0]['id'] = 'BENCH'
+                    
+                    players[1]['playerType'] = 'SERVED BY'
+                    
+                for idx, player in enumerate(players):
+
+                    num = idx + 1
+
+                    player_data = player['player']
+
+                    play[f'player_{num}'] = unidecode(player_data['fullName'].upper())
+
+                    play[f'player_{num}'] = play[f'player_{num}'].replace('ALEXANDRE', 'ALEX').replace('ALEXANDER', 'ALEX').replace('CHRISTOPHER', 'CHRIS')
+
+                    play[f'player_{num}'] = correct_names_dict.get(play[f'player_{num}'], play[f'player_{num}'])
+
+                    play[f'player_{num}_api_id'] = int(player_data['id'])
+
+                    if play[f'player_{num}'] != 'BENCH':
+
+                        name_split = play[f'player_{num}'].split(' ', 1)
+
+                        play[f'player_{num}_eh_id'] = name_split[0].strip() + '.' + name_split[1].strip()
+
+                        play[f'player_{num}_eh_id'] = correct_api_names_dict.get(play[f'player_{num}_api_id'], play[f'player_{num}_eh_id'])
+
+                    else:
+
+                        play[f'player_{num}_eh_id'] = 'BENCH'
+                    
+                    play[f'player_{num}_type'] = player['playerType'].upper()
+                
+            delete_list = ['result', 'about', 'coordinates', 'team', 'players']
+            
+            
+            if play['event_type'] == 'PSTR' and play['period'] == 1:
+                
+                game_start = play['event_dt']
+            
+            play = {k: v for k, v in play.items() if k not in delete_list}
+            
+            game_list.append(play)
+
+        game_list = sorted(game_list, key = lambda k: (k['event_idx']))
+            
+        for event in game_list:
+            
+            time_elapsed = pd.to_datetime(event['event_dt']) - game_start
+            
+            event['time_elapsed'] = str(time_elapsed)
+                    
+            event['time_elapsed_seconds'] = time_elapsed.total_seconds()
+            
+            if 'version' in event.keys():
+                
+                continue
+            
+            other_events = [x for x in game_list
+                            if x != event
+                            and x['event_type'] == event['event_type']
+                            and x['game_seconds'] == event['game_seconds']
+                            and x.get('player_1_api_id') is not None
+                            and x['period'] == event['period']
+                            and event.get('player_1_api_id') is not None
+                            and x['player_1_api_id'] == event['player_1_api_id']
+                         ]
+
+            version = 1
+            
+            event['version'] = 1
+
+            if len(other_events) > 0:
+                
+                for idx, other_event in enumerate(other_events):
+
+                    if 'version' not in other_event.keys():
+
+                        version += 1
+                    
+                        other_event['version'] = version
+    
+        games_dict.update({game_id: game_list})  
         
         if game_id == game_ids[-1]:
             
-            events_df = pd.DataFrame(concat_list)#, ignore_index = True)
-            
-            group_list = ['game_id', 'period', 'game_seconds', 'event_team', 'event', 'player_1_id']
-            
-            events_df['version'] = events_df[~pd.isna(events_df.player_1_id)].groupby(group_list).transform('cumcount') + 1
-            
-            events_df.version = events_df.version.fillna(1)
-    
-            columns = ['season', 'game_id', 'session', 'start_date', 'start_time', 'game_start', 'home_team', 'home_team_name',
-                       'away_team', 'away_team_name','event_idx', 'period', 'period_type', 'period_time',
-                       'period_time_remaining', 'period_seconds', 'period_seconds_remaining', 'game_seconds',
-                       'event_type', 'event', 'event_description', 'coords_x', 'coords_y', 'event_code', 'date_time', 'home_score',
-                       'away_score', 'event_team', 'event_team_name', 'event_team_id', 'event_team_link', 'player_1', 
-                       'player_1_id', 'player_1_api', 'player_1_type', 'player_2', 'player_2_id', 'player_2_api',
-                       'player_2_type', 'player_3', 'player_3_id', 'player_3_api', 'player_3_type', 'player_4',
-                       'player_4_id', 'player_4_api', 'player_4_type', 'game_winning_goal', 'empty_net_goal',
-                       'penalty_severity', 'penalty_minutes', 'time_elapsed', 'time_elapsed_seconds', 'version']
-
-            columns = [x for x in columns if x in events_df.columns]
-
-            events_df = events_df[columns]
-            
             pbar.set_description(f'Finished scraping events data from the NHL API')
+
+            if nested == False:
+
+                s.close()
             
         else:
         
@@ -3537,8 +3523,34 @@ def scrape_api_events(game_ids, live_response = None, session = None, disable_pr
         postfix_str = f'{current_time}'
         
         pbar.set_postfix_str(postfix_str)
-        
-    return events_df
+
+    if nested == False:
+
+        events_data = [event for events in games_dict.values() for event in events]
+
+        df = pd.DataFrame(events_data)
+
+        columns = ['season', 'game_id', 'session', 'game_date', 'event_team', 'event_team_name',
+                       'event_idx', 'period', 'period_time', 'period_seconds', 'game_seconds',
+                       'event', 'event_type',  'description', 'coords_x', 'coords_y', 'event_dt',
+                       'home_score', 'away_score', 'player_1', 'player_1_api_id', 'player_1_eh_id',
+                       'player_1_type', 'player_2', 'player_2_api_id', 'player_2_eh_id', 'player_2_type',
+                       'player_3', 'player_3_api_id', 'player_3_eh_id', 'player_3_type', 'player_4',
+                       'player_4_api_id', 'player_4_eh_id', 'player_4_type', 'game_winning_goal',
+                       'empty_net_goal', 'penalty_severity', 'penalty_minutes', 'time_elapsed',
+                       'time_elapsed_seconds', 'version']
+
+        column_order = [x for x in columns if x in df.columns]
+
+        df = df[column_order]
+
+        df = df.replace('', np.nan)
+
+        return df
+
+    else:
+
+        return games_dict
     
 ############################################## HTML events ##############################################
 
@@ -3940,6 +3952,14 @@ def scrape_html_events(game_ids, disable_print = False, game_data = None, roster
         pbar.set_postfix_str(postfix_str)
                 
     return events_df
+
+
+
+
+
+
+
+
 
 
 
