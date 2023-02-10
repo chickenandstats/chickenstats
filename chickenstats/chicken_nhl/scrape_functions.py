@@ -180,6 +180,38 @@ def convert_ids(api_game_id):
     
     return html_season_id, html_game_id
 
+## []Docstring
+## []Comments
+def game_id_info(game_id, html_id = False):
+    
+    if str(game_id).isdigit() == False or len(str(game_id)) != 10:
+        
+        raise Exception('NOT A VALID GAME ID')
+    
+    year = int(str(game_id)[0:4])
+    
+    season = int(f'{year}{year + 1}')
+    
+    game_session = str(game_id)[4:6]
+    
+    game_sessions = {'O1': 'PR', '02': 'R', '03': 'P'}
+    
+    for session_code, session_name in game_sessions.items():
+        
+        if game_session == session_code:
+            
+            game_session = session_name
+            
+    if html_id == True:
+        
+        html_id = str(game_id)[4:]
+        
+        return season, game_session, html_id
+    
+    else:
+            
+        return season, game_session
+
 ############################################## Schedule ##############################################
 
 ## []Refactored
@@ -2632,7 +2664,7 @@ def scrape_html_shifts(game_ids, roster_data = None, session = None, nested = Tr
 ## [x]Refactored
 ## [x]Docstring
 ## []Comments
-def scrape_html_changes(game_ids, shifts_data = None, roster_data = None, session = None, nested = True):
+def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, session = None, nested = True):
     
     '''
 
@@ -3206,12 +3238,6 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
     '''
     
-    ## TO DO:
-    ## 1. Flip blocked shots
-    ## 2. Penalty players
-    ## 3. add comments and edit doc string
-    ## 4. double check columns are in the right order
-    
     ## Convert game IDs to list if given a single game ID
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
     
@@ -3234,21 +3260,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
         year = int(str(game_id)[0:4])
 
-        season = int(f'{year}{year + 1}')
-
-        game_session = str(game_id)[4:6]
-
-        if game_session == '01':
-            
-            game_session = 'PR'
-            
-        if game_session == '02':
-            
-            game_session = 'R'
-            
-        if game_session == '03':
-            
-            game_session = 'P'
+        season, game_session = game_id_info(game_id)
         
         if (str(game_id).isdigit() == False
             or len(str(game_id)) != 10
@@ -3277,7 +3289,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
             
             response = live_response
 
-        game_info = scrape_game_info(game_id, live_response = response, nested = True)[game_id]
+        game_info = scrape_game_info(game_id, live_response = response, session = s, nested = True)[game_id]
         
         plays = response['liveData']['plays']['allPlays']
 
@@ -3337,7 +3349,9 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
                            'PENALTY': 'PENL', 'GIVEAWAY': 'GIVE', 'TAKEAWAY': 'TAKE', 'MISSEDSHOT': 'MISS', 
                            'PERIOD_START': 'PSTR', 'PERIOD_END': 'PEND', 'PERIOD_OFFICIAL': 'POFF', 'GAME_OFFICIAL': 'GOFF',
                            'GAME_SCHEDULED': 'GSCH', 'GAME_END': 'GEND', 'CHALLENGE': 'CHL', 'SHOOTOUT_COMPLETE': 'SOC',
-                           'EARLY_INT_START': 'EISTR', 'EARLY_INT_END': 'EIEND', 'PERIOD_READY': 'PREADY'}
+                           'EARLY_INT_START': 'EISTR', 'EARLY_INT_END': 'EIEND', 'PERIOD_READY': 'PREADY',
+                           'FAILED_SHOT_ATTEMPT': 'MISS'
+                           }
             
             new_values = {'season': season,
                           'session': game_session,
@@ -3347,14 +3361,14 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
                           'period': int(about['period']),
                           'period_time': about['periodTime'],
                           'period_seconds': (int(time_split[0]) * 60) + int(time_split[1]),
-                          'event': result['event'].upper(),
-                          'event_type': event_types.get(result['eventTypeId'], result['eventTypeId']),
+                          'event': event_types.get(result['eventTypeId'], result['eventTypeId']),
+                          'event_type': result['event'].upper(),
                           'event_code': result['eventCode'],
                           'description': result['description'].upper(),
                           'event_team': event_team.get('triCode', ''), 
                           'event_team_name': unidecode(event_team.get('name', '').upper()),
-                          'x_coords': float(coordinates.get('x', np.nan)),
-                          'y_coords': float(coordinates.get('y', np.nan)),
+                          'coords_x': float(coordinates.get('x', np.nan)),
+                          'coords_y': float(coordinates.get('y', np.nan)),
                           'home': home,
                           'home_score': int(about['goals']['home']),
                           'away_score': int(about['goals']['away']),
@@ -3383,7 +3397,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
             
             if players is not None:
                 
-                if play['event_type'] == 'BLOCK' and players[1]['playerType'].upper() == 'BLOCKER':
+                if play['event'] == 'BLOCK' and players[1]['playerType'].upper() == 'BLOCKER':
                     
                     players[0], players[1] = players[1], players[0]
                     
@@ -3399,7 +3413,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
                         play['event_team_name'] = game_info['home_team_name']
                         
-                if play['event_type'] == 'FAC' and players[1]['playerType'].upper() == 'WINNER':
+                if play['event'] == 'FAC' and players[1]['playerType'].upper() == 'WINNER':
                     
                     players[0], players[1] = players[1], players[0]
                     
@@ -3415,7 +3429,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
                         play['event_team_name'] = game_info['home_team_name']
                         
-                if play['event_type'] == 'PENL' and 'too many men' in play['description'].lower():
+                if play['event'] == 'PENL' and 'too many men' in play['description'].lower():
                     
                     players.append(players[0].copy())
                     
@@ -3456,7 +3470,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
             delete_list = ['result', 'about', 'coordinates', 'team', 'players']
             
             
-            if play['event_type'] == 'PSTR' and play['period'] == 1:
+            if play['event'] == 'PSTR' and play['period'] == 1:
                 
                 game_start = play['event_dt']
             
@@ -3480,7 +3494,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
             
             other_events = [x for x in game_list
                             if x != event
-                            and x['event_type'] == event['event_type']
+                            and x['event'] == event['event']
                             and x['game_seconds'] == event['game_seconds']
                             and x.get('player_1_api_id') is not None
                             and x['period'] == event['period']
@@ -3530,7 +3544,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
         df = pd.DataFrame(events_data)
 
-        columns = ['season', 'game_id', 'session', 'game_date', 'event_team', 'event_team_name',
+        columns = ['season', 'session', 'game_id', 'game_date', 'event_team', 'event_team_name',
                        'event_idx', 'period', 'period_time', 'period_seconds', 'game_seconds',
                        'event', 'event_type',  'description', 'coords_x', 'coords_y', 'event_dt',
                        'home_score', 'away_score', 'player_1', 'player_1_api_id', 'player_1_eh_id',
@@ -3557,7 +3571,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 ## []Refactored
 ## []Docstring
 ## []Comments
-def scrape_html_events(game_ids, disable_print = False, game_data = None, roster_data = None, session = None):
+def scrape_html_events(game_ids, roster_data = None, session = None, nested = True):
     '''
     Scrapes the event data from the HTML endpoint. Returns a dataframe.
 
@@ -3580,25 +3594,28 @@ def scrape_html_events(game_ids, disable_print = False, game_data = None, roster
         When using in another scrape function, can pass the requests session to improve speed
     '''    
     
-    ## TO DO:
-    ## 1. Flip faceoff players so winner is always event_player_1
-    ## 2. Penalty players
-    
     ## IMPORTANT LISTS AND DICTIONARIES
-    NEW_TEAMS_DICT = {'L.A': 'LAK', 'N.J': 'NJD', 'S.J': 'SJS', 'T.B': 'TBL', 'PHX': 'ARI'}
-    EVENT_LIST = ['GOAL', 'SHOT', 'MISS', 'BLOCK', 'FAC', 'HIT', 'GIVE', 'TAKE', 'PENL', 'CHANGE']
-    FENWICK_EVENTS = ["SHOT", "GOAL", "MISS"]
-    CORSI_EVENTS = ["SHOT", "GOAL", "MISS", "BLOCK"]
-    #even_strength = ["5v5", "4v4", "3v3"]
-    #uneven_strength = ["5v4", "4v5", "5v3", "3v5", "4v3", "3v4", "5vE", "Ev5", "4vE", "Ev4", "3vE", "Ev3"]
-    #pp_strength = ["5v4", "4v5", "5v3", "3v5", "4v3", "3v4"]
-    #empty_net = ["5vE", "Ev5", "4vE", "Ev4", "3vE", "Ev3"]
+    NEW_TEAM_NAMES = {'L.A': 'LAK', 'N.J': 'NJD', 'S.J': 'SJS', 'T.B': 'TBL', 'PHX': 'ARI'}
+
+    ## Compiling regex expressions to save time later
+        
+    event_team_re = re.compile('^([A-Z]{3}|[A-Z]\.[A-Z])')
+    numbers_re = re.compile('#([0-9]{1,2})')
+    event_players_re = re.compile('([A-Z]{3}\s+\#[0-9]{1,2})')
+    positions_re = re.compile('([A-Z]{1,2})')
+    fo_team_re = re.compile('([A-Z]{3}) WON')
+    block_team_re = re.compile('BLOCKED BY\s+([A-Z]{3})')
+    skaters_re = re.compile(r'(\d+)')
+    zone_re = re.compile(r'([A-Za-z]{3}). ZONE')
+    penalty_re = re.compile('([A-Za-z]*|[A-Za-z]*-[A-Za-z]*|[A-Za-z]*\s+\(.*\))\s*\(')
+    penalty_length_re = re.compile('(\d+) MIN')
+    shot_re = re.compile(',\s+([A-za-z]*|[A-za-z]*-[A-za-z]*),')
+    distance_re = re.compile('(\d+) FT')
+    served_re = re.compile('([A-Z]{3}).*#([0-9]+)')
+    served_drawn_re = re.compile('([A-Z]{3})\s#.*\sSERVED BY: #([0-9]+)')
     
     ## Convert game IDs to list if given a single game ID
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
-    
-    ## Important lists
-    BIG_LIST = []
     
     if session == None:
     
@@ -3607,71 +3624,26 @@ def scrape_html_events(game_ids, disable_print = False, game_data = None, roster
     else:
         
         s = session
+
+    games_dict = {}
         
-    pbar = tqdm(game_ids, disable = disable_print)
+    pbar = tqdm(game_ids, disable = nested)
 
     for game_id in pbar:
         
-        if game_data is None:
-            
-            game_info = scrape_game_info(game_id, disable_print = True, session = s)
-            
-        else:
-            
-            game_info = game_data[game_data.game_id == game_id]
+        season, game_session, html_id = game_id_info(game_id, html_id = True)
             
         if roster_data is None:
             
-            roster = scrape_html_roster(game_id, disable_print = True, session = s)
+            roster = scrape_html_roster(game_id, session = s, nested = True)[game_id]
             
         else:
             
-            roster = roster_data[roster_data.game_id == game_id]
-            
-        season = str(game_id)[:4] + str(int(str(game_id)[:4]) + 1)
-        
-        conds_dict = {str(game_id)[4:6] == '01': 'PR', str(game_id)[4:6] == '02': 'R', str(game_id)[4:6] == '03': 'P'}
-            
-        for condition, value in conds_dict.items():
+            roster = roster_data[game_id]
 
-            if condition:
+        actives = {player['team_jersey']: player for player in roster if player['status'] == 'ACTIVE'}
 
-                session = value
-
-        ## THE BELOW ARE IMPORTANT DICTIONARIES AND LISTS OF INFORMATION COLLECTED FROM THE GAME INFO AND ROSTERS ENDPOINTS
-        
-        ## Dictionary with the full team name as keys with 'home' or 'away' as values
-        TEAMS_DICT = dict(zip(game_info.team_name, game_info.status)) 
-
-        ## Dictionary with 'home' or 'away' as keys as the full team name as values
-        TEAMS_DICT_REV = dict(zip(game_info.status, game_info.team_name)) 
-
-        ## Dictionary with the full team name as keys with 'home' or 'away' as values
-        TEAMS_DICT_SHORT = dict(zip(game_info.team_tri_code, game_info.status))
-        
-        ## Dictionary with 'home' or 'away' as keys as the full team name as values
-        TEAMS_DICT_SHORT_REV = dict(zip(game_info.status, game_info.team_tri_code))
-
-        ## Team names
-        HOME_TEAM_NAME = TEAMS_DICT_REV['home']
-        HOME_TEAM_NAME_SHORT = TEAMS_DICT_SHORT_REV['home']
-
-        AWAY_TEAM_NAME = TEAMS_DICT_REV['away']
-        AWAY_TEAM_NAME_SHORT = TEAMS_DICT_SHORT_REV['away']
-        
-        ## Roster stuff
-        
-        roster = roster[roster.player_status != 'scratch']
-        
-        PLAYER_NAMES = dict(zip(roster.player_abbr, roster.player_name))
-        PLAYER_API_NAMES = dict(zip(roster.player_abbr, roster.api_name))
-
-        ## Game type, either regular season or playoffs
-        GAME_SESSION = game_info.game_type.iloc[0]
-            
-        html_season_id, html_game_id = convert_ids(game_id)
-
-        url = f'http://www.nhl.com/scores/htmlreports/{html_season_id}/PL0{html_game_id}.HTM'
+        url = f'http://www.nhl.com/scores/htmlreports/{season}/PL{html_id}.HTM'
 
         response = s.get(url)
 
@@ -3698,15 +3670,15 @@ def scrape_html_events(game_ids, disable_print = False, game_data = None, roster
         tds = soup.find_all("td", {"class": re.compile('.*bborder.*')})
 
         events_data = hs_strip_html(tds)
-        
-        events_data = [unidecode.unidecode(x).replace('\n ', ', ').replace('\n', '') for x in events_data]
-        
-        length = int(len(events_data) / 8)
-        
-        events_data = np.array(events_data).reshape(length, 8)
 
+        events_data = [unidecode(x).replace('\n ', ', ').replace('\n', '') for x in events_data]
+
+        length = int(len(events_data) / 8)
+
+        events_data = np.array(events_data).reshape(length, 8)
+        
         for idx, event in enumerate(events_data):
-            
+                
             column_names = ['event_idx', 'period', 'strength', 'time', 'event', 'description', 'away_skaters', 'home_skaters']
 
             if '#' in event:
@@ -3716,60 +3688,25 @@ def scrape_html_events(game_ids, disable_print = False, game_data = None, roster
             else:
 
                 event = dict(zip(column_names, event))
+                
+                new_values = {'season': season,
+                              'session': game_session,
+                              'game_id': game_id,
+                              'event_idx': int(event['event_idx']),
+                              'description': unidecode(event['description']).upper(),
+                              'period': int(event['period']),
+                         }
+            
+                event.update(new_values)
 
                 events.append(event)
-                
-        ## Writing regex expression
-        
-        event_team_re = re.compile('^([A-Z]{3}|[A-Z]\.[A-Z])')
-        numbers_re = re.compile('#([0-9]{1,2})')
-        event_players_re = re.compile('([A-Z]{3}\s+\#[0-9]{1,2})')
-        positions_re = re.compile('([A-Z]{1,2})')
-        skaters_re = re.compile(r'(\d+)')
-        zone_re = re.compile(r'([A-Za-z]{3}). Zone')
-        penalty_re = re.compile('([A-Za-z]*|[A-Za-z]*-[A-Za-z]*|[A-Za-z]*\s+\(.*\))\s*\(')
-        penalty_l_re = re.compile('(\d+) min')
-        shot_re = re.compile(',\s+([A-za-z]*|[A-za-z]*-[A-za-z]*),')
-        distance_re = re.compile('(\d+) ft')
-        served_re = re.compile('([A-Z]{3}).*#([0-9]+)')
-        served_drawn_re = re.compile('([A-Z]{3})\s#.*\sServed By: #([0-9]+)')
-        
+
         for event in events:
             
-            event['season'] = season
+            for old_name, new_name in NEW_TEAM_NAMES.items():
             
-            event['game_id'] = game_id
-            
-            event['session'] = session
-            
-            for team_type, team_name in TEAMS_DICT_REV.items():
-
-                event[team_type + '_team'] = team_name
-
-                event[team_type + '_team_abbr'] = TEAMS_DICT_SHORT_REV[team_type]
+                event['description'] = event['description'].replace(old_name, new_name).upper()
                 
-            og_time = event['time']
-
-            time_split = event['time'].split(':')
-
-            event['period_time'] = time_split[0].zfill(2) + ':' + time_split[1][:2]
-            
-            event['period'] = int(event['period'])
-            
-            event['period_seconds'] = (60 * int(event['period_time'].split(':')[0])) + int(event['period_time'].split(':')[1])
-            
-            if event['period'] == 5 and GAME_SESSION == 'R':
-                
-                event['game_seconds'] = 3900 + event['period_seconds']
-             
-            else:
-                
-                event['game_seconds'] = (int(event['period']) - 1) * 1200 + event['period_seconds']
-                
-            for old_name, new_name in NEW_TEAMS_DICT.items():
-
-                event['description'] = event['description'].replace(old_name, new_name)
-
             if game_id == 2012020018:
 
                 bad_names = {'EDM #9': 'VAN #9', 'VAN #93': 'EDM #93', 'VAN #94': 'EDM #94'}
@@ -3778,166 +3715,199 @@ def scrape_html_events(game_ids, disable_print = False, game_data = None, roster
 
                     event['description'] = event['description'].replace(bad_name, good_name)
 
-            if game_id == 2018021133:
+                if game_id == 2018021133:
 
-                event['description'] = event['description'].replace('WSH TAKEAWAY - #71 CIRELLI', 'TBL TAKEAWAY - #71 CIRELLI')
-                
-            if event['event'] != 'STOP':
-                
-                try:
-                
-                    event['event_team'] = re.search(event_team_re, event['description']).group(1)
-                
-                except AttributeError:
+                    event['description'] = event['description'].replace('WSH TAKEAWAY - #71 CIRELLI', 'TBL TAKEAWAY - #71 CIRELLI')
                     
+            if event['event'] != 'STOP':
+                    
+                try:
+
+                    event['event_team'] = re.search(event_team_re, event['description']).group(1)
+
+                except AttributeError:
+
                     continue
                     
-            columns = ['event_team', 'home_team_abbr', 'away_team_abbr']
-            
-            columns = [x for x in columns if x in event.keys()]
+            if event['event'] == 'FAC':
+                
+                event['event_team'] = re.search(fo_team_re, event['description']).group(1)
 
-            for col in columns:
+            if event['event'] == 'BLOCK' and 'BLOCKED BY' in event['description']:
 
-                event[col] = NEW_TEAMS_DICT.get(event[col], event[col])
+                event['event_team'] = re.search(block_team_re, event['description']).group(1)
+                
+            og_time = event['time']
+
+            time_split = event['time'].split(':')
+
+            event['period_time'] = time_split[0].zfill(2) + ':' + time_split[1][:2]
+
+            event['period_seconds'] = (60 * int(event['period_time'].split(':')[0])) + int(event['period_time'].split(':')[1])
+
+            if event['period'] == 5 and game_session == 'R':
+
+                event['game_seconds'] = 3900 + event['period_seconds']
+
+            else:
+
+                event['game_seconds'] = (int(event['period']) - 1) * 1200 + event['period_seconds']
                 
             event_list = ['GOAL', 'SHOT', 'TAKE', 'GIVE']
-                
-            if event['event'] in event_list:
-                
-                event_players = [event['event_team'] + num for num in re.findall(numbers_re, event['description'])]
-                
-            else:
-                
-                event_players = re.findall(event_players_re, event['description'])
-                
-                if event['event'] == 'FAC' and event['event_team'] == event['home_team_abbr']:
                     
-                    event_players.reverse()
-            
+            if event['event'] in event_list:
+
+                event_players = [event['event_team'] + num for num in re.findall(numbers_re, event['description'])]
+
+            else:
+
+                event_players = re.findall(event_players_re, event['description'])
+
+            if event['event'] == 'FAC' and event['event_team'] not in event_players[0]:
+
+                event_players[0], event_players[1] = event_players[1], event_players[0]
+
+            if event['event'] == 'BLOCK' and event['event_team'] not in event_players[0]:
+
+                event_players[0], event_players[1] = event_players[1], event_players[0]
+
             for idx, event_player in enumerate(event_players):
-                
+
                 num = idx + 1
                 
-                event[f'event_player_{num}'] = PLAYER_NAMES[event_player.replace(' #', '')]
+                event_player = event_player.replace(' #', '')
                 
-                event[f'event_player_{num}_api'] = PLAYER_API_NAMES[event_player.replace(' #', '')]
+                player_name = actives[event_player]['player_name']
                 
-            teams_l = ['home', 'away']
-            
-            for team in teams_l:
+                eh_id = actives[event_player]['eh_id']
                 
-                if event['event'].upper() == 'PSTR':
-                    
-                    event[f'{team}_skaters'] = np.nan
-                    
-                    event[f'{team}_positions'] = np.nan
-                    
-                else:
+                new_values = {f'player_{num}': player_name,
+                              f'player_{num}_eh_id': eh_id
+                             }
                 
-                    event[f'{team}_positions'] = re.findall(positions_re, str(event[f'{team}_skaters']))
-
-                    skaters = re.findall(skaters_re, str(event[f'{team}_skaters']))
-
-                    event[f'{team}_skaters'] = [event[f'{team}_team_abbr'] + str(x) for x in skaters]
-            
+                event.update(new_values)
+                
             try:
-                
+
                 event['zone'] = re.search(zone_re, event['description']).group(1).upper()
-                
+
             except AttributeError:
-                
+
                 continue
-                
+
             penalty_events = ['PENL', 'DELPEN'] 
-                
+
             if event['event'] in penalty_events:
-                
-                if 'team' in event['description'].lower() and 'served by' in event['description'].lower():
-                    
-                    event['event_player_1'] = 'BENCH'
-                    
-                    event['event_player_1_api'] = 'BENCH'
-                    
+
+                if 'TEAM' in event['description'] and 'SERVED BY' in event['description']:
+
+                    event['player_1'] = 'BENCH'
+
+                    event['player_1_eh_id'] = 'BENCH'
+
                     try:
-                    
+
                         served_by = re.search(served_re, event['description'])
-                    
+
                         served_name = served_by.group(1) + str(served_by.group(2))
-                        
-                        event[f'event_player_2'] = PLAYER_NAMES[served_name]
-                
-                        event[f'event_player_2_api'] = PLAYER_API_NAMES[served_name]
-                        
+
+                        event[f'player_2'] = actives[served_name]['player_name']
+
+                        event[f'player_2_eh_id'] = actives[served_name]['eh_id']
+
                     except AttributeError:
-                        
+
                         continue
-                        
-                if 'served by' in event['description'].lower() and 'drawn by' in event['description'].lower():
-                    
+
+                if 'SERVED BY' in event['description'] and 'DRAWN BY' in event['description']:
+
                     try:
-                    
+
                         served_by = re.search(served_drawn_re, event['description'])
-                    
+
                         served_name = served_by.group(1) + str(served_by.group(2))
-                        
-                        event[f'event_player_3'] = PLAYER_NAMES[served_name]
-                
-                        event[f'event_player_3_api'] = PLAYER_API_NAMES[served_name]
-                        
+
+                        event[f'player_3'] = actives[served_name]['player_name']
+
+                        event[f'player_3_eh_id'] = actives[served_name]['eh_id']
+
                     except AttributeError:
-                        
+
                         continue
-                
-                event['penalty'] = re.search(penalty_re, event['description']).group(1).upper()
-                
-                event['penalty_length'] = int(re.search(penalty_l_re, event['description']).group(1))
-                
-            shot_events = ['GOAL', 'SHOT', 'MISS', 'BLOCK']
-            
-            if event['event'] in shot_events:
-                
+                        
                 try:
-                
-                    event['shot_type'] = re.search(shot_re, event['description']).group(1).upper()
+
+                    event['penalty'] = re.search(penalty_re, event['description']).group(1).upper()
                     
                 except AttributeError:
-                
+                    
                     continue
                 
+                if 'INTERFERENCE ON GOALKEEPER' in event['description']:
+                    
+                    event['penalty'] = 'GOALKEEPER INTERFERENCE'
+
+                event['penalty_length'] = int(re.search(penalty_length_re, event['description']).group(1))
+
+            shot_events = ['GOAL', 'SHOT', 'MISS', 'BLOCK']
+
+            if event['event'] in shot_events:
+
+                try:
+
+                    event['shot_type'] = re.search(shot_re, event['description']).group(1).upper()
+
+                except AttributeError:
+
+                    continue
+
             try:
-                
+
                 event['event_distance'] = int(re.search(distance_re, event['description']).group(1))
-                
+
             except AttributeError:
-                
+
                 continue
+
+        events = sorted(events, key = lambda k: (k['event_idx']))
                 
-        events_df = pd.DataFrame(events)
-                
-        BIG_LIST.append(events_df)
+        for event in events:
+
+            if 'version' not in event.keys():
+
+                other_events = [x for x in events
+                                if x != event
+                                and x['event'] == event['event']
+                                and x['game_seconds'] == event['game_seconds']
+                                and x['period'] == event['period']
+                                and x.get('player_1_eh_id') is not None
+                                and event.get('player_1_eh_id') is not None
+                                and x['player_1_eh_id'] == event['player_1_eh_id']
+                             ]
+
+                version = 1
+
+                event['version'] = version
+
+                if len(other_events) > 0:
+
+                    for idx, other_event in enumerate(other_events):
+
+                        if 'version' not in other_event.keys():
+
+                            version += 1
+
+                            other_event['version'] = version
+
+        games_dict.update({game_id: events})
                 
         if game_id == game_ids[-1]:
             
             pbar.set_description(f'Finished scraping events data from the HTML endpoint')
             
-            events_df = pd.concat(BIG_LIST, ignore_index = True)
-            
-            group_list = ['game_id', 'period', 'game_seconds', 'event_team', 'event', 'event_player_1']
-            
-            events_df['version'] = events_df[~pd.isna(events_df.event_player_1)].groupby(group_list).transform('cumcount') + 1
-            
-            events_df.version = events_df.version.fillna(1)
-            
-            columns = ['season', 'game_id', 'session', 'event_idx', 'period', 'period_seconds', 'game_seconds',
-                       'strength', 'period_time', 'event',
-                       'description', 'away_skaters', 'home_skaters', 'home_team', 'home_team_abbr',
-                       'away_team', 'away_team_abbr', 'event_team', 'event_player_1', 'event_player_1_api',
-                       'event_player_2', 'event_player_2_api', 'event_player_3', 'event_player_3_api', 'home_positions',
-                       'away_positions', 'zone', 'distance', 'shot_type', 'penalty', 'penalty_length', 'version']
-            
-            columns = [x for x in columns if x in events_df.columns]
-            
-            events_df = events_df[columns]
+            if nested == False:
+
+                s.close()
 
         else:
 
@@ -3950,8 +3920,32 @@ def scrape_html_events(game_ids, disable_print = False, game_data = None, roster
         postfix_str = f'{current_time}'
 
         pbar.set_postfix_str(postfix_str)
-                
-    return events_df
+
+    if nested == False:
+
+        events_data = [event for events in games_dict.values() for event in events]
+
+        df = pd.DataFrame(events_data)
+
+        columns = ['season', 'session', 'game_id', 'event_team', 'event_idx', 
+                    'period', 'period_time', 'period_seconds', 'game_seconds',
+                    'event', 'description', 'strength', 'zone', 'player_1',
+                    'player_1_eh_id', 'player_2', 'player_2_eh_id', 'player_3',
+                    'player_3_eh_id', 'event_distance', 'shot_type', 'penalty',
+                    'penalty_length', 'version']
+
+        column_order = [x for x in columns if x in df.columns]
+
+        df = df[column_order]
+
+        df = df.replace('', np.nan)
+
+        return df
+
+    else:
+
+        return games_dict
+
 
 
 
