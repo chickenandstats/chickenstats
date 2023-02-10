@@ -12,6 +12,24 @@
 
 # 1. Ensure correct data types are returned by each scraper
 # 2. QC names against Evolving Hockey to ensure EH IDs match
+# 3. QC everything over the years
+
+## Changes
+    # 1. Add event types and descriptions
+    # 2. Add version columns
+    # 3. Ensure dictionary keys are returned in the correct order
+    # 4. Change time column to 0:00 format
+
+## API events
+    # 1. Confirm which events and columns I want to keep - pretty close on this
+    # 2. Ensure dictionary keys are returned in the correct order
+    # 3. Add home and away columns
+
+## HTML events
+    # 1. Add the time columns where necessary
+    # 2. Ensure dictionary keys are returned in the correct order
+    # 3. Change time column to 0:00 format
+    # 4. Fix away skaters and home skaters columns
 
 ############################################## Dependencies ##############################################
 
@@ -1997,7 +2015,7 @@ def scrape_html_roster(game_ids, session = None, nested = True):
 ## [x]Refactored
 ## [x]Docstring
 ## [x]Comments
-def scrape_html_shifts(game_ids, roster_data = None, session = None, nested = True):
+def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
     
     '''
 
@@ -2664,7 +2682,7 @@ def scrape_html_shifts(game_ids, roster_data = None, session = None, nested = Tr
 ## [x]Refactored
 ## [x]Docstring
 ## []Comments
-def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, session = None, nested = True):
+def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = None, nested = True):
     
     '''
 
@@ -2888,29 +2906,13 @@ def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, sessio
             
         if shifts_data is None:
             
-            shifts = scrape_html_shifts(game_id, roster_data = roster_data, session = s, nested = True)[game_id]
+            shifts = scrape_shifts(game_id, roster_data = roster_data, session = s, nested = True)[game_id]
             
         else:
             
             shifts = shifts_data[game_id].copy(deep = True)
 
-        year = int(str(game_id)[0:4])
-
-        season = int(f'{year}{year + 1}')
-
-        game_session = str(game_id)[4:6]
-
-        if game_session == '01': 
-            
-            game_session = 'PR'
-            
-        if game_session == '02':
-            
-            game_session = 'R'
-            
-        if game_session == '03':
-            
-            game_session = 'P'
+        season, game_session = game_id_info(game_id)
 
         game_list = []
 
@@ -2968,8 +2970,8 @@ def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, sessio
                     new_values = {'season': season,
                                   'session': game_session,
                                   'game_id': game_id,
-                                  'team_name': players_on[0]['team_name'],
-                                  'team': players_on[0]['team'],
+                                  'event': 'CHANGE',
+                                  'event_team': players_on[0]['team'],
                                   'home': players_on[0]['home'],
                                   'away': players_on[0]['away'],
                                   'team_venue': team,
@@ -2978,35 +2980,35 @@ def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, sessio
                                   'period_seconds': players_on[0]['start_time_seconds'],
                                   'number_on': len(players_on),
                                   'number_off': 0,
-                                  'players_on': tuple([x['team_jersey'] for x in players_on]),
-                                  'players_on_names': tuple([x['player_name'] for x in players_on]),
-                                  'players_on_eh_id': tuple([x['eh_id'] for x in players_on]),
-                                  'players_on_positions': tuple([x['position'] for x in players_on]),
+                                  'players_on': [x['team_jersey'] for x in players_on],
+                                  'players_on_names': [x['player_name'] for x in players_on],
+                                  'players_on_eh_id': [x['eh_id'] for x in players_on],
+                                  'players_on_positions': [x['position'] for x in players_on],
                                   'players_off': '',
                                   'players_off_names': '',
                                   'players_off_eh_id': '',
                                   'players_off_positions': '',
                                   'number_on_forwards': len(forwards_on),
                                   'number_off_forwards': 0,
-                                  'forwards_on': tuple([x['team_jersey'] for x in forwards_on]),
-                                  'forwards_on_names': tuple([x['player_name'] for x in forwards_on]),
-                                  'forwards_on_eh_id': tuple( [x['eh_id'] for x in forwards_on]),
+                                  'forwards_on': [x['team_jersey'] for x in forwards_on],
+                                  'forwards_on_names': [x['player_name'] for x in forwards_on],
+                                  'forwards_on_eh_id': [x['eh_id'] for x in forwards_on],
                                   'forwards_off': '',
                                   'forwards_off_names': '',
                                   'forwards_off_eh_id': '',
                                   'number_on_defense': len(defense_on),
                                   'number_off_defense': 0,
-                                  'defense_on': tuple([x['team_jersey'] for x in defense_on]),
-                                  'defense_on_names': tuple([x['player_name'] for x in defense_on]),
-                                  'defense_on_eh_id': tuple([x['eh_id'] for x in defense_on]),
+                                  'defense_on': [x['team_jersey'] for x in defense_on],
+                                  'defense_on_names': [x['player_name'] for x in defense_on],
+                                  'defense_on_eh_id': [x['eh_id'] for x in defense_on],
                                   'defense_off': '',
                                   'defense_off_names': '',
                                   'defense_off_eh_id': '',
                                   'number_on_goalies': len(goalies_on),
                                   'number_off_goalies': 0,
-                                  'goalies_on': tuple([x['team_jersey'] for x in goalies_on]),
-                                  'goalies_on_names': tuple([x['player_name'] for x in goalies_on]),
-                                  'goalies_on_eh_id': tuple([x['eh_id'] for x in goalies_on]),
+                                  'goalies_on': [x['team_jersey'] for x in goalies_on],
+                                  'goalies_on_names': [x['player_name'] for x in goalies_on],
+                                  'goalies_on_eh_id': [x['eh_id'] for x in goalies_on],
                                   'goalies_off': '',
                                   'goalies_off_names': '',
                                   'goalies_off_eh_id': '',
@@ -3056,8 +3058,9 @@ def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, sessio
                     new_values = {'season': season,
                                   'session': game_session,
                                   'game_id': game_id,
-                                  'team_name': players_off[0]['team_name'],
-                                  'team': players_off[0]['team'],
+                                  'event': 'CHANGE',
+                                  'event_team': players_on[0]['team'],
+                                  'event_team': players_off[0]['team'],
                                   'team_venue': team,
                                   'home': players_off[0]['home'],
                                   'away': players_off[0]['away'],
@@ -3065,22 +3068,22 @@ def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, sessio
                                   'period_time': players_off[0]['end_time'],
                                   'period_seconds': players_off[0]['end_time_seconds'],
                                   'number_off': len(players_off),
-                                  'players_off': tuple([x['team_jersey'] for x in players_off]),
-                                  'players_off_names': tuple([x['player_name'] for x in players_off]),
-                                  'players_off_eh_id': tuple([x['eh_id'] for x in players_off]),
-                                  'players_off_positions': tuple([x['position'] for x in players_off]),
+                                  'players_off': [x['team_jersey'] for x in players_off],
+                                  'players_off_names': [x['player_name'] for x in players_off],
+                                  'players_off_eh_id': [x['eh_id'] for x in players_off],
+                                  'players_off_positions': [x['position'] for x in players_off],
                                   'number_off_forwards': len(forwards_off),
-                                  'forwards_off': tuple([x['team_jersey'] for x in forwards_off]),
-                                  'forwards_off_names': tuple([x['player_name'] for x in forwards_off]),
-                                  'forwards_off_eh_id': tuple([x['eh_id'] for x in forwards_off]),
+                                  'forwards_off': [x['team_jersey'] for x in forwards_off],
+                                  'forwards_off_names': [x['player_name'] for x in forwards_off],
+                                  'forwards_off_eh_id': [x['eh_id'] for x in forwards_off],
                                   'number_off_defense': len(defense_off),
-                                  'defense_off': tuple([x['team_jersey'] for x in defense_off]),
-                                  'defense_off_names': tuple([x['player_name'] for x in defense_off]),
-                                  'defense_off_eh_id': tuple([x['eh_id'] for x in defense_off]),
+                                  'defense_off': [x['team_jersey'] for x in defense_off],
+                                  'defense_off_names': [x['player_name'] for x in defense_off],
+                                  'defense_off_eh_id': [x['eh_id'] for x in defense_off],
                                   'number_off_goalies': len(goalies_off),
-                                  'goalies_off': tuple([x['team_jersey'] for x in goalies_off]),
-                                  'goalies_off_names': tuple([x['player_name'] for x in goalies_off]),
-                                  'goalies_off_eh_id': tuple([x['eh_id'] for x in goalies_off]),
+                                  'goalies_off': [x['team_jersey'] for x in goalies_off],
+                                  'goalies_off_names': [x['player_name'] for x in goalies_off],
+                                  'goalies_off_eh_id': [x['eh_id'] for x in goalies_off],
                                  }
                     
                     if change_off in changes_on:
@@ -3097,9 +3100,47 @@ def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, sessio
                         changes_dict[change_off] = new_values
                     
                 game_list.extend(list(changes_dict.values()))
-            
+
         game_list = sorted(game_list, key = lambda k: (k['period'], k['period_seconds'], k['away']))
 
+        for change in game_list:
+
+            players_on = ', '.join(change.get('players_on_names', []))
+
+            players_off = ', '.join(change.get('players_off_names', []))
+
+            on_num = len(change.get('players_on_names', []))
+
+            off_num = len(change.get('players_off_names', []))
+
+            if  on_num > 0 and off_num > 0:
+
+                change['description'] = f"PLAYERS ON: {players_on} / PLAYERS OFF: {players_off}"
+
+            if on_num > 0 and off_num == 0:
+
+                 change['description'] = f"PLAYERS ON: {players_on}"
+
+            if off_num > 0 and on_num == 0:
+
+                change['description'] = f"PLAYERS OFF: {players_off}"
+
+            if change['period'] == 5 and game_session == 'R':
+
+                change['game_seconds'] = 3900 + change['period_seconds']
+
+            else:
+
+                change['game_seconds'] = (int(change['period']) - 1) * 1200 + change['period_seconds']
+
+            if change['home'] == 1:
+
+                change['event_type'] = 'HOME CHANGE'
+
+            else:
+
+                change['event_type'] = 'AWAY CHANGE'
+            
         games_dict.update({game_id: game_list})
 
         if game_id == game_ids[-1]:
@@ -3126,7 +3167,7 @@ def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, sessio
 
         changes_data = [change for changes in games_dict.values() for change in changes]
 
-        tuple_fields = ['players_on', 'players_off', 'players_on_names', 'players_off_names',
+        list_fields = ['players_on', 'players_off', 'players_on_names', 'players_off_names',
                         'players_on_eh_id', 'players_off_eh_id', 'players_on_positions',
                         'players_off_positions', 'forwards_on', 'forwards_off', 'forwards_on_names',
                         'forwards_off_names', 'forwards_on_eh_id', 'forwards_off_eh_id', 'defense_on',
@@ -3136,9 +3177,9 @@ def scrape_html_changes(game_ids, roster_data = None, shifts_data = None, sessio
 
         for change in changes_data:
 
-            for tuple_field in tuple_fields:
+            for list_field in list_fields:
 
-                change[tuple_field] = ', '.join(change.get(tuple_field, ''))
+                change[list_field] = ', '.join(change.get(list_field, ''))
 
         df = pd.DataFrame(changes_data)
 
@@ -3741,7 +3782,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
             time_split = event['time'].split(':')
 
-            event['period_time'] = time_split[0].zfill(2) + ':' + time_split[1][:2]
+            event['period_time'] = time_split[0] + ':' + time_split[1][:2]
 
             event['period_seconds'] = (60 * int(event['period_time'].split(':')[0])) + int(event['period_time'].split(':')[1])
 
@@ -3899,6 +3940,28 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
                             other_event['version'] = version
 
+        for event in events:
+
+            if 'period_seconds' not in event.keys():
+            
+                if 'time' in event.keys():
+                    
+                    time_split = event['time'].split(':')
+                    
+                    event['period_time'] = time_split[0] + ':' + time_split[1][:2]
+
+                    event['period_seconds'] = (60 * int(event['period_time'].split(':')[0])) + int(event['period_time'].split(':')[1])
+                    
+                    if event['period'] == 5 and event['session'] == 'R':
+
+                        event['game_seconds'] = 3900 + event['period_seconds']
+
+                    else:
+
+                        event['game_seconds'] = (int(event['period']) - 1) * 1200 + event['period_seconds']
+
+
+
         games_dict.update({game_id: events})
                 
         if game_id == game_ids[-1]:
@@ -3946,10 +4009,13 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
         return games_dict
 
+############################################## PBP functions ##############################################
+
+##
 
 
 
-
+## End
 
 
 
