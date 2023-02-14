@@ -1155,7 +1155,7 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
 ## [x]Refactored
 ## [x]Docstring
 ## [x]Comments
-def scrape_api_roster(game_ids, live_response = None, session = None, nested = True):
+def scrape_api_rosters(game_ids, live_response = None, session = None, nested = True):
     
     '''
 
@@ -1552,7 +1552,7 @@ def scrape_api_roster(game_ids, live_response = None, session = None, nested = T
 ## [x]Refactored
 ## [x]Docstring
 ## [x]Comments
-def scrape_html_roster(game_ids, session = None, nested = True):
+def scrape_html_rosters(game_ids, session = None, nested = True):
     
     '''
 
@@ -2085,7 +2085,7 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
         jersey: integer
             Player's jersey number, e.g., 9
 
-        shift_number: integer
+        shift_count: integer
             Cumulative number of shifts, e.g., 1
 
         period: integer
@@ -2156,7 +2156,7 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
             
         if roster_data is None:
             
-            roster = scrape_html_roster(game_id, session = s, nested = True)[game_id]
+            roster = scrape_html_rosters(game_id, session = s, nested = True)[game_id]
 
         ## If already exists, reuse roster data to prevent redundant hits
             
@@ -2292,7 +2292,7 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
 
                     ## Adding header values to the shift data
 
-                    headers = ['shift_number', 'period', 'shift_start', 'shift_end', 'duration']
+                    headers = ['shift_count', 'period', 'shift_start', 'shift_end', 'duration']
 
                     ## Creating a dictionary from the headers and the shift data
 
@@ -2311,7 +2311,7 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
                                   'team_jersey': f"{team_codes[team_name]}{shifts['jersey']}",
                                   'position': actives[f"{team_codes[team_name]}{shifts['jersey']}"]['position'],
                                   'jersey': int(shifts['jersey']),
-                                  'shift_number': int(shift_dict['shift_number']),
+                                  'shift_count': int(shift_dict['shift_count']),
                                   'shift_start': unidecode(shift_dict['shift_start']).strip(),
                                   'start_time': unidecode(shift_dict['shift_start']).strip().split('/', 1)[0],
                                   'shift_end': unidecode(shift_dict['shift_end']).strip(),
@@ -2620,7 +2620,7 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
 
         ## Sorting values
 
-        game_list = sorted(game_list, key = lambda k: (k['away'], k['goalie'], k['jersey'], k['shift_number']))
+        game_list = sorted(game_list, key = lambda k: (k['away'], k['goalie'], k['jersey'], k['shift_count']))
 
         ## Adding the game data to the dictionary that will eventually be returned
 
@@ -2662,7 +2662,7 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
 
         column_order = ['season', 'session', 'game_id', 'team', 'team_name', 'team_venue',
                         'player_name', 'eh_id', 'team_jersey', 'position', 'jersey',
-                        'shift_number', 'period', 'start_time', 'end_time', 'duration',
+                        'shift_count', 'period', 'start_time', 'end_time', 'duration',
                         'start_time_seconds', 'end_time_seconds', 'duration_seconds',
                         'shift_start', 'shift_end', 'goalie', 'home']
 
@@ -2979,40 +2979,40 @@ def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = N
                                   'period': period,
                                   'period_time': players_on[0]['start_time'],
                                   'period_seconds': players_on[0]['start_time_seconds'],
-                                  'number_on': len(players_on),
-                                  'number_off': 0,
-                                  'players_on': [x['team_jersey'] for x in players_on],
-                                  'players_on_names': [x['player_name'] for x in players_on],
-                                  'players_on_eh_id': [x['eh_id'] for x in players_on],
-                                  'players_on_positions': [x['position'] for x in players_on],
-                                  'players_off': '',
-                                  'players_off_names': '',
-                                  'players_off_eh_id': '',
-                                  'players_off_positions': '',
-                                  'number_on_forwards': len(forwards_on),
-                                  'number_off_forwards': 0,
-                                  'forwards_on': [x['team_jersey'] for x in forwards_on],
-                                  'forwards_on_names': [x['player_name'] for x in forwards_on],
-                                  'forwards_on_eh_id': [x['eh_id'] for x in forwards_on],
-                                  'forwards_off': '',
-                                  'forwards_off_names': '',
-                                  'forwards_off_eh_id': '',
-                                  'number_on_defense': len(defense_on),
-                                  'number_off_defense': 0,
-                                  'defense_on': [x['team_jersey'] for x in defense_on],
-                                  'defense_on_names': [x['player_name'] for x in defense_on],
-                                  'defense_on_eh_id': [x['eh_id'] for x in defense_on],
-                                  'defense_off': '',
-                                  'defense_off_names': '',
-                                  'defense_off_eh_id': '',
-                                  'number_on_goalies': len(goalies_on),
-                                  'number_off_goalies': 0,
-                                  'goalies_on': [x['team_jersey'] for x in goalies_on],
-                                  'goalies_on_names': [x['player_name'] for x in goalies_on],
-                                  'goalies_on_eh_id': [x['eh_id'] for x in goalies_on],
-                                  'goalies_off': '',
-                                  'goalies_off_names': '',
-                                  'goalies_off_eh_id': '',
+                                  'change_on_count': len(players_on),
+                                  'change_off_count': 0,
+                                  'change_on_jersey': [x['team_jersey'] for x in players_on],
+                                  'change_on': [x['player_name'] for x in players_on],
+                                  'change_on_id': [x['eh_id'] for x in players_on],
+                                  'change_on_positions': [x['position'] for x in players_on],
+                                  'change_off_jersey': '',
+                                  'change_off': '',
+                                  'change_off_id': '',
+                                  'change_off_positions': '',
+                                  'change_on_forwards_count': len(forwards_on),
+                                  'change_off_forwards_count': 0,
+                                  'change_on_forwards_jersey': [x['team_jersey'] for x in forwards_on],
+                                  'change_on_forwards': [x['player_name'] for x in forwards_on],
+                                  'change_on_forwards_id': [x['eh_id'] for x in forwards_on],
+                                  'change_off_forwards_jersey': '',
+                                  'change_off_forwards': '',
+                                  'change_off_forwards_id': '',
+                                  'change_on_defense_count': len(defense_on),
+                                  'change_off_defense_count': 0,
+                                  'change_on_defense_jersey': [x['team_jersey'] for x in defense_on],
+                                  'change_on_defense': [x['player_name'] for x in defense_on],
+                                  'change_on_defense_id': [x['eh_id'] for x in defense_on],
+                                  'change_off_defense_jersey': '',
+                                  'change_off_defense': '',
+                                  'change_off_defense_id': '',
+                                  'change_on_goalie_count': len(goalies_on),
+                                  'change_off_goalie_count': 0,
+                                  'change_on_goalie_jersey': [x['team_jersey'] for x in goalies_on],
+                                  'change_on_goalie': [x['player_name'] for x in goalies_on],
+                                  'change_on_goalie_id': [x['eh_id'] for x in goalies_on],
+                                  'change_off_goalie_jersey': '',
+                                  'change_off_goalie': '',
+                                  'change_off_goalie_id': '',
                                  }
                     
                     changes_dict.update({change_on: new_values})
@@ -3068,23 +3068,24 @@ def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = N
                                   'period': period,
                                   'period_time': players_off[0]['end_time'],
                                   'period_seconds': players_off[0]['end_time_seconds'],
-                                  'number_off': len(players_off),
-                                  'players_off': [x['team_jersey'] for x in players_off],
-                                  'players_off_names': [x['player_name'] for x in players_off],
-                                  'players_off_eh_id': [x['eh_id'] for x in players_off],
-                                  'players_off_positions': [x['position'] for x in players_off],
-                                  'number_off_forwards': len(forwards_off),
-                                  'forwards_off': [x['team_jersey'] for x in forwards_off],
-                                  'forwards_off_names': [x['player_name'] for x in forwards_off],
-                                  'forwards_off_eh_id': [x['eh_id'] for x in forwards_off],
-                                  'number_off_defense': len(defense_off),
-                                  'defense_off': [x['team_jersey'] for x in defense_off],
-                                  'defense_off_names': [x['player_name'] for x in defense_off],
-                                  'defense_off_eh_id': [x['eh_id'] for x in defense_off],
-                                  'number_off_goalies': len(goalies_off),
-                                  'goalies_off': [x['team_jersey'] for x in goalies_off],
-                                  'goalies_off_names': [x['player_name'] for x in goalies_off],
-                                  'goalies_off_eh_id': [x['eh_id'] for x in goalies_off],
+                                  'change_on_count': 0,
+                                  'change_off_count': len(players_off),
+                                  'change_off_jersey': [x['team_jersey'] for x in players_off],
+                                  'change_off': [x['player_name'] for x in players_off],
+                                  'change_off_id': [x['eh_id'] for x in players_off],
+                                  'change_off_positions': [x['position'] for x in players_off],
+                                  'change_off_forwards_count': len(forwards_off),
+                                  'change_off_forwards_jersey': [x['team_jersey'] for x in forwards_off],
+                                  'change_off_forwards': [x['player_name'] for x in forwards_off],
+                                  'change_off_forwards_id': [x['eh_id'] for x in forwards_off],
+                                  'change_off_defense_count': len(defense_off),
+                                  'change_off_defense_jersey': [x['team_jersey'] for x in defense_off],
+                                  'change_off_defense': [x['player_name'] for x in defense_off],
+                                  'change_off_defense_id': [x['eh_id'] for x in defense_off],
+                                  'change_off_goalie_count': len(goalies_off),
+                                  'change_off_goalie_jersey': [x['team_jersey'] for x in goalies_off],
+                                  'change_off_goalie': [x['player_name'] for x in goalies_off],
+                                  'change_off_goalie_id': [x['eh_id'] for x in goalies_off],
                                  }
                     
                     if change_off in changes_on:
@@ -3093,10 +3094,10 @@ def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = N
                         
                     else:
 
-                        new_values.update({'number_on': 0,
-                                            'number_on_forwards': 0,
-                                            'number_on_defense': 0,
-                                            'number_on_goalies': 0})
+                        new_values.update({'change_on_count': 0,
+                                            'change_on_forwards_count': 0,
+                                            'change_on_defense_count': 0,
+                                            'change_on_goalie_count': 0})
                         
                         changes_dict[change_off] = new_values
                     
@@ -3106,13 +3107,13 @@ def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = N
 
         for change in game_list:
 
-            players_on = ', '.join(change.get('players_on_names', []))
+            players_on = ', '.join(change.get('change_on', []))
 
-            players_off = ', '.join(change.get('players_off_names', []))
+            players_off = ', '.join(change.get('change_off', []))
 
-            on_num = len(change.get('players_on_names', []))
+            on_num = len(change.get('change_on', []))
 
-            off_num = len(change.get('players_off_names', []))
+            off_num = len(change.get('change_off', []))
 
             if  on_num > 0 and off_num > 0:
 
@@ -3284,16 +3285,14 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
     
     ## Important lists
     games_dict = {}
+        
+    if session == None:
     
-    if live_response == None:
+        s = s_session()
+    
+    else:
         
-        if session == None:
-        
-            s = s_session()
-        
-        else:
-            
-            s = session
+        s = session
     
     pbar = tqdm(game_ids, disable = nested)
     
@@ -3470,13 +3469,11 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
                         play['event_team_name'] = game_info['home_team_name']
                         
-                if play['event'] == 'PENL' and 'too many men' in play['description'].lower():
-                    
-                    players.append(players[0].copy())
-                    
-                    players[0]['fullName'] = 'BENCH'
-                    
-                    players[0]['id'] = 'BENCH'
+                if play['event'] == 'PENL' and 'too many men/ice' in play['description'].lower():
+
+                    players.insert(0, {'player': {'fullName': 'BENCH',
+                                                    'id': 'BENCH',},
+                                        'playerType': 'BENCH'})
                     
                     players[1]['playerType'] = 'SERVED BY'
                     
@@ -3492,13 +3489,13 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
                     play[f'player_{num}'] = correct_names_dict.get(play[f'player_{num}'], play[f'player_{num}'])
 
-                    play[f'player_{num}_api_id'] = int(player_data['id'])
+                    play[f'player_{num}_api_id'] = player_data['id']
 
                     if play[f'player_{num}'] != 'BENCH':
 
                         name_split = play[f'player_{num}'].split(' ', 1)
 
-                        play[f'player_{num}_eh_id'] = name_split[0].strip() + '.' + name_split[1].strip()
+                        play[f'player_{num}_eh_id'] = f'{name_split[0].strip()}.{name_split[1].strip()}'.replace('..', '.')
 
                         play[f'player_{num}_eh_id'] = correct_api_names_dict.get(play[f'player_{num}_api_id'], play[f'player_{num}_eh_id'])
 
@@ -3676,7 +3673,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
             
         if roster_data is None:
             
-            roster = scrape_html_roster(game_id, session = s, nested = True)[game_id]
+            roster = scrape_html_rosters(game_id, session = s, nested = True)[game_id]
             
         else:
             
@@ -3743,6 +3740,17 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                 events.append(event)
 
         for event in events:
+
+            non_descripts = {'PGSTR': 'PRE-GAME START',
+                                'PGEND': 'PRE-GAME END',
+                                'ANTHEM': 'NATIONAL ANTHEM',
+                                'EISTR': 'EARLY INTERMISSION START',
+                                'EIEND': 'EARLY INTERMISSION END'
+            }
+
+            if event['event'] in list(non_descripts.keys()):
+
+                event['description'] = non_descripts[event['event']]
             
             for old_name, new_name in NEW_TEAM_NAMES.items():
             
@@ -3759,8 +3767,10 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                 if game_id == 2018021133:
 
                     event['description'] = event['description'].replace('WSH TAKEAWAY - #71 CIRELLI', 'TBL TAKEAWAY - #71 CIRELLI')
+
+            non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND']
                     
-            if event['event'] != 'STOP':
+            if event['event'] not in non_team_events:
                     
                 try:
 
@@ -3910,6 +3920,10 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
                 continue
 
+            ## Adding event descriptions to events that don't have them
+
+            
+
         events = sorted(events, key = lambda k: (k['event_idx']))
                 
         for event in events:
@@ -3939,8 +3953,6 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                             version += 1
 
                             other_event['version'] = version
-
-        for event in events:
 
             if 'period_seconds' not in event.keys():
             
@@ -4014,7 +4026,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 ## []Refactored
 ## []Docstring
 ## []Comments
-def prep_pbp(game_id, html_events, api_events, changes, html_rosters):
+def prep_pbp(game_id, game_info, html_events, api_events, changes, html_rosters):
     '''
 
     --------- Info ---------
@@ -4065,6 +4077,7 @@ def prep_pbp(game_id, html_events, api_events, changes, html_rosters):
 
     game_list = []
 
+    game_info = game_info[game_id]
     html_events = html_events[game_id]
     api_events = api_events[game_id]
     changes = changes[game_id]
@@ -4072,31 +4085,9 @@ def prep_pbp(game_id, html_events, api_events, changes, html_rosters):
     
     for event in html_events:
         
-        if 'period_seconds' not in event.keys():
-            
-            if 'time' in event.keys():
-                
-                time_split = event['time'].split(':')
-                
-                event['period_time'] = time_split[0] + ':' + time_split[1][:2]
-
-                event['period_seconds'] = (60 * int(event['period_time'].split(':')[0])) + int(event['period_time'].split(':')[1])
-                
-                if event['period'] == 5 and event['session'] == 'R':
-
-                    event['game_seconds'] = 3900 + event['period_seconds']
-
-                else:
-
-                    event['game_seconds'] = (int(event['period']) - 1) * 1200 + event['period_seconds']
-        
         event_data = {}
         
         event_data.update(event)
-        
-        important_events = ['PSTR', 'GOAL', 'SHOT', 'MISS', 'BLOCK',
-                            'FAC', 'PENL', 'STOP', 'CHL', 
-                            'GIVE', 'HIT', 'TAKE', 'PEND', 'GEND', 'GOFF']
         
         api_matches = [x for x in api_events if x['event'] == event['event']
                        and x['period'] == event['period']
@@ -4140,6 +4131,26 @@ def prep_pbp(game_id, html_events, api_events, changes, html_rosters):
     game_list.extend(changes)
     
     for event in game_list:
+
+        new_values = {'game_date': game_info['game_date'],
+                        'home_team': game_info['home_team'],
+                        'home_team_name': game_info['home_team_name'],
+                        'away_team': game_info['away_team'],
+                        'away_team_name': game_info['away_team_name']
+        }
+
+        event.update(new_values)
+
+        if 'event_type' not in event.keys():
+
+            non_descripts = {'PGSTR': 'PRE-GAME START',
+                                'PGEND': 'PRE-GAME END',
+                                'ANTHEM': 'NATIONAL ANTHEM',
+                                'EISTR': 'EARLY INTERMISSION START',
+                                'EIEND': 'EARLY INTERMISSION END',
+                                'DELPEN': 'DELAYED PENALTY' }
+
+            event['event_type'] = non_descripts.get(event['event'], '')
                 
         if 'version' not in event.keys():
             
@@ -4152,20 +4163,22 @@ def prep_pbp(game_id, html_events, api_events, changes, html_rosters):
                      'GOAL': 6, 
                      'STOP': 7,
                      'CHANGE': 8,
-                     'PSTR': 9,
-                     'FAC': 10,
-                     'CHL': 11,
-                     'DELPEN': 11,
-                     'BLOCK': 11,
-                     'GIVE': 11,
-                     'HIT': 11,
-                     'MISS': 11,
-                     'SHOT': 11,
-                     'TAKE': 11,
-                     'SOC': 11,
-                     'PEND': 12,
-                     'GEND': 13,
-                     'GOFF': 14
+                     'EISTR': 9,
+                     'EIEND': 10,
+                     'PSTR': 11,
+                     'FAC': 12,
+                     'CHL': 13,
+                     'DELPEN': 13,
+                     'BLOCK': 13,
+                     'GIVE': 13,
+                     'HIT': 13,
+                     'MISS': 13,
+                     'SHOT': 13,
+                     'TAKE': 13,
+                     'SOC': 13,
+                     'PEND': 14,
+                     'GEND': 15,
+                     'GOFF': 16
                     }
 
         event['sort_value'] = sort_dict[event['event']]
@@ -4174,14 +4187,24 @@ def prep_pbp(game_id, html_events, api_events, changes, html_rosters):
     
     for event in game_list:
 
-        event['home_on_eh_id'] = []
-        event['home_on_names'] = []
-        event['home_on_positions'] = []
+        event['home_forwards_id'] = []
+        event['home_forwards'] = []
+        event['home_forwards_positions'] = []
+        event['home_defense_id'] = []
+        event['home_defense'] = []
+        event['home_defense_positions'] = []
+        event['home_goalie_id'] = []
+        event['home_goalie'] = []
 
-        event['away_on_eh_id'] = []
-        event['away_on_names'] = []
-        event['away_on_positions'] = []
-        
+        event['away_forwards_id'] = []
+        event['away_forwards'] = []
+        event['away_forwards_positions'] = []
+        event['away_defense_id'] = []
+        event['away_defense'] = []
+        event['away_defense_positions'] = []
+        event['away_goalie_id'] = []
+        event['away_goalie'] = []
+    
     roster = [x for x in html_rosters if x['status'] == 'ACTIVE']
     
     teams = np.unique([x['team'] for x in roster]).tolist()
@@ -4196,9 +4219,9 @@ def prep_pbp(game_id, html_events, api_events, changes, html_rosters):
 
             if (event.get('event_team', 'NaN') in player['team_jersey'] 
                 and event['event'] == 'CHANGE'
-                and event.get('players_on') is not None):
+                and event.get('change_on') is not None):
                 
-                players_on = [x for x in event['players_on'] if x == player['team_jersey']]
+                players_on = [x for x in event['change_on_jersey'] if x == player['team_jersey']]
                 
                 if len(players_on) > 0:
 
@@ -4206,48 +4229,189 @@ def prep_pbp(game_id, html_events, api_events, changes, html_rosters):
 
             if (event.get('event_team', 'NaN') in player['team_jersey']
                 and event['event'] == 'CHANGE'
-                and event.get('players_off') is not None):
+                and event.get('change_off') is not None):
                 
-                players_off = [x for x in event['players_off'] if x == player['team_jersey']]
+                players_off = [x for x in event['change_off_jersey'] if x == player['team_jersey']]
                 
                 if len(players_off) > 0:
 
                     counter -= 1
                     
             if counter > 0:
+
+                forwards = ['L', 'C', 'R']
                 
                 if player['team_venue'] == 'HOME':
-                    
-                    event['home_on_eh_id'].append(player['eh_id'])
-                    event['home_on_names'].append(player['player_name'])
-                    event['home_on_positions'].append(player['position'])
+
+                    if player['position'] in forwards:
+
+                        event['home_forwards_id'].append(player['eh_id'])
+
+                        event['home_forwards'].append(player['player_name'])
+
+                        event['home_forwards_positions'].append(player['position'])
+
+                    elif player['position'] == 'D':
+
+                        event['home_defense_id'].append(player['eh_id'])
+
+                        event['home_defense'].append(player['player_name'])
+
+                        event['home_defense_positions'].append(player['position'])
+
+                    elif player['position'] == 'G':
+
+                        event['home_goalie_id'].append(player['eh_id'])
+
+                        event['home_goalie'].append(player['player_name'])
                     
                 else:
-                    
-                    event['away_on_eh_id'].append(player['eh_id'])
-                    event['away_on_names'].append(player['player_name'])
-                    event['away_on_positions'].append(player['position'])
+
+                    if player['position'] in forwards:
+
+                        event['away_forwards_id'].append(player['eh_id'])
+
+                        event['away_forwards'].append(player['player_name'])
+
+                        event['away_forwards_positions'].append(player['position'])
+
+                    elif player['position'] == 'D':
+
+                        event['away_defense_id'].append(player['eh_id'])
+
+                        event['away_defense'].append(player['player_name'])
+
+                        event['away_defense_positions'].append(player['position'])
+
+                    elif player['position'] == 'G':
+
+                        event['away_goalie_id'].append(player['eh_id'])
+
+                        event['away_goalie'].append(player['player_name'])
                 
-    for event in game_list:
-        
-        home_on = len(event['home_on_eh_id'])
-        
-        away_on = len(event['away_on_eh_id'])
-        
-        event['home_on_num'] = home_on
-        
-        event['away_on_num'] = away_on
-        
+    for idx, event in enumerate(game_list):
+
+        new_values = {'event_idx': idx + 1,
+                        #'event_length': event['game_seconds'] - game_list[idx - 1]['game_seconds'],
+                        'home_on_id': event['home_forwards_id'] + event['home_defense_id'],
+                        'home_on': event['home_forwards'] + event['home_defense'],
+                        'home_on_positions': event['home_forwards_positions'] + event['home_defense_positions'],
+                        'away_on_id': event['away_forwards_id'] + event['away_defense_id'],
+                        'away_on': event['away_forwards'] + event['away_defense'],
+                        'away_on_positions': event['away_forwards_positions'] + event['away_defense_positions'],
+                        }
+
+        event.update(new_values)
+
+        event['home_skaters'] = len(event['home_on_id'])
+
+        event['away_skaters'] = len(event['away_on_id'])
+
+        if event['home_goalie'] == []:
+
+            home_on = 'E'
+
+        else:
+
+            home_on = event['home_skaters']
+
+        if event['away_goalie'] == []:
+
+            away_on = 'E'
+
+        else:
+
+            away_on = event['away_skaters']
+
         event['strength_state'] = f"{home_on}v{away_on}"
-    
+
+        if event.get('event_team') == event['home_team']:
+
+            new_values = {'strength_state': f"{home_on}v{away_on}",
+                            'event_team_skaters': event['home_skaters'],
+                            'event_team_on_id': event['home_on_id'],
+                            'event_team_on': event['home_on'],
+                            'event_team_forwards_id': event['home_forwards_id'],
+                            'event_team_forwards': event['home_forwards'],
+                            'event_team_defense_id': event['home_defense_id'],
+                            'event_team_defense': event['home_defense'],
+                            'event_team_goalie_id': event['home_goalie_id'],
+                            'event_team_goalie': event['home_goalie'],
+                            'opp_team_skaters': event['away_skaters'],
+                            'opp_team_on_id': event['away_on_id'],
+                            'opp_team_on': event['away_on'],
+                            'opp_team_forwards_id': event['away_forwards_id'],
+                            'opp_team_forwards': event['away_forwards'],
+                            'opp_team_defense_id': event['away_defense_id'],
+                            'opp_team_defense': event['away_defense'],
+                            'opp_team_goalie_id': event['away_goalie_id'],
+                            'opp_team_goalie': event['away_goalie'],
+            }
+
+            event.update(new_values)
+
+        elif event.get('event_team') == event['away_team']:
+
+            new_values = {'strength_state': f"{away_on}v{home_on}",
+                            'event_team_skaters': event['away_skaters'],
+                            'event_team_on_id': event['away_on_id'],
+                            'event_team_on': event['away_on'],
+                            'event_team_forwards_id': event['away_forwards_id'],
+                            'event_team_forwards': event['away_forwards'],
+                            'event_team_defense_id': event['away_defense_id'],
+                            'event_team_defense': event['away_defense'],
+                            'event_team_goalie_id': event['away_goalie_id'],
+                            'event_team_goalie': event['away_goalie'],
+                            'opp_team_skaters': event['home_skaters'],
+                            'opp_team_on_id': event['home_on_id'],
+                            'opp_team_on': event['home_on'],
+                            'opp_team_forwards_id': event['home_forwards_id'],
+                            'opp_team_forwards': event['home_forwards'],
+                            'opp_team_defense_id': event['home_defense_id'],
+                            'opp_team_defense': event['home_defense'],
+                            'opp_team_goalie_id': event['home_goalie_id'],
+                            'opp_team_goalie': event['home_goalie'],
+            }
+
+            event.update(new_values)
+
+        if ((event['home_skaters'] > 5 and event['home_goalie'] != [])
+            or (event['away_skaters'] > 5 and event['away_goalie'] != [])):
+
+            event['strength_state'] = 'ILLEGAL'
+
+        if event['event'] == 'CHANGE':
+
+            faceoffs = [x for x in game_list if (x['event'] == 'FAC' and
+                                                    x['game_seconds'] == event['game_seconds'] and
+                                                    x['period'] == event['period'])]
+
+            if len(faceoffs) > 0:
+
+                event['coords_x'] = faceoffs[0]['coords_x']
+
+                event['coords_y'] = faceoffs[0]['coords_y']
+
+                if event['event_team'] == faceoffs[0]['event_team']:
+
+                    event['zone'] = faceoffs[0]['zone']
+
+                else:
+
+                    zones = {'OFF': 'DEF', 'DEF': 'OFF', 'NEU': 'NEU'}
+
+                    event['zone'] = zones[faceoffs[0]['zone']]
+
+            else:
+
+                event['zone'] = 'OTF'
+
     return {game_id: game_list}
-
-
 
 ## []Refactored
 ## []Docstring
 ## []Comments
-def scrape_pbp(game_ids, disable_print = False):
+def scrape_pbp(game_ids, nested = False, disable_print = False):
     
     '''
 
@@ -4463,15 +4627,19 @@ def scrape_pbp(game_ids, disable_print = False):
 
         season, game_session = game_id_info(game_id)
 
-        html_rosters = scrape_html_roster(game_id, session = s, nested = True)
+        live_response = scrape_live_endpoint(game_id, session = s)
+
+        game_info = scrape_game_info(game_id, live_response = live_response, session = s, nested = True)
+
+        api_events = scrape_api_events(game_id, live_response = live_response, session = s, nested = True)
+
+        html_rosters = scrape_html_rosters(game_id, session = s, nested = True)
 
         changes = scrape_changes(game_id, roster_data = html_rosters, session = s, nested = True)
 
         html_events = scrape_html_events(game_id, roster_data = html_rosters, session = s, nested = True)
 
-        api_events = scrape_api_events(game_id, session = s, nested = True)
-
-        game_dict = prep_pbp(game_id, html_events, api_events, changes, html_rosters)
+        game_dict = prep_pbp(game_id, game_info, html_events, api_events, changes, html_rosters)
 
         games_dict.update(game_dict)
 
@@ -4491,40 +4659,104 @@ def scrape_pbp(game_ids, disable_print = False):
         
         pbar.set_postfix_str(postfix_str)
 
-    events_data = [event for events in games_dict.values() for event in events]
+    if nested == False:
 
-    df = pd.DataFrame(events_data)
+        events_data = [event for events in games_dict.values() for event in events]
 
-    columns = ['season', 'session', 'game_id', 'event_idx', 'event_idx_api',
-               'event_team', 'team_venue', 'event', 'event_type', 'description', 
-               'period', 'period_time', 'period_seconds', 'game_seconds', 'strength_state',
-               'player_1', 'player_1_api_id', 'player_1_eh_id', 'player_1_eh_id_api',
-               'player_2', 'player_2_api_id', 'player_2_eh_id', 'player_2_eh_id_api',
-               'player_3', 'player_3_api_id', 'player_3_eh_id', 'player_3_eh_id_api',
-               'coords_x', 'coords_y', 'shot_type', 'event_distance', 'zone', 'penalty',
-               'penalty_length', 'event_detail', 'home_score', 'away_score',
-               'event_on_eh_id', 'event_on_names', 'event_on_positions',
-               'opp_on_eh_id', 'opp_on_names', 'opp_on_positions', #'home_on', 'away_on',
-               'number_on', 'number_off', 'players_on',
-               'players_on_names', 'players_on_eh_id', 'players_on_positions',
-               'players_off', 'players_off_names', 'players_off_eh_id', 'players_off_positions',
-               'number_on_forwards', 'number_off_forwards', 'forwards_on',
-               'forwards_on_names', 'forwards_on_eh_id', 'forwards_off',
-               'forwards_off_names', 'forwards_off_eh_id', 'number_on_defense',
-               'number_off_defense', 'defense_on', 'defense_on_names',
-               'defense_on_eh_id', 'defense_off', 'defense_off_names',
-               'defense_off_eh_id', 'number_on_goalies', 'number_off_goalies',
-               'goalies_on', 'goalies_on_names', 'goalies_on_eh_id', 'goalies_off',
-               'goalies_off_names', 'goalies_off_eh_id', 'api_description', 'event_dt', 'time_elapsed',
-               'time_elapsed_seconds', 'home_on_num', 'away_on_num' ]
+        list_fields = ['home_on_id',
+                         'home_on',
+                         'home_on_positions',
+                         'home_goalie_id',
+                         'home_goalie',
+                         'away_on_id',
+                         'away_on',
+                         'away_on_positions',
+                         'away_goalie_id',
+                         'away_goalie',
+                         'event_team_on_id',
+                         'event_team_on',
+                         'event_team_forwards_id',
+                         'event_team_forwards',
+                         'event_team_defense_id',
+                         'event_team_defense',
+                         'event_team_goalie_id',
+                         'event_team_goalie',
+                         'opp_team_on_id',
+                         'opp_team_on',
+                         'opp_team_forwards_id',
+                         'opp_team_forwards',
+                         'opp_team_defense_id',
+                         'opp_team_defense',
+                         'opp_team_goalie_id',
+                         'opp_team_goalie',
+                         'change_on',
+                         'change_on_id',
+                         'change_on_positions',
+                         'change_off',
+                         'change_off_id', 
+                         'change_off_positions',
+                         'change_on_forwards',
+                         'change_on_forwards_id',
+                         'change_off_forwards',
+                         'change_off_forwards_id',
+                         'change_on_defense',
+                         'change_on_defense_id',
+                         'change_off_defense',
+                         'change_off_defense_id',
+                         'change_on_goalie',
+                         'change_on_goalie_id',
+                         'change_off_goalie',
+                         'change_off_goalie_id'
+                         ]
 
-    columns = [x for x in columns if x in df.columns]
+        for event in events_data:
 
-    df = df[columns]
+            for list_field in [x for x in list_fields if x in event.keys()]:
 
-    df = df.replace('', np.nan)
+                event[list_field] = ', '.join(event[list_field])
 
-    return df
+        df = pd.DataFrame(events_data)
+
+        columns = ['season', 'session', 'game_id', 'game_date',
+                   'period', 'period_seconds', 'game_seconds',
+                   'strength_state', 'score_state', 'event_idx', 'event_team',
+                   'event', 'event_type', 'description', 'zone',
+                   'coords_x', 'coords_y', 'event_length', 'player_1', 'player_1_eh_id',
+                   'player_1_api_id', 'player_1_eh_id_api', 'player_2',
+                   'player_2_eh_id',  'player_2_api_id', 'player_2_eh_id_api',
+                   'player_3', 'player_3_eh_id', 'player_3_api_id', 'player_3_eh_id_api',
+                   'shot_type', 'event_distance', 'event_detail', 
+                   'penalty', 'penalty_length', 'event_dt',
+                   'time_elapsed', 'time_elapsed_seconds', 'home_score',
+                   'away_score', 'home', 'away', 'home_team', 'home_team_name',
+                   'away_team', 'away_team_name', 'home_skaters', 'away_skaters',
+                   'event_team_skaters', 'event_team_on_id', 'event_team_on', 
+                   'event_team_goalie_id', 'event_team_goalie', 'event_team_forwards_id',
+                   'event_team_forwards', 'event_team_defense_id', 'event_team_defense',
+                   'opp_team_skaters', 'opp_team_on_id', 'opp_team_on', 'opp_team_goalie_id',
+                   'opp_team_goalie', 'opp_team_forwards_id', 'opp_team_forwards', 'opp_team_defense_id',
+                   'opp_team_defense', 'home_on_id', 'home_on', 'home_on_positions', 'home_goalie_id', 'home_goalie',
+                   'away_on_id', 'away_on', 'away_on_positions', 'away_goalie_id', 'away_goalie',
+                   'change_on_count', 'change_off_count', 'change_on', 'change_on_id', 'change_on_positions',
+                   'change_off', 'change_off_id', 'change_off_positions', 'change_on_forwards_count',
+                   'change_off_forwards_count', 'change_on_forwards', 'change_on_forwards_id', 'change_off_forwards',
+                   'change_off_forwards_id', 'change_on_defense_count', 'change_off_defense_count',
+                   'change_on_defense', 'change_on_defense_id',  'change_off_defense', 'change_off_defense_id',
+                   'change_on_goalie_count', 'change_off_goalie_count',
+                   'change_on_goalie', 'change_on_goalie_id','change_off_goalie', 'change_off_goalie_id',
+        ]
+
+        columns = [x for x in columns if x in df.columns]
+
+        df = df[columns]
+
+        df = df.replace('', np.nan).replace(' ', np.nan)
+
+        return df
+
+    else:
+
+        return games_dict
 
 
 ## End
