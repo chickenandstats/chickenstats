@@ -1760,6 +1760,12 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
         ## Itereating through the team's tables of active players
 
         for idx, team_soup in enumerate(team_soup_list):
+
+            table_dict = {'align':'center', 'border':'0', 'cellpadding':'0', 'cellspacing':'0', 'width':'100%', 'xmlns:ext':''}
+
+            stuff = soup.find_all('table', table_dict)[idx].find_all("td", {"class" : "bold"})
+
+            starters = list(np.reshape(stuff, (int(len(stuff) / 3), 3))[:, 2])
             
             ## Getting length to create numpy array
 
@@ -1806,6 +1812,14 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
                 new_values = {'team_name': team_names.get(team_list[idx]),
                               'team_venue': team_list[idx].upper(),
                               'status': 'ACTIVE'}
+
+                if player['player_name'] in starters:
+
+                    player['starter'] = 1
+
+                else:
+
+                    player['starter'] = 0
                 
                 if 'position' not in headers:
 
@@ -2486,6 +2500,38 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
                     
                     if period == 1:
 
+                        if len(team_goalies) < 1:
+
+                            first_goalie = {}
+
+                            starter = [x for x in actives if x['position'] == 'G' and x['team_venue'] == team and x['starter'] == 1][0]
+
+                            new_values = {'season': season,
+                                            'session': game_session,
+                                            'game_id': game_id,
+                                            'period': period,
+                                            'team': starter['team'],
+                                            'team_name': starter['team_name'],
+                                            'team_venue': team,
+                                            'player_name': starter['player_name'],
+                                            'eh_id': starter['eh_id'],
+                                            'team_jersey': starter['team_jersey'],
+                                            'goalie': 1}
+
+                            if team == 'HOME':
+
+                                new_values.update({'home': 1,
+                                                        'away': 0})
+
+                            else:
+
+                                new_values.update({'away': 1,
+                                                        'home': 0})
+
+
+                            first_goalie.update(new_values)
+                            
+
                         first_goalie = team_goalies[0]
 
                         ## Initial dictionary is set using data from the first goalie to appear
@@ -2524,25 +2570,27 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
                         
                         goalie_shift['shift_start'] = '0:00 / 20:00'
 
-                        ## Setting end time value
-                        
-                        goalie_shift['end_time'] = '20:00'
+                        if max_seconds < 1200:
 
-                        ## Setting end time in seconds
-                        
-                        goalie_shift['end_time_seconds'] = 1200
+                            ## Setting end time value
+                            
+                            goalie_shift['end_time'] = '20:00'
 
-                        ## Setting the duration, assuming they were out there the whole time
-                        
-                        goalie_shift['duration'] = '20:00'
+                            ## Setting end time in seconds
+                            
+                            goalie_shift['end_time_seconds'] = 1200
 
-                        ## Setting the duration in seconds, assuming they were out there the whole time
-                        
-                        goalie_shift['duration_seconds'] = 1200
+                            ## Setting the duration, assuming they were out there the whole time
+                            
+                            goalie_shift['duration'] = '20:00'
 
-                        ## Setting the shift end value
+                            ## Setting the duration in seconds, assuming they were out there the whole time
+                            
+                            goalie_shift['duration_seconds'] = 1200
 
-                        goalie_shift['shift_end'] = '20:00 / 0:00'
+                            ## Setting the shift end value
+
+                            goalie_shift['shift_end'] = '20:00 / 0:00'
 
                     ## If the period is greater than 3
                         
@@ -2562,21 +2610,23 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
                             
                             total_seconds = 1200
 
-                        ## Getting end time
-                        
-                        end_time = str(timedelta(seconds = max_seconds)).split(':', 1)[1]
+                        if max_seconds < total_seconds:
 
-                        ## Getting remainder time
-                                
-                        remainder = str(timedelta(seconds = (total_seconds - max_seconds))).split(':', 1)[1]
+                            ## Getting end time
+                            
+                            end_time = str(timedelta(seconds = max_seconds)).split(':', 1)[1]
 
-                        ## Setting values
-                        
-                        goalie_shift['end_time_seconds'] = max_seconds
+                            ## Getting remainder time
+                                    
+                            remainder = str(timedelta(seconds = (total_seconds - max_seconds))).split(':', 1)[1]
 
-                        goalie_shift['end_time'] = end_time
+                            ## Setting values
+                            
+                            goalie_shift['end_time_seconds'] = max_seconds
 
-                        goalie_shift['shift_end'] = f'{end_time} / {remainder}'
+                            goalie_shift['end_time'] = end_time
+
+                            goalie_shift['shift_end'] = f'{end_time} / {remainder}'
 
                     ## Appending the new goalie shift to the game list
                         
