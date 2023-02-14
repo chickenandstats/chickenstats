@@ -3519,7 +3519,8 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
                         play['event_team_name'] = game_info['home_team_name']
                         
-                if play['event'] == 'PENL' and 'too many men/ice' in play['description'].lower():
+                if (play['event'] == 'PENL' and
+                    'served by' in play['description'].lower()):
 
                     players.insert(0, {'player': {'fullName': 'BENCH',
                                                     'id': 'BENCH',},
@@ -3944,9 +3945,106 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                     
                     continue
                 
-                if 'INTERFERENCE ON GOALKEEPER' in event['description']:
+                if ('INTERFERENCE' in event['description'] and
+                    'GOALKEEPER' in event['description']):
                     
                     event['penalty'] = 'GOALKEEPER INTERFERENCE'
+
+                elif ('CROSS' in event['description'] and 
+                    'CHECKING' in event['description']):
+
+                    event['penalty'] = 'CROSS-CHECKING'
+
+                elif ('DELAY' in event['description'] and
+                    'GAME' in event['description'] and
+                    'PUCK OVER' in event['description']):
+
+                    event['penalty'] = 'DELAY OF GAME - PUCK OVER GLASS'
+
+                elif ('DELAY' in event['description'] and
+                    'GAME' in event['description'] and
+                    'FO VIOL' in event['description']):
+
+                    event['penalty'] = 'DELAY OF GAME - FACEOFF VIOLATION'
+
+                elif ('DELAY' in event['description'] and
+                    'GAME' in event['description'] and
+                    'EQUIPMENT' in event['description']):
+
+                    event['penalty'] = 'DELAY OF GAME - EQUIPMENT'
+
+                elif ('DELAY' in event['description'] and
+                    'GAME' in event['description'] and
+                    'UNSUCC' in event['description']):
+
+                    event['penalty'] = 'DELAY OF GAME - UNSUCCESSFUL CHALLENGE'
+
+                elif ('DELAY' in event['description'] and
+                    'GAME' in event['description'] and
+                    'SMOTHERING' in event['description']):
+
+                    event['penalty'] = 'DELAY OF GAME - SMOTHERING THE PUCK'
+
+                elif ('ILLEGAL' in event['description'] and 
+                    'CHECK' in event['description'] and 
+                    'HEAD' in event['description']
+                    ):
+
+                    event['penalty'] = 'ILLEGAL CHECK TO HEAD'
+
+                elif ('HIGH-STICKING' in event['description'] and 
+                    '- DOUBLE' in event['description']):
+
+                    event['penalty'] = 'HIGH-STICKING - DOUBLE MINOR'
+
+                elif ('GAME MISCONDUCT' in event['description']):
+
+                    event['penalty'] = 'GAME MISCONDUCT'
+
+                elif ('MATCH PENALTY' in event['description']):
+
+                    event['penalty'] = 'MATCH PENALTY'
+
+                elif ('NET' in event['description'] and 'DISPLACED' in event['description']):
+
+                    event['penalty'] = "DISPLACED NET"
+
+                elif ('REMOVING' in event['description'] and 'HELMET' in event['description']):
+
+                    event['penalty'] = "REMOVING OPPONENT HELMET"
+
+                elif ('HOOKING' in event['description'] and 'BREAKAWAY' in event['description']):
+
+                    event['penalty'] = 'HOOKING - BREAKAWAY'
+
+                elif ('TEAM TOO MANY' in event['description']):
+
+                    event['penalty'] = 'TOO MANY MEN ON THE ICE'
+
+                elif ('HOLDING' in event['description'] and 'STICK' in event['description']):
+
+                    event['penalty'] = 'HOLDING THE STICK'
+
+                elif ('CLOSING' in event['description'] and 'HAND' in event['description']):
+
+                    event['penalty'] = 'CLOSING HAND ON PUCK'
+
+                elif ('ABUSE' in event['description'] and 'OFFICIALS' in event['description']):
+
+                    event['penalty'] = 'ABUSE OF OFFICIALS'
+
+                elif ('UNSPORTSMANLIKE CONDUCT' in event['description']):
+
+                    event['penalty'] = 'UNSPORTSMANLIKE CONDUCT'
+
+                elif ('PUCK' in event['description'] and 'THROWN' in event['description'] and 'FWD' in event['description']):
+
+                    event['penalty'] = 'PUCK THROWN FORWARD - GOALKEEPER'
+
+                elif ('DELAY' in event['description'] and 'GAME' in event['description']):
+
+                    event['penalty'] = 'DELAY OF GAME'
+
 
                 event['penalty_length'] = int(re.search(penalty_length_re, event['description']).group(1))
 
@@ -3964,7 +4062,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
             try:
 
-                event['event_distance'] = int(re.search(distance_re, event['description']).group(1))
+                event['shot_distance'] = int(re.search(distance_re, event['description']).group(1))
 
             except AttributeError:
 
@@ -4056,7 +4154,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                     'period', 'period_time', 'period_seconds', 'game_seconds',
                     'event', 'description', 'strength', 'zone', 'player_1',
                     'player_1_eh_id', 'player_2', 'player_2_eh_id', 'player_3',
-                    'player_3_eh_id', 'event_distance', 'shot_type', 'penalty',
+                    'player_3_eh_id', 'shot_distance', 'shot_type', 'penalty',
                     'penalty_length', 'version']
 
         column_order = [x for x in columns if x in df.columns]
