@@ -4198,6 +4198,8 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
         actives = {player['team_jersey']: player for player in roster if player['status'] == 'ACTIVE'}
 
+        scratches = {player['team_jersey']: player for player in roster if player['status'] == 'SCRATCH'}
+
         url = f'http://www.nhl.com/scores/htmlreports/{season}/PL{html_id}.HTM'
 
         response = s.get(url)
@@ -4343,10 +4345,18 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                 num = idx + 1
                 
                 event_player = event_player.replace(' #', '')
+
+                try:
                 
-                player_name = actives[event_player]['player_name']
-                
-                eh_id = actives[event_player]['eh_id']
+                    player_name = actives[event_player]['player_name']
+
+                    eh_id = actives[event_player]['eh_id']
+
+                except KeyError:
+
+                    player_name = scratches[event_player]['player_name']
+
+                    eh_id = scratches[event_player]['eh_id']
                 
                 new_values = {f'player_{num}': player_name,
                               f'player_{num}_eh_id': eh_id
@@ -4764,6 +4774,9 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
         event_data.update(event)
         
         api_matches = [x for x in api_events if x['event'] == event['event']
+                        and x.get('event_team') is not None
+                        and event.get('event_team') is not None
+                        and x['event_team'] == event['event_team']
                        and x['period'] == event['period']
                        and x['period_seconds'] == event['period_seconds']
                        and x['version'] == event['version']]
@@ -4789,10 +4802,13 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
                           'event_dt': api_match['event_dt'],
                           'player_1_eh_id_api': api_match.get('player_1_eh_id', ''),
                           'player_1_api_id': api_match.get('player_1_api_id', ''),
+                          'player_1_type': api_match.get('player_1_type', ''),
                           'player_2_eh_id_api': api_match.get('player_2_eh_id', ''),
                           'player_2_api_id': api_match.get('player_2_api_id', ''),
+                          'player_2_type': api_match.get('player_2_type', ''),
                           'player_3_eh_id_api': api_match.get('player_3_eh_id', ''),
-                          'player_3_api_id': api_match.get('player_3_eh_id', ''),
+                          'player_3_api_id': api_match.get('player_3_api_id', ''),
+                          'player_3_type': api_match.get('player_3_type', ''),
                           'time_elapsed': api_match['time_elapsed'],
                           'time_elapsed_seconds': api_match['time_elapsed_seconds'],
                           'version_api': api_match['version'],
@@ -4805,6 +4821,16 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
     game_list.extend(changes)
     
     for event in game_list:
+
+        if event.get('player_3_type') == 'GOALIE':
+
+            event['player_3'] = np.nan
+
+            event['player_3_eh_id'] = np.nan
+
+            event['player_3_api_id'] = np.nan
+
+            event['player_3_type'] = np.nan
 
         new_values = {'game_date': game_info['game_date'],
                         'home_team': game_info['home_team'],
@@ -5479,9 +5505,9 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
                    'strength_state', 'score_state', 'event_idx', 'event_team',
                    'event', 'event_type', 'description', 'zone',
                    'coords_x', 'coords_y', 'event_length', 'player_1', 'player_1_eh_id',
-                   'player_1_api_id',  'player_2',
-                   'player_2_eh_id',  'player_2_api_id', 
-                   'player_3', 'player_3_eh_id', 'player_3_api_id',
+                   'player_1_api_id', 'player_1_type',  'player_2',
+                   'player_2_eh_id',  'player_2_api_id', 'player_2_type', 
+                   'player_3', 'player_3_eh_id', 'player_3_api_id', 'player_3_type',
                    'shot_type', 'shot_distance', 'event_detail', 
                    'penalty', 'penalty_length', 'penalty_severity', 'event_dt',
                    'time_elapsed', 'time_elapsed_seconds', 'home_score',
