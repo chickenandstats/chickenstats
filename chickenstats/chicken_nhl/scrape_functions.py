@@ -236,11 +236,10 @@ def game_id_info(game_id, html_id = False):
 ## [x]Docstring
 ## []Comments
 def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_only = False, live_only = False, teams = None, disable_print = False):
-    
-    
+      
     '''
     
-    --------- Info ---------
+    --------- INFO ---------
 
     Scrapes schedule from the NHL API for a given four-digit year or list-like object of four-digit years. Returns a Pandas DataFrame.
     By default, returns entire 2022 schedule, including playoffs, if applicable. 
@@ -248,7 +247,7 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
 
     Typically takes 2-5 seconds per seasons, but can increase if scraping multiple seasons.
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMETER(S) ---------
 
     seasons | integer or list-like object: default = 2022
         Four-digit year (e.g., 2022), or list-like object consisting of four-digit years (e.g., generator or Pandas Series)
@@ -279,7 +278,7 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
         If True, progress bar is disabled
         If False, prints progress bar
 
-    --------- Returns ---------
+    --------- RETURNS ---------
     
     Pandas DataFrame with columns:
         
@@ -574,7 +573,7 @@ def scrape_standings(seasons = 2022, disable_print = False):
     
     '''
     
-    --------- Info ---------
+    --------- INFO ---------
 
     Scrapes standings from the NHL API for a given four-digit year or list-like object of four-digit years. Returns a Pandas DataFrame.
     By default, the standings are for 2022 and are of the moment the function is run, e.g., anything in the past will be historical. 
@@ -582,7 +581,7 @@ def scrape_standings(seasons = 2022, disable_print = False):
 
     Scrapes approximately 1 season per second.
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMETER(S) ---------
 
     seasons | integer or list-like object: default = 2022
         Four-digit year (e.g., 2022), or list-like object consisting of four-digit years (e.g., generator or Pandas Series)
@@ -591,7 +590,7 @@ def scrape_standings(seasons = 2022, disable_print = False):
         If True, disables progress bar
         If False, prints progress bar
 
-    --------- Returns ---------
+    --------- RETURNS ---------
 
     Pandas DataFrame with columns:
         
@@ -830,7 +829,7 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
     
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
     Scrapes game information from the API for a given game ID or list-like object of game IDs.
     Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
@@ -840,12 +839,12 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
 
     Scrapes approximately 8-12 games per second.
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETER(S) ---------
 
     game_ids | integer or list-like object
-        A single 1--digit API game ID (e.g., 2021020001) or list-like object of game IDs (e.g., generator or Pandas Series)
+        A single 1--digit API game ID (e.g., 2022020002) or list-like object of game IDs (e.g., generator or Pandas Series)
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMTER(S) ---------
 
     live_response | JSON object: default = None
         When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
@@ -857,7 +856,7 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
         If True, progress bar is disabled and a dictionary with game IDs as keys and lists of players as dictionaries
         If False, prints progress to the console and returns a Pandas DataFrame
 
-    --------- Returns ---------
+    --------- RETURNS ---------
 
     Default: Dictionary with game IDs as keys and a dictionaries of game information as the values
 
@@ -1159,7 +1158,7 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
     
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
     Scrapes the game roster from the API for a given game ID or list-like object of game IDs.
     Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
@@ -1169,12 +1168,12 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
 
     Scrapes approximately 8-12 games per second.
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETER(S) ---------
 
     game_ids | integer or list-like object
-        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+        A single 10-digit API game ID (e.g., 2022020002) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMETER(S) ---------
 
     live_response | JSON object: default = None
         When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
@@ -1187,7 +1186,7 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
         If False, prints progress to the console and returns a Pandas DataFrame
 
 
-    --------- Returns ---------
+    --------- RETURNS ---------
 
     Default: Dictionary with game IDs as keys and lists of player-dictionaries as the values.
 
@@ -1548,7 +1547,7 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
     
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
     Scrapes the rosters from the HTML endpoint for a given game ID or list-like object of game IDs.
     Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
@@ -1558,12 +1557,12 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
 
     Scrapes approximately 4-8 games per second.
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETERS ---------
 
     game_ids | integer or list-like object
-        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+        A single 10-digit API game ID (e.g., 2022020002) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMETERS ---------
 
     session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
@@ -1572,7 +1571,7 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
         If True, progress bar is disabled and a dictionary with game IDs as keys and lists of players as dictionaries
         If False, prints progress to the console and returns a Pandas DataFrame
 
-    --------- Returns ---------
+    --------- RETURNS ---------
 
     Default: Dictionary with game IDs as keys and lists of player-dictionaries as the values
 
@@ -2020,28 +2019,34 @@ def scrape_html_rosters(game_ids, session = None, nested = True):
 
         return games_dict
 
-## []Refactored
-## []Docstring
+## [x]Refactored
+## [x]Docstring
 ## []Comments
 def scrape_rosters(game_ids, html_rosters = None, api_rosters = None, session = None, nested = True):
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
-    Scrapes the shifts from the HTML endpoint for a given game ID or list-like object of game IDs.
+    Scrapes and cmbines the rosters from the HTML and API endpoints for a given game ID or list-like object of game IDs.
     Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
 
-    By default returns a dictionary with game IDs as keys and lists of shift-dictionaries as values.
+    By default returns a dictionary with game IDs as keys and lists of player-dictionaries as values.
     If nested is False, returns a Pandas DataFrame.
 
-    Scrapes approximately 1-2 games per second.   
+    Scrapes approximately 4-7 games per second.   
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETER(S) ---------
 
     game_ids | integer or list-like object
-        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+        A single 10-digit API game ID (e.g., 2022020002) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMETER(S) ---------
+
+    html_rosters | dictionary from scrape_html_rosters function: default = None
+        If nested, can provide HTML rosters to combine without scraping
+
+    api_rosters | dictionary from scrape_api_rosters function: default = None
+        If nested, can provide API rosters to combine without scraping
 
     session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
@@ -2050,13 +2055,13 @@ def scrape_rosters(game_ids, html_rosters = None, api_rosters = None, session = 
         If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of shifts as dictionaries 
         If False, prints progress to the console and returns a dataframe
         
-    --------- Returns ---------
+    --------- RETURNS ---------
 
-    Default: Dictionary with game IDs as keys and lists of shift-dictionaries as the values
+    Default: Dictionary with game IDs as keys and lists of player-dictionaries as the values
 
     If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
 
-    Each shift in each game list is a dictionary with the following fields and values:
+    Each player in each game list is a dictionary with the following fields and values:
 
         season: integer
             8-digit season code, e.g., 20222023
@@ -2082,51 +2087,63 @@ def scrape_rosters(game_ids, html_rosters = None, api_rosters = None, session = 
         eh_id: object
             Identifier that can be used to match with Evolving Hockey data, e.g., FILIP.FORSBERG
 
+        api_id: integer
+            Unique 7-digit player identifier, e.g., 8476887
+
         team_jersey: object
             3-letter team code plus player's jersey number, e.g., NSH9
             Used for identification in other functions
 
-        position: object
-            Player's position, e.g., L
-
         jersey: integer
             Player's jersey number, e.g., 9
 
-        shift_count: integer
-            Cumulative number of shifts, e.g., 1
+        position: object
+            Player's position, e.g., F
 
-        period: integer
-            Game period, e.g., 1
+        shoots: object
+            Skater's shooting hand, e.g., R
 
-        start_time: object
-            Clock time (ascending) shift was started, e.g., 0:00
+        catches: object
+            Goalie's catching hand, e.g., NaN
 
-        end_time: object
-            Clock time (ascending) shift was ended, e.g., 0:24
+        height: float
+            Player's height in feet, e.g., 6.083333
 
-        duration: object
-            Clock time (ascending) of shift duration, e.g., 0:24
+        weight: int
+            Players weight in pounds, e.g., 205
 
-        start_time_seconds: integer
-            Start time of shift in seconds, e.g., 0
+        starter: integer
+            Whether player started the game, e.g., 1
 
-        end_time_seconds: integer
-            End time of shift in seconds, e.g., 24
+        rookie: integer
+            Whether player is a rookie, e.g., 0
 
-        duration_seconds: integer
-            Duration of shifts in seconds, e.g., 24
+        captain: integer
+            Whether player is designated the captain, e.g., 0
 
-        shift_start: object
-            Ascending and descending clock times for shift start, e.g, 0:00 / 20:00
+        alternate_captain: integer
+            Whether player is designated an alternate captain, e.g., 0
 
-        shift_end: object
-            Ascending and descending clock times for shift end, e.g, 0:24 / 19:36
+        status: object
+            Player's status, e.g., ACTIVE
 
-        goalie: integer
-            Whether player is a goalie or not, e.g., 0
+        active: integer
+            Whether player is currently active, e.g., 1
 
-        home: integer
-            Wehther player is home or not, e.g., 1
+        birth_date: object
+            Player's birth date, e.g., 1994-08-13
+
+        birth_city: object
+            Player's birth city, e.g., OSTERVALA
+
+        birth_state_province: object
+            U.S. state or Canadian province where player was born, if applicable, e.g., NaN
+
+        birth_country: object
+            Country where player was born, e.g., SWE
+
+        nationality: float
+            Player's nationality, e.g., SWE
 
     '''
 
@@ -2281,7 +2298,7 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
     
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
     Scrapes the shifts from the HTML endpoint for a given game ID or list-like object of game IDs.
     Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
@@ -2291,12 +2308,16 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
 
     Scrapes approximately 1-2 games per second.   
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETER(S) ---------
 
     game_ids | integer or list-like object
-        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+        A single 10-digit API game ID (e.g., 2022020002) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMETER(S) ---------
+
+    roster_data | dictionary: default = None
+        If nested in other functions, can provide roster data from scrape function to prevent redundant hits to endpoints
+        If standalone, will scrape roster data for each game automatically
 
     session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
@@ -2305,7 +2326,7 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
         If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of shifts as dictionaries 
         If False, prints progress to the console and returns a dataframe
         
-    --------- Returns ---------
+    --------- RETURNS ---------
 
     Default: Dictionary with game IDs as keys and lists of shift-dictionaries as the values
 
@@ -2980,13 +3001,13 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
 ############################################## HTML changes ##############################################
 
 ## [x]Refactored
-## []Docstring
+## [x]Docstring
 ## []Comments
 def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = None, nested = True):
     
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
     Scrapes the changes from the HTML shifts endpoint for a given game ID or list-like object of game IDs.
     Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
@@ -2996,20 +3017,20 @@ def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = N
 
     Scrapes approximately 1-2 games per second. 
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETER(S) ---------
 
     game_ids | integer or list-like object
-        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+        A single 10-digit API game ID (e.g., 2022020002) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
-    --------- Optional parameters ---------
-
-    shifts_data | dictionary: default = None
-        If nested in other functions, can provide shifts data from scrape function to prevent redundant hits to endpoints
-        If standalone, will scrape shifts data for each game automatically
+    --------- OPTIONAL PARAMETER(S) ---------
 
     roster_data | dictionary: default = None
         If nested in other functions, can provide roster data from scrape function to prevent redundant hits to endpoints
         If standalone, will scrape roster data for each game automatically
+
+    shifts_data | dictionary: default = None
+        If nested in other functions, can provide shifts data from scrape function to prevent redundant hits to endpoints
+        If standalone, will scrape shifts data for each game automatically
 
     session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
@@ -3018,7 +3039,7 @@ def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = N
         If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of changes as dictionaries 
         If False, prints progress to the console and returns a dataframe
 
-    --------- Returns ---------
+    --------- RETURNS ---------
 
     Default: Dictionary with game IDs as keys and lists of change-dictionaries as the values
 
@@ -3035,149 +3056,155 @@ def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = N
         game_id: integer
             10-digit game identifier, e.g., 2022020001
 
-        team: object
+        event_team: object
             3-letter team code, e.g., NSH
-
-        team_name: object
-            Full team name, e.g., NASHVILLE PREDATORS
 
         team_venue: object
             Whether team is home or away, e.g., home
 
+        event: object
+            Name of the event when including with other events, e.g., CHANGE
+
+        event_type: object
+            Type of the change when including with other events, e.g., HOME CHANGE
+        
+        description: object
+            Description of the change, e.g., PLAYERS ON: FILIP FORSBERG, ALEX CARRIER, ROMAN JOSI, MIKAEL GRANLUND, JUUSE SAROS, MATT DUCHENE
+
         period: integer
             Game period, e.g., 1
 
-        period_time: object
-            Clock time (ascending), e.g., 0:00
-
         period_seconds: integer
-            Period time in seconds, e.g., 0
+            Period time in seconds (ascending), e.g., 0
 
-        number_on: integer
+        game_seconds: integer
+            Game time in seconds (ascending), e.g., 0
+
+        change_on_count: integer
             Number of players entering the ice, e.g., 6
 
-        number_off: integer
+        change_off_count: integer
             Number of players exiting the ice, e.g., 0
 
-        players_on: tuple
+        change_on_jersey: list
             Abbreviations of players on, in jersey order, e.g., (NSH9, NSH45, NSH59, NSH64, NSH74, NSH95)
             If returning a DataFrame, will be a string, e.g., NSH9, NSH45, NSH59, NSH64, NSH74, NSH95
 
-        players_on_names: tuple
+        change_on: list
             Names of players on, in jersey order, e.g., (FILIP FORSBERG, ALEX CARRIER, ROMAN JOSI, MIKAEL GRANLUND, JUUSE SAROS, MATT DUCHENE)
             If returning a DataFrame, will be a string, e.g., FILIP FORSBERG, ALEX CARRIER, ROMAN JOSI, MIKAEL GRANLUND, JUUSE SAROS, MATT DUCHENE
 
-        players_on_eh_id: tuple
+        change_on_id: list
             Evolving Hockey IDs of players on, in jersey order, e.g., (FILIP.FORSBERG, ALEX.CARRIER, ROMAN.JOSI, MIKAEL.GRANLUND, JUUSE.SAROS, MATT.DUCHENE)
             If returning a DataFrame, will be a string, e.g., FILIP.FORSBERG, ALEX.CARRIER, ROMAN.JOSI, MIKAEL.GRANLUND, JUUSE.SAROS, MATT.DUCHENE 
 
-        players_on_positions: tuple
+        change_on_positions: list
             Positions of players on, in jersey order, e.g., (L, D, D, C, G, C)
             If returning a DataFrame, will be a string, e.g., L, D, D, C, G, C
 
-        players_off: tuple
+        change_off_jersey: list
             Abbreviations of players off, in jersey order
             If returning a DataFrame, will be a string
 
-        players_off_names: tuple
+        change_off: list
             Names of players off, in jersey order
             If returning a DataFrame, will be a string
 
-        players_off_eh_id: tuple
+        change_off_id: list
             Evolving Hockey IDs of players off, in jersey order
             If returning a DataFrame, will be a string
 
-        players_off_positions: tuple
+        change_off_positions: list
             Positions of players off, in jersey order
             If returning a DataFrame, will be a string
 
-        number_on_forwards: integer
+        change_on_forwards_count: integer
             Number of forwards entering the ice, e.g., 6
 
-        number_off_forwards: integer
+        change_off_forwards_count: integer
             Number of forwards exiting the ice, e.g., 0
 
-        forwards_on: tuple
+        change_on_forwards_jersey: list
             Abbreviations of forwards on, in jersey order, e.g., (NSH9, NSH64, NSH95)
             If returning a DataFrame, will be a string, e.g., NSH9, NSH64, NSH95
 
-        forwards_on_names: tuple
+        change_on_forwards: list
             Names of forwards on, in jersey order, e.g., (FILIP FORSBERG, MIKAEL GRANLUND, MATT DUCHENE)
             If returning a DataFrame, will be a string, e.g., FILIP FORSBERG, MIKAEL GRANLUND, MATT DUCHENE
 
-        forwards_on_eh_id: tuple
+        change_on_forwards_id: list
             Evolving Hockey IDs of forwards on, in jersey order, e.g., (FILIP.FORSBERG, MIKAEL.GRANLUND, MATT.DUCHENE)
             If returning a DataFrame, will be a string, e.g., FILIP.FORSBERG, MIKAEL.GRANLUND, MATT.DUCHENE
 
-        forwards_off: tuple
+        change_off_forwards_jersey: list
             Abbreviations of forwards off, in jersey order
             If returning a DataFrame, will be a string
 
-        forwards_off_name: tuple
+        change_off_forwards: list
             Names of forwards off, in jersey order
             If returning a DataFrame, will be a string
 
-        forwards_off_eh_id: tuple
+        change_off_forwards_id: list
             Evolving Hockey IDs of forwards off, in jersey order
             If returning a DataFrame, will be a string
 
-        number_on_defense: integer
-            Number of players entering the ice, e.g., 6
+        change_on_defense_count: list
+            Number of defense entering the ice, e.g., 6
 
-        number_off_defense: integer
-            Number of players exiting the ice, e.g., 0
+        change_off_defense_count: list
+            Number of defense exiting the ice, e.g., 0
 
-        defense_on: tuple
+        change_on_defense_jersey: list
             Abbreviations of defense on, in jersey order, e.g., (NSH45, NSH59)
             If returning a DataFrame, will be a string, e.g., NSH45, NSH59
 
-        defense_on_names: tuple
+        change_on_defense: list
             Names of defense on, in jersey order, e.g., (ALEX CARRIER, ROMAN JOSI)
             If returning a DataFrame, will be a string, e.g., ALEX CARRIER, ROMAN JOSI
 
-        defense_on_eh_id: tuple
+        change_on_defense_id: list
             Evolving Hockey IDs of defense on, in jersey order, e.g., (ALEX.CARRIER, ROMAN.JOSI)
             If returning a DataFrame, will be a string, e.g., ALEX.CARRIER, ROMAN.JOSI
 
-        defense_off: tuple
+        change_off_defense_jersey: list
             Abbreviations of defense off, in jersey order
             If returning a DataFrame, will be a string
 
-        defense_off_names: tuple
+        change_off_defense: list
             Names of defense off, in jersey order
             If returning a DataFrame, will be a string
 
-        defense_off_eh_id: tuple
+        change_off_defense_id: list
             Evolving Hockey IDs of defense off, in jersey order
             If returning a DataFrame, will be a string
 
-        number_on_goalies: integer
+        change_on_goalie_count: integer
             Number of goalies entering the ice, e.g., 6
 
-        number_off_goalies: integer
+        change_off_goalie_count: integer
             Number of goalies exiting the ice, e.g., 0
 
-        goalies_on: tuple
+        change_on_goalie_jersey: list
             Abbreviations of goalies on, in jersey order, e.g., (NSH74)
             If returning a DataFrame, will be a string, e.g., NSH74
 
-        goalies_on_names: tuple
+        change_on_goalie: list
             Names of goalies on, in jersey order, e.g., (JUUSE SAROS)
             If returning a DataFrame, will be a string, e.g., JUUSE SAROS
 
-        goalies_on_eh_id: tuple
+        change_on_goalie_id: list
             Evolving Hockey IDs of goalies on, in jersey order, e.g., (JUUSE.SAROS)            
             If returning a DataFrame, will be a string, e.g., JUUSE.SAROS
 
-        goalies_off: tuple
+        change_off_goalie_jersey: list
             Abbreviations of goalies off, in jersey order
             If returning a DataFrame, will be a string
 
-        goalies_off_names: tuple
+        change_off_goalie: list
             Names of goalies off, in jersey order
             If returning a DataFrame, will be a string
 
-        goalies_off_eh_id: tuple
+        change_off_goalie_id: list
             Evolving Hockey IDs of players off, in jersey order
             If returning a DataFrame, will be a string
 
@@ -3520,9 +3547,10 @@ def scrape_changes(game_ids, roster_data = None, shifts_data = None, session = N
 ## []Docstring
 ## []Comments
 def scrape_api_events(game_ids, live_response = None, session = None, nested = True):
+    
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
     Scrapes the event data from the NHL API for a given game ID or list-like object of game IDs.
     Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
@@ -3533,12 +3561,12 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
     Scrapes approximately x-y games per second. 
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETER(S) ---------
 
     game_ids | integer or list-like object
-        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+        A single 10-digit API game ID (e.g., 2019020684) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMETER(S) ---------
 
     live_response | JSON object: default = None
         When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
@@ -3550,38 +3578,136 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
         If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of changes as dictionaries 
         If False, prints progress to the console and returns a dataframe
 
-    --------- Returns ---------
+    --------- RETURNS ---------
 
-    Default: Dictionary with game IDs as keys and lists of change-dictionaries as the values
+    Default: Dictionary with game IDs as keys and lists of event-dictionaries as the values
 
     If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
 
     Each change in each game list is a dictionary with the following fields and values:
 
         season: integer
-            8-digit season code, e.g., 20222023
+            8-digit season code, e.g., 20192020
 
         session: object
             Regular season or playoffs, e.g., R
 
         game_id: integer
-            10-digit game identifier, e.g., 2022020001
+            10-digit game identifier, e.g., 2019020684
 
+        game_date: object
+            Date of game in Eastern time-zone, e.g., 2020-01-09
 
-    Scrapes the event data from the API endpoint. Returns a dataframe. Data do not exist before 2010-2011 season
+        event_team: object
+            3-letter abbreviation of the team for the event, e.g., NSH 
 
-    Used within the main play-by-play scraper
-    Parameters:
-    game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
+        event_team_name: object
+            Name of the team for the event, e.g., NASHVILLE PREDATORS
 
-    live_response: JSON object; default: None
-        When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
+        event_idx: object
+            Unique index number of event, in chronological order, e.g., 333
 
-    disable_print: boolean; default: False
-        If False, prints progress to the console
+        period: integer
+            Period number, e.g., 3
 
-    session: requests Session object; default = None
-        When using in another scrape function, can pass the requests session to improve speed
+        period_seconds: integer
+            Number of seconds elapsed in the period, e.g., 1178
+
+        game_seconds: integer
+            Number of seconds elapsed in the game, e.g., 3578
+
+        event: object
+            Name of the event, e.g., GOAL
+
+        event_type: object
+            Type of the event, e.g., GOAL
+
+        description: object
+            Description of the event, e.g., PEKKA RINNE (1) WRIST SHOT, ASSISTS: NONE
+
+        coords_x: float
+            X coordinates of event, e.g., -96
+
+        coords_y: float
+            Y coordinates of event, e.g., 11
+
+        home_score: integer
+            Number of goals scored by home team, e.g., 2
+
+        away_score: integer
+            Number of goals scored by away team, e.g., 5
+
+        player_1: object
+            Name of the player, e.g.,  PEKKA RINNE
+
+        player_1_api_id: integer
+            Unique ID for the player, e.g., 8471469
+
+        player_1_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data, e.g., PEKKA.RINNE
+
+        player_1_type: object
+            Type of player, e.g., SHOOTER
+        
+        player_2: object
+            Name of the player
+
+        player_2_api_id: integer
+            Unique ID for the player
+
+        player_2_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data
+
+        player_2_type: object
+            Type of player
+
+        player_3: object
+            Name of the player
+
+        player_3_api_id: object
+            Unique ID for the player
+
+        player_3_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data
+
+        player_3_type: object
+            Type of player
+
+        player_4: object
+            Name of the player
+
+        player_4_api_id: object
+            Unique ID for the player
+
+        player_4_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data
+
+        player_4_type: object
+            Type of player
+
+        game_winning_goal: integer
+            Whether shot is game winning goal, e.g., 0
+
+        empty_net_goal: integer
+            Whether shot is an empty net goal, e.g., 1
+
+        penalty_severity: object
+            Whether penalty is a minor or major
+
+        penalty_minutes: float
+            Length of penalty in minutes
+
+        event_dt: object
+            Datetime in eastern time zone that event occurred, e.g., Timestamp('2020-01-09 23:01:47-0500', tz='US/Eastern')
+
+        time_elapsed: object
+            Time delta object for amount of time elapsed since game start, e.g., 0 days 02:21:37
+
+        time_elapsed_seconds: float
+            Time elapsed since game start in seconds, e.g., 8497.0
+
+        version: integer
+            Used for matching with HTML events, e.g., 1
 
     '''
     
@@ -3885,13 +4011,13 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
         df = pd.DataFrame(events_data)
 
         columns = ['season', 'session', 'game_id', 'game_date', 'event_team', 'event_team_name',
-                       'event_idx', 'period', 'period_time', 'period_seconds', 'game_seconds',
-                       'event', 'event_type',  'description', 'coords_x', 'coords_y', 'event_dt',
+                       'event_idx', 'period', 'period_seconds', 'game_seconds',
+                       'event', 'event_type',  'description', 'coords_x', 'coords_y',
                        'home_score', 'away_score', 'player_1', 'player_1_api_id', 'player_1_eh_id',
                        'player_1_type', 'player_2', 'player_2_api_id', 'player_2_eh_id', 'player_2_type',
                        'player_3', 'player_3_api_id', 'player_3_eh_id', 'player_3_type', 'player_4',
                        'player_4_api_id', 'player_4_eh_id', 'player_4_type', 'game_winning_goal',
-                       'empty_net_goal', 'penalty_severity', 'penalty_minutes', 'time_elapsed',
+                       'empty_net_goal', 'penalty_severity', 'penalty_minutes', 'event_dt', 'time_elapsed',
                        'time_elapsed_seconds', 'version']
 
         column_order = [x for x in columns if x in df.columns]
@@ -3909,30 +4035,118 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 ############################################## HTML events ##############################################
 
 ## []Refactored
-## []Docstring
+## [x]Docstring
 ## []Comments
 def scrape_html_events(game_ids, roster_data = None, session = None, nested = True):
-    '''
-    Scrapes the event data from the HTML endpoint. Returns a dataframe.
-
-    Used within the main play-by-play scraper
-    Parameters:
-    game_ids: a single API game ID (e.g., 2021020001) or list of game IDs
-
-    disable_print: boolean; default: False
-        If False, prints progress to the console
-
-    roster_data: dataframe; default: None
-        Can pass a dataframe of roster information to prevent re-scraping from the same endpoint.
-        If empty, scrapes roster data from the HTML endpoint
     
-    game_data: dataframe; default: None
-        Can pass a dataframe of game information to prevent re-scraping from the same endpoint.
-        If empty, scrapes game information data from the API endpoint
+    '''
+    --------- INFO ---------
 
-    session: requests Session object; default = None
+    Scrapes the event data from the NHL API for a given game ID or list-like object of game IDs.
+    Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
+    Data do not exist before 2010-2011 season.
+
+    By default returns a dictionary with game IDs as keys and lists of change-dictionaries as values.
+    If nested is False, returns a Pandas DataFrame.
+
+    Scrapes approximately x-y games per second. 
+
+    --------- REQUIRED PARAMETER(S) ---------
+
+    game_ids | integer or list-like object
+        A single 10-digit API game ID (e.g., 2019020684) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+
+    --------- OPTIONAL PARAMETER(S) ---------
+
+    roster_data | dictionary: default = None
+        If nested in other functions, can provide roster data from scrape function to prevent redundant hits to endpoints
+        If standalone, will scrape roster data for each game automatically
+
+    session | requests Session object: default = None
         When using in another scrape function, can pass the requests session to improve speed
-    '''    
+
+    nested | boolean: default = True
+        If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of changes as dictionaries 
+        If False, prints progress to the console and returns a dataframe
+
+    --------- RETURNS ---------
+
+    Default: Dictionary with game IDs as keys and lists of event-dictionaries as the values
+
+    If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
+
+    Each change in each game list is a dictionary with the following fields and values:
+
+        season: integer
+            8-digit season code, e.g., 20192020
+
+        session: object
+            Regular season or playoffs, e.g., R
+
+        game_id: integer
+            10-digit game identifier, e.g., 2019020684
+
+        event_team: object
+            3-letter abbreviation of the team for the event, e.g., NSH 
+
+        event_idx: object
+            Unique index number of event, in chronological order, e.g., 333
+
+        period: integer
+            Period number, e.g., 3
+
+        period_seconds: integer
+            Number of seconds elapsed in the period, e.g., 1178
+
+        game_seconds: integer
+            Number of seconds elapsed in the game, e.g., 3578
+
+        event: object
+            Name of the event, e.g., GOAL
+
+        description: object
+            Description of the event, e.g., NSH #35 RINNE(1), WRIST, DEF. ZONE, 185 FT.
+
+        strength: object
+            Strength state for event, e.g., EV
+
+        zone: object
+            Zone location of event, e.g., DEF
+
+        player_1: object
+            Name of the player, e.g.,  PEKKA RINNE
+
+        player_1_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data, e.g., PEKKA.RINNE
+        
+        player_2: object
+            Name of the player
+
+        player_2_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data
+
+        player_3: object
+            Name of the player
+
+        player_3_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data
+
+        shot_distance: float
+            Shot distance from net in feet, e.g., 185
+
+        shot_type: object
+            Type of shot, e.g., WRIST
+
+        penalty: object
+            Name of penalty
+
+        penalty_length: object
+            Length of penalty in minutes
+
+        version: integer
+            Used for matching with HTML events, e.g., 1
+
+    ''' 
     
     ## IMPORTANT LISTS AND DICTIONARIES
     NEW_TEAM_NAMES = {'L.A': 'LAK', 'N.J': 'NJD', 'S.J': 'SJS', 'T.B': 'TBL', 'PHX': 'ARI'}
@@ -4046,8 +4260,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                                 'PGEND': 'PRE-GAME END',
                                 'ANTHEM': 'NATIONAL ANTHEM',
                                 'EISTR': 'EARLY INTERMISSION START',
-                                'EIEND': 'EARLY INTERMISSION END'
-            }
+                                'EIEND': 'EARLY INTERMISSION END'}
 
             if event['event'] in list(non_descripts.keys()):
 
@@ -4056,7 +4269,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
             for old_name, new_name in NEW_TEAM_NAMES.items():
             
                 event['description'] = event['description'].replace(old_name, new_name).upper()
-                
+
             if game_id == 2012020018:
 
                 bad_names = {'EDM #9': 'VAN #9', 'VAN #93': 'EDM #93', 'VAN #94': 'EDM #94'}
@@ -4065,10 +4278,14 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
                     event['description'] = event['description'].replace(bad_name, good_name)
 
-                if game_id == 2018021133:
+            if game_id == 2018021133:
 
-                    event['description'] = event['description'].replace('WSH TAKEAWAY - #71 CIRELLI', 'TBL TAKEAWAY - #71 CIRELLI')
+                event['description'] = event['description'].replace('WSH TAKEAWAY - #71 CIRELLI', 'TBL TAKEAWAY - #71 CIRELLI')
 
+            if game_id == 2021020224 and event['description'] == ' - MTL #60 BELZILE VS BOS #92 NOSEK':
+
+                event['description'] = 'MTL WON NEU. ZONE - MTL #60 BELZILE VS BOS #92 NOSEK'
+                
             non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND']
                     
             if event['event'] not in non_team_events:
@@ -4097,14 +4314,12 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
             event['period_seconds'] = (60 * int(event['period_time'].split(':')[0])) + int(event['period_time'].split(':')[1])
 
+            event['game_seconds'] = (int(event['period']) - 1) * 1200 + event['period_seconds']
+
             if event['period'] == 5 and game_session == 'R':
 
                 event['game_seconds'] = 3900 + event['period_seconds']
 
-            else:
-
-                event['game_seconds'] = (int(event['period']) - 1) * 1200 + event['period_seconds']
-                
             event_list = ['GOAL', 'SHOT', 'TAKE', 'GIVE']
                     
             if event['event'] in event_list:
@@ -4402,12 +4617,30 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                 
         for event in events:
 
+            if 'period_seconds' not in event.keys():
+            
+                if 'time' in event.keys():
+                    
+                    time_split = event['time'].split(':')
+                    
+                    event['period_time'] = time_split[0] + ':' + time_split[1][:2]
+
+                    event['period_seconds'] = (60 * int(event['period_time'].split(':')[0])) + int(event['period_time'].split(':')[1])
+
+            if 'game_seconds' not in event.keys():
+
+                event['game_seconds'] = (int(event['period']) - 1) * 1200 + event['period_seconds']
+                    
+                if event['period'] == 5 and event['session'] == 'R':
+
+                    event['game_seconds'] = 3900 + event['period_seconds']
+
             if 'version' not in event.keys():
 
                 other_events = [x for x in events
                                 if x != event
                                 and x['event'] == event['event']
-                                and x['game_seconds'] == event['game_seconds']
+                                and x.get('game_seconds') == event['game_seconds']
                                 and x['period'] == event['period']
                                 and x.get('player_1_eh_id') is not None
                                 and event.get('player_1_eh_id') is not None
@@ -4428,26 +4661,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
                             other_event['version'] = version
 
-            if 'period_seconds' not in event.keys():
             
-                if 'time' in event.keys():
-                    
-                    time_split = event['time'].split(':')
-                    
-                    event['period_time'] = time_split[0] + ':' + time_split[1][:2]
-
-                    event['period_seconds'] = (60 * int(event['period_time'].split(':')[0])) + int(event['period_time'].split(':')[1])
-                    
-                    if event['period'] == 5 and event['session'] == 'R':
-
-                        event['game_seconds'] = 3900 + event['period_seconds']
-
-                    else:
-
-                        event['game_seconds'] = (int(event['period']) - 1) * 1200 + event['period_seconds']
-
-
-
         games_dict.update({game_id: events})
                 
         if game_id == game_ids[-1]:
@@ -4477,7 +4691,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
         df = pd.DataFrame(events_data)
 
         columns = ['season', 'session', 'game_id', 'event_team', 'event_idx', 
-                    'period', 'period_time', 'period_seconds', 'game_seconds',
+                    'period', 'period_seconds', 'game_seconds',
                     'event', 'description', 'strength', 'zone', 'player_1',
                     'player_1_eh_id', 'player_2', 'player_2_eh_id', 'player_3',
                     'player_3_eh_id', 'shot_distance', 'shot_type', 'penalty',
@@ -4498,22 +4712,22 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 ############################################## PBP functions ##############################################
 
 ## []Refactored
-## []Docstring
+## [x]Docstring
 ## []Comments
-def prep_pbp(game_id, game_info, html_events, api_events, changes, html_rosters):
+def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
-    Preps the play-by-play data by combining HTML and API events, and changes. 
+    Preps the play-by-play data by combining HTML and API events, changes, and rosters. 
     Used only within the scrape_pbp function.
 
     Returns a list of event-dictionaries as values.
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETER(S) ---------
 
     game_id | integer or list-like object
-        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+        A single 10-digit API game ID (e.g., 2022020002) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
     html_events | JSON object: default = None
         When using in another scrape function, can pass the live endpoint response as a JSON object to prevent redundant hits
@@ -4525,27 +4739,13 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, html_rosters)
         If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of changes as dictionaries 
         If False, prints progress to the console and returns a dataframe
 
-    html_rosters | boolean: default = True
+    rosters | boolean: default = True
         If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of changes as dictionaries 
         If False, prints progress to the console and returns a dataframe
 
-    --------- Returns ---------
+    --------- RETURNS ---------
 
-    Default: Dictionary with game IDs as keys and lists of change-dictionaries as the values
-
-    If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
-
-    Each change in each game list is a dictionary with the following fields and values:
-
-        season: integer
-            8-digit season code, e.g., 20222023
-
-        session: object
-            Regular season or playoffs, e.g., R
-
-        game_id: integer
-            10-digit game identifier, e.g., 2022020001
-
+    Dictionary with game IDs as keys and lists of event-dictionaries as the values
 
     '''
 
@@ -4555,7 +4755,7 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, html_rosters)
     html_events = html_events[game_id]
     api_events = api_events[game_id]
     changes = changes[game_id]
-    html_rosters = html_rosters[game_id]
+    rosters = rosters[game_id]
     
     for event in html_events:
         
@@ -4679,7 +4879,7 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, html_rosters)
         event['away_goalie_id'] = []
         event['away_goalie'] = []
     
-    roster = [x for x in html_rosters if x['status'] == 'ACTIVE']
+    roster = [x for x in rosters if x['status'] == 'ACTIVE']
     
     teams = np.unique([x['team'] for x in roster]).tolist()
     
@@ -4889,203 +5089,282 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
     
     '''
 
-    --------- Info ---------
+    --------- INFO ---------
 
-    Scrapes the changes from the HTML shifts endpoint for a given game ID or list-like object of game IDs.
-    Primarily used in combination with other scraping functions, but can be used standalone with nested parameter.
+    Scrapes play-by-play data from several HTML and API endpoints for a given game ID or list-like object of game IDs.
 
-    By default returns a dictionary with game IDs as keys and lists of change-dictionaries as values.
-    If nested is False, returns a Pandas DataFrame.
+    By default returns a Pandas DataFrame.
+    If nested is True, returns a dictionary with game IDs as keys and lists of event-dictionaries as values
 
-    Scrapes approximately 1-2 games per second. 
+    Scrapes approximately 1 game every 2-3 seconds. 
 
-    --------- Required parameters ---------
+    --------- REQUIRED PARAMETER(S) ---------
 
     game_ids | integer or list-like object
-        A single 10-digit API game ID (e.g., 2021020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
+        A single 10-digit API game ID (e.g., 2022020001) or list-like object of 10-digit game IDs (e.g., generator or Pandas Series)
 
-    --------- Optional parameters ---------
+    --------- OPTIONAL PARAMETER(S) ---------
 
-    shifts_data | dictionary: default = None
-        If nested in other functions, can provide shifts data from scrape function to prevent redundant hits to endpoints
-        If standalone, will scrape shifts data for each game automatically
+    nested | boolean: default = False
+        If True, returns a dictionary with game IDs as keys and lists of events as dictionaries 
+        If False, returns a Pandas DataFrame
 
-    roster_data | dictionary: default = None
-        If nested in other functions, can provide roster data from scrape function to prevent redundant hits to endpoints
-        If standalone, will scrape roster data for each game automatically
-
-    session | requests Session object: default = None
+    disable_print | boolean: default = False
         When using in another scrape function, can pass the requests session to improve speed
 
-    nested | boolean: default = True
-        If True, progress bar is disabled and returns a dictionary with game IDs as keys and lists of changes as dictionaries 
-        If False, prints progress to the console and returns a dataframe
+    --------- RETURNS ---------
 
-    --------- Returns ---------
+    Default: Pandas DataFrame with each event as a row and the columns listed below. 
 
-    Default: Dictionary with game IDs as keys and lists of change-dictionaries as the values
+    If nested = True, then returns a dictionary with game IDs as keys and lists of event-dictionaries as the values
 
-    If nested = False, then returns a Pandas DataFrame, converting the dictionary keys to columns.
-
-    Each change in each game list is a dictionary with the following fields and values:
+    The play-by-play DataFrame returned contains the following fields:
 
         season: integer
-            8-digit season code, e.g., 20222023
+            8-digit season code, e.g., 20192020
 
         session: object
             Regular season or playoffs, e.g., R
 
         game_id: integer
-            10-digit game identifier, e.g., 2022020001
+            10-digit game identifier, e.g., 2019020684
 
-        team: object
-            3-letter team code, e.g., NSH
-
-        team_name: object
-            Full team name, e.g., NASHVILLE PREDATORS
-
-        team_venue: object
-            Whether team is home or away, e.g., home
+        game_date: object
+            Date of game in Eastern time-zone, e.g., 2020-01-09
 
         period: integer
-            Game period, e.g., 1
-
-        period_time: object
-            Clock time (ascending), e.g., 0:00
+            Game period, e.g., 3
 
         period_seconds: integer
-            Period time in seconds, e.g., 0
+            Period time elapsed in seconds, e.g., 1178
 
-        number_on: integer
+        game_seconds: integer
+            Game time elapsed in seconds, e.g., 3578
+
+        strength_state: object
+            Game time elapsed in seconds, e.g., 5vE
+
+        event_idx: object
+            Unique index number of event, in chronological order, e.g., 665
+
+        event_team: object
+            3-letter abbreviation of the team for the event, e.g., NSH 
+
+        event: object
+            Name of the event, e.g., GOAL
+
+        event_type: object
+            Type of the event, e.g., GOAL
+
+        description: object
+            Description of the event, e.g., NSH #35 RINNE(1), WRIST, DEF. ZONE, 185 FT.
+
+        zone: object
+            Zone location of event, e.g., DEF
+
+        coords_x: float
+            X coordinates of event, e.g., -96
+
+        coords_y: float
+            Y coordinates of event, e.g., 11
+
+        player_1: object
+            Name of the player, e.g.,  PEKKA RINNE
+
+        player_1_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data, e.g., PEKKA.RINNE
+
+        player_1_api_id: integer
+            Unique ID for the player, e.g., 8471469
+
+        player_2: object
+            Name of the player, e.g.,  PEKKA RINNE
+
+        player_2_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data, e.g., PEKKA.RINNE
+
+        player_2_api_id: integer
+            Unique ID for the player, e.g., 8471469
+
+        player_3: object
+            Name of the player, e.g.,  PEKKA RINNE
+
+        player_3_eh_id: object
+            Identifier that can be used to match with Evolving Hockey data, e.g., PEKKA.RINNE
+
+        player_3_api_id: integer
+            Unique ID for the player, e.g., 8471469
+        
+        shot_type: object
+            Type of shot, e.g., WRIST
+
+        shot_distance: float
+            Shot distance from net in feet, e.g., 185
+        
+        event_detail: object
+            Additional information available for the event from the API, e.g., WRIST SHOT
+        
+        penalty: object
+            Name of penalty
+
+        penalty_length: object
+            Length of penalty in minutes
+
+        penalty_severity: object
+            Whether penalty is a minor or major
+
+        event_dt: object
+            Datetime in eastern time zone that event occurred, e.g., Timestamp('2020-01-09 23:01:47-0500', tz='US/Eastern')
+
+        time_elapsed: object
+            Time delta object for amount of time elapsed since game start, e.g., 0 days 02:21:37
+
+        time_elapsed_seconds: float
+            Time elapsed since game start in seconds, e.g., 8497.0
+
+        home_score: integer
+            Number of goals scored by home team, e.g., 2
+
+        away_score: integer
+            Number of goals scored by away team, e.g., 5
+
+        home: integer
+            Whether event team is home, e.g., 0
+
+        away: integer
+            Whether event team is away, e.g., 1
+
+        change_on_count: integer
             Number of players entering the ice, e.g., 6
 
-        number_off: integer
+        change_off_count: integer
             Number of players exiting the ice, e.g., 0
 
-        players_on: tuple
+        change_on_jersey: list
             Abbreviations of players on, in jersey order, e.g., (NSH9, NSH45, NSH59, NSH64, NSH74, NSH95)
             If returning a DataFrame, will be a string, e.g., NSH9, NSH45, NSH59, NSH64, NSH74, NSH95
 
-        players_on_names: tuple
+        change_on: list
             Names of players on, in jersey order, e.g., (FILIP FORSBERG, ALEX CARRIER, ROMAN JOSI, MIKAEL GRANLUND, JUUSE SAROS, MATT DUCHENE)
             If returning a DataFrame, will be a string, e.g., FILIP FORSBERG, ALEX CARRIER, ROMAN JOSI, MIKAEL GRANLUND, JUUSE SAROS, MATT DUCHENE
 
-        players_on_eh_id: tuple
+        change_on_id: list
             Evolving Hockey IDs of players on, in jersey order, e.g., (FILIP.FORSBERG, ALEX.CARRIER, ROMAN.JOSI, MIKAEL.GRANLUND, JUUSE.SAROS, MATT.DUCHENE)
             If returning a DataFrame, will be a string, e.g., FILIP.FORSBERG, ALEX.CARRIER, ROMAN.JOSI, MIKAEL.GRANLUND, JUUSE.SAROS, MATT.DUCHENE 
 
-        players_on_positions: tuple
+        change_on_positions: list
             Positions of players on, in jersey order, e.g., (L, D, D, C, G, C)
             If returning a DataFrame, will be a string, e.g., L, D, D, C, G, C
 
-        players_off: tuple
+        change_off_jersey: list
             Abbreviations of players off, in jersey order
             If returning a DataFrame, will be a string
 
-        players_off_names: tuple
+        change_off: list
             Names of players off, in jersey order
             If returning a DataFrame, will be a string
 
-        players_off_eh_id: tuple
+        change_off_id: list
             Evolving Hockey IDs of players off, in jersey order
             If returning a DataFrame, will be a string
 
-        players_off_positions: tuple
+        change_off_positions: list
             Positions of players off, in jersey order
             If returning a DataFrame, will be a string
 
-        number_on_forwards: integer
+        change_on_forwards_count: integer
             Number of forwards entering the ice, e.g., 6
 
-        number_off_forwards: integer
+        change_off_forwards_count: integer
             Number of forwards exiting the ice, e.g., 0
 
-        forwards_on: tuple
+        change_on_forwards_jersey: list
             Abbreviations of forwards on, in jersey order, e.g., (NSH9, NSH64, NSH95)
             If returning a DataFrame, will be a string, e.g., NSH9, NSH64, NSH95
 
-        forwards_on_names: tuple
+        change_on_forwards: list
             Names of forwards on, in jersey order, e.g., (FILIP FORSBERG, MIKAEL GRANLUND, MATT DUCHENE)
             If returning a DataFrame, will be a string, e.g., FILIP FORSBERG, MIKAEL GRANLUND, MATT DUCHENE
 
-        forwards_on_eh_id: tuple
+        change_on_forwards_id: list
             Evolving Hockey IDs of forwards on, in jersey order, e.g., (FILIP.FORSBERG, MIKAEL.GRANLUND, MATT.DUCHENE)
             If returning a DataFrame, will be a string, e.g., FILIP.FORSBERG, MIKAEL.GRANLUND, MATT.DUCHENE
 
-        forwards_off: tuple
+        change_off_forwards_jersey: list
             Abbreviations of forwards off, in jersey order
             If returning a DataFrame, will be a string
 
-        forwards_off_name: tuple
+        change_off_forwards: list
             Names of forwards off, in jersey order
             If returning a DataFrame, will be a string
 
-        forwards_off_eh_id: tuple
+        change_off_forwards_id: list
             Evolving Hockey IDs of forwards off, in jersey order
             If returning a DataFrame, will be a string
 
-        number_on_defense: integer
-            Number of players entering the ice, e.g., 6
+        change_on_defense_count: list
+            Number of defense entering the ice, e.g., 6
 
-        number_off_defense: integer
-            Number of players exiting the ice, e.g., 0
+        change_off_defense_count: list
+            Number of defense exiting the ice, e.g., 0
 
-        defense_on: tuple
+        change_on_defense_jersey: list
             Abbreviations of defense on, in jersey order, e.g., (NSH45, NSH59)
             If returning a DataFrame, will be a string, e.g., NSH45, NSH59
 
-        defense_on_names: tuple
+        change_on_defense: list
             Names of defense on, in jersey order, e.g., (ALEX CARRIER, ROMAN JOSI)
             If returning a DataFrame, will be a string, e.g., ALEX CARRIER, ROMAN JOSI
 
-        defense_on_eh_id: tuple
+        change_on_defense_id: list
             Evolving Hockey IDs of defense on, in jersey order, e.g., (ALEX.CARRIER, ROMAN.JOSI)
             If returning a DataFrame, will be a string, e.g., ALEX.CARRIER, ROMAN.JOSI
 
-        defense_off: tuple
+        change_off_defense_jersey: list
             Abbreviations of defense off, in jersey order
             If returning a DataFrame, will be a string
 
-        defense_off_names: tuple
+        change_off_defense: list
             Names of defense off, in jersey order
             If returning a DataFrame, will be a string
 
-        defense_off_eh_id: tuple
+        change_off_defense_id: list
             Evolving Hockey IDs of defense off, in jersey order
             If returning a DataFrame, will be a string
 
-        number_on_goalies: integer
+        change_on_goalie_count: integer
             Number of goalies entering the ice, e.g., 6
 
-        number_off_goalies: integer
+        change_off_goalie_count: integer
             Number of goalies exiting the ice, e.g., 0
 
-        goalies_on: tuple
+        change_on_goalie_jersey: list
             Abbreviations of goalies on, in jersey order, e.g., (NSH74)
             If returning a DataFrame, will be a string, e.g., NSH74
 
-        goalies_on_names: tuple
+        change_on_goalie: list
             Names of goalies on, in jersey order, e.g., (JUUSE SAROS)
             If returning a DataFrame, will be a string, e.g., JUUSE SAROS
 
-        goalies_on_eh_id: tuple
+        change_on_goalie_id: list
             Evolving Hockey IDs of goalies on, in jersey order, e.g., (JUUSE.SAROS)            
             If returning a DataFrame, will be a string, e.g., JUUSE.SAROS
 
-        goalies_off: tuple
+        change_off_goalie_jersey: list
             Abbreviations of goalies off, in jersey order
             If returning a DataFrame, will be a string
 
-        goalies_off_names: tuple
+        change_off_goalie: list
             Names of goalies off, in jersey order
             If returning a DataFrame, will be a string
 
-        goalies_off_eh_id: tuple
+        change_off_goalie_id: list
             Evolving Hockey IDs of players off, in jersey order
             If returning a DataFrame, will be a string
 
-
     '''
+
+
     
     ## Convert game IDs to list if given a single game ID
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
@@ -5200,11 +5479,11 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
                    'strength_state', 'score_state', 'event_idx', 'event_team',
                    'event', 'event_type', 'description', 'zone',
                    'coords_x', 'coords_y', 'event_length', 'player_1', 'player_1_eh_id',
-                   'player_1_api_id', 'player_1_eh_id_api', 'player_2',
-                   'player_2_eh_id',  'player_2_api_id', 'player_2_eh_id_api',
-                   'player_3', 'player_3_eh_id', 'player_3_api_id', 'player_3_eh_id_api',
+                   'player_1_api_id',  'player_2',
+                   'player_2_eh_id',  'player_2_api_id', 
+                   'player_3', 'player_3_eh_id', 'player_3_api_id',
                    'shot_type', 'shot_distance', 'event_detail', 
-                   'penalty', 'penalty_length', 'event_dt',
+                   'penalty', 'penalty_length', 'penalty_severity', 'event_dt',
                    'time_elapsed', 'time_elapsed_seconds', 'home_score',
                    'away_score', 'home', 'away', 'home_team', 'home_team_name',
                    'away_team', 'away_team_name', 'home_skaters', 'away_skaters',
