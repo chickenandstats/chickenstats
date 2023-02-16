@@ -4284,11 +4284,15 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
                 event['description'] = event['description'].replace('WSH TAKEAWAY - #71 CIRELLI', 'TBL TAKEAWAY - #71 CIRELLI')
 
-            if game_id == 2021020224 and event['description'] == ' - MTL #60 BELZILE VS BOS #92 NOSEK':
+            if game_id == 2021020224:
 
-                event['description'] = 'MTL WON NEU. ZONE - MTL #60 BELZILE VS BOS #92 NOSEK'
+                event['description'] = event['description'].replace(' - MTL #60 BELZILE VS BOS #92 NOSEK', 'MTL WON NEU. ZONE - MTL #60 BELZILE VS BOS #92 NOSEK')
+
+            if game_id == 2018020989:
+
+                event['time'] = event['time'].replace('-16:0-120:00', '5:000:00')
                 
-            non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND']
+            non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND', 'SOC']
                     
             if event['event'] not in non_team_events:
                     
@@ -4772,14 +4776,25 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
         event_data = {}
         
         event_data.update(event)
+
+        non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND', 'SOC']
+
+        if event['event'] in non_team_events:
+
+            api_matches = [x for x in api_events if x['event'] == event['event']
+                           and x['period'] == event['period']
+                           and x['period_seconds'] == event['period_seconds']
+                           and x['version'] == event['version']]
+
+        else:
         
-        api_matches = [x for x in api_events if x['event'] == event['event']
-                        and x.get('event_team') is not None
-                        and event.get('event_team') is not None
-                        and x['event_team'] == event['event_team']
-                       and x['period'] == event['period']
-                       and x['period_seconds'] == event['period_seconds']
-                       and x['version'] == event['version']]
+            api_matches = [x for x in api_events if x['event'] == event['event']
+                            and x.get('event_team') is not None
+                            and event.get('event_team') is not None
+                            and x['event_team'] == event['event_team']
+                           and x['period'] == event['period']
+                           and x['period_seconds'] == event['period_seconds']
+                           and x['version'] == event['version']]
         
         if len(api_matches) == 0:
             
@@ -4859,6 +4874,7 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
         sort_dict = {'PGSTR': 1,
                      'PGEND': 2,
                      'ANTHEM': 3,
+                     'PSTR': 3,
                      'CHL': 4,
                      'DELPEN': 4,
                      'BLOCK': 4,
@@ -4873,7 +4889,6 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
                      'CHANGE': 8,
                      'EISTR': 9,
                      'EIEND': 10,
-                     'PSTR': 11,
                      'FAC': 12,
                      'PEND': 13,
                      'SOC': 14,
@@ -5079,6 +5094,10 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
             or (event['away_skaters'] > 5 and event['away_goalie'] != [])):
 
             event['strength_state'] = 'ILLEGAL'
+
+        if event['period'] == 5 and event['session'] == 'R':
+
+            event['strength_state'] = '1v0'
 
         if event['event'] == 'CHANGE':
 
