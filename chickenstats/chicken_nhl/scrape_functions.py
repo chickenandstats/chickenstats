@@ -4291,6 +4291,10 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
             if game_id == 2018020989:
 
                 event['time'] = event['time'].replace('-16:0-120:00', '5:000:00')
+
+            if game_id == 2017020463:
+
+                event['time'] = event['time'].replace('-16:0-120:00', '2:022:58')
                 
             non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND', 'SOC']
                     
@@ -4837,15 +4841,23 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
     
     for event in game_list:
 
-        if event.get('player_3_type') == 'GOALIE':
+        if event.get('player_2_type') == 'GOALIE':
 
-            event['player_3'] = np.nan
+            new_values = {'player_2': np.nan,
+                            'player_2_eh_id': np.nan,
+                            'player_2_api_id': np.nan,
+                            'player_2_type': np.nan}
 
-            event['player_3_eh_id'] = np.nan
+            event.update(new_values)
 
-            event['player_3_api_id'] = np.nan
+        elif event.get('player_3_type') == 'GOALIE':
 
-            event['player_3_type'] = np.nan
+            new_values = {'player_3': np.nan,
+                            'player_3_eh_id': np.nan,
+                            'player_3_api_id': np.nan,
+                            'player_3_type': np.nan}
+
+            event.update(new_values)
 
         new_values = {'game_date': game_info['game_date'],
                         'home_team': game_info['home_team'],
