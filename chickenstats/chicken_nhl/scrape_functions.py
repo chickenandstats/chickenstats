@@ -4843,16 +4843,7 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
             
             event_data.update(new_values)
             
-            game_list.append(event_data)
-
-        elif len(api_matches) > 1:
-
-            #for match in api_matches:
-
-            if game_id == 2016021127 and event['game_seconds'] == 3515:
-
-                display(api_matches)
-            
+            game_list.append(event_data)            
             
     game_list.extend(changes)
     
