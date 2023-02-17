@@ -3896,14 +3896,15 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
 
                         play['event_team_name'] = game_info['home_team_name']
                         
-                if (play['event'] == 'PENL' and
-                    'served by' in play['description'].lower()):
+                if (play['event'] == 'PENL'):
 
-                    players.insert(0, {'player': {'fullName': 'BENCH',
-                                                    'id': 'BENCH',},
-                                        'playerType': 'BENCH'})
-                    
-                    players[1]['playerType'] = 'SERVED BY'
+                    if 'served by' in play['description'].lower() and 'team' in play['description'].lower():
+
+                        players.insert(0, {'player': {'fullName': 'BENCH',
+                                                        'id': 'BENCH',},
+                                            'playerType': 'BENCH'})
+                        
+                        players[1]['playerType'] = 'SERVED BY'
                     
                 for idx, player in enumerate(players):
 
@@ -4286,7 +4287,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
             if game_id == 2021020224:
 
-                event['description'] = event['description'].replace(' - MTL #60 BELZILE VS BOS #92 NOSEK', 'MTL WON NEU. ZONE - MTL #60 BELZILE VS BOS #92 NOSEK')
+                event['description'] = event['description'].replace(' - MTL #60 BELZILE VS BOS #92 NOSEK','MTL WON NEU. ZONE - MTL #60 BELZILE VS BOS #92 NOSEK')
 
             if game_id == 2018020989:
 
@@ -4295,6 +4296,10 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
             if game_id == 2017020463:
 
                 event['time'] = event['time'].replace('-16:0-120:00', '2:022:58')
+
+            if game_id == 2016021127:
+
+                event['description'] = event['description'].replace('BOS #55 ACCIARI ( MIN), DEF. ZONE', 'BOS #55 ACCIARI MISCONDUCT (10 MIN), DEF. ZONE')
                 
             non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND', 'SOC']
                     
@@ -4796,6 +4801,9 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
                             and x.get('event_team') is not None
                             and event.get('event_team') is not None
                             and x['event_team'] == event['event_team']
+                            and x.get('player_1_eh_id') is not None
+                            and event.get('player_1_eh_id') is not None
+                            and x['player_1_eh_id'] == event['player_1_eh_id']
                            and x['period'] == event['period']
                            and x['period_seconds'] == event['period_seconds']
                            and x['version'] == event['version']]
@@ -4836,6 +4844,15 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
             event_data.update(new_values)
             
             game_list.append(event_data)
+
+        elif len(api_matches) > 1:
+
+            #for match in api_matches:
+
+            if game_id == 2016021127 and event['game_seconds'] == 3515:
+
+                display(api_matches)
+            
             
     game_list.extend(changes)
     
@@ -4910,7 +4927,7 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
 
         event['sort_value'] = sort_dict[event['event']]
             
-    game_list = sorted(game_list, key = lambda k: (k['period'], k['period_seconds'], k['version'], k['sort_value']))
+    game_list = sorted(game_list, key = lambda k: (k['period'], k['period_seconds'], k['sort_value'])) #, k['version']
     
     for event in game_list:
 
@@ -5557,7 +5574,7 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
                    'change_off_forwards_id', 'change_on_defense_count', 'change_off_defense_count',
                    'change_on_defense', 'change_on_defense_id',  'change_off_defense', 'change_off_defense_id',
                    'change_on_goalie_count', 'change_off_goalie_count',
-                   'change_on_goalie', 'change_on_goalie_id','change_off_goalie', 'change_off_goalie_id',
+                   'change_on_goalie', 'change_on_goalie_id','change_off_goalie', 'change_off_goalie_id', 'version'
         ]
 
         columns = [x for x in columns if x in df.columns]
