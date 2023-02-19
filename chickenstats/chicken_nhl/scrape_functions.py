@@ -2451,6 +2451,8 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
 
         actives = {x['team_jersey']: x for x in roster if x['status'] == 'ACTIVE'}
 
+        scratches = {x['team_jersey']: x for x in roster if x['status'] == 'SCRATCH'}
+
         ## Creating basic information from game ID
             
         year = int(str(game_id)[0:4])
@@ -2590,9 +2592,11 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
                                   'team': team_codes[team_name],
                                   'team_venue': team_venue.upper(),
                                   'player_name': shifts['player_name'],
-                                  'eh_id': actives[f"{team_codes[team_name]}{shifts['jersey']}"]['eh_id'],
+                                  'eh_id': actives.get(f"{team_codes[team_name]}{shifts['jersey']}",
+                                                            scratches.get(f"{team_codes[team_name]}{shifts['jersey']}"))['eh_id'],
                                   'team_jersey': f"{team_codes[team_name]}{shifts['jersey']}",
-                                  'position': actives[f"{team_codes[team_name]}{shifts['jersey']}"]['position'],
+                                  'position': actives.get(f"{team_codes[team_name]}{shifts['jersey']}",
+                                                            scratches.get(f"{team_codes[team_name]}{shifts['jersey']}"))['position'],
                                   'jersey': int(shifts['jersey']),
                                   'period': int(shift_dict['period'].replace('OT', '4').replace('SO', '5')),
                                   'shift_count': int(shift_dict['shift_count']),
@@ -3817,7 +3821,7 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
                            'PERIOD_START': 'PSTR', 'PERIOD_END': 'PEND', 'PERIOD_OFFICIAL': 'POFF', 'GAME_OFFICIAL': 'GOFF',
                            'GAME_SCHEDULED': 'GSCH', 'GAME_END': 'GEND', 'CHALLENGE': 'CHL', 'SHOOTOUT_COMPLETE': 'SOC',
                            'EARLY_INT_START': 'EISTR', 'EARLY_INT_END': 'EIEND', 'PERIOD_READY': 'PREADY',
-                           'FAILED_SHOT_ATTEMPT': 'MISS'
+                           'FAILED_SHOT_ATTEMPT': 'MISS', 'EMERGENCY_GOALTENDER': 'EGT',
                            }
             
             new_values = {'season': season,
@@ -3898,11 +3902,18 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
                         
                 if (play['event'] == 'PENL'):
 
-                    if 'served by' in play['description'].lower() and 'team' in play['description'].lower():
+                    if ('served by' in play['description'].lower() and
+                        ('too many' in play['description'].lower() or
+                            'team' in play['description'].lower() or
+                            'unsucc. chlg' in play['description'].lower() or
+                            'bench' in play['description'].lower() or
+                            (play['description'].lower()[:5] == 'abuse')
+                            
+                            )):
 
                         players.insert(0, {'player': {'fullName': 'BENCH',
                                                         'id': 'BENCH',},
-                                            'playerType': 'BENCH'})
+                                            'playerType': 'PENALTYON'})
                         
                         players[1]['playerType'] = 'SERVED BY'
                     
@@ -4250,10 +4261,20 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
                               'game_id': game_id,
                               'event_idx': int(event['event_idx']),
                               'description': unidecode(event['description']).upper(),
-                              'period': int(event['period']),
+                              'period': event['period'],
                          }
             
                 event.update(new_values)
+
+                ## This event is missing from the API and doesn't have a player in the HTML endpoint
+
+                if game_id == 2022020194 and event['event_idx'] == 134:
+
+                    continue
+
+                if game_id == 2022020673 and event['event_idx'] == 208:
+
+                    continue
 
                 events.append(event)
 
@@ -4300,6 +4321,54 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
             if game_id == 2016021127:
 
                 event['description'] = event['description'].replace('BOS #55 ACCIARI ( MIN), DEF. ZONE', 'BOS #55 ACCIARI MISCONDUCT (10 MIN), DEF. ZONE')
+
+            if game_id == 2015020904:
+
+                event['time'] = event['time'].replace('-16:0-120:00', '5:000:00')
+
+            if game_id == 2014021118:
+
+                event['time'] = event['time'].replace('-16:0-120:00', '5:000:00')
+
+            if game_id == 2013020083:
+
+                event['time'] = event['time'].replace('-16:0-120:00', '5:000:00')
+
+            if game_id == 2013020274:
+
+                event['time'] = event['time'].replace('-16:0-120:00', '5:000:00')
+
+            if game_id == 2013020644:
+
+                event['time'] = event['time'].replace('-16:0-120:00', '5:000:00')
+
+            if game_id == 2013020971:
+
+                if event['event_idx'] == 1:
+
+                    event['period'] = 1
+
+                    event['time'] = '0:0020:00'
+
+            if event['event'] == 'PEND' and event['time'] == '-16:0-120:00':
+
+                goals = [x for x in events if x['period'] == event['period'] and x['event'] == 'GOAL']
+
+                if len(goals) == 0:
+
+                    if int(event['period']) == 4 and event['session'] == 'R':
+
+                        event['time'] = event['time'].replace('-16:0-120:00', '5:000:00')
+
+                    else:
+
+                        event['time'] = event['time'].replace('-16:0-120:00', '20:000:00')
+
+                elif len(goals) > 0:
+
+                    goal = goals[-1]
+
+                    event['time'] = event['time'].replace('-16:0-120:00', goal['time'])
                 
             non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND', 'SOC']
                     
@@ -4309,10 +4378,14 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
                     event['event_team'] = re.search(event_team_re, event['description']).group(1)
 
+                    if event['event_team'] == 'LEA':
+
+                        event['event_team'] = ''
+
                 except AttributeError:
 
                     continue
-                    
+
             if event['event'] == 'FAC':
                 
                 event['event_team'] = re.search(fo_team_re, event['description']).group(1)
@@ -4320,6 +4393,8 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
             if event['event'] == 'BLOCK' and 'BLOCKED BY' in event['description']:
 
                 event['event_team'] = re.search(block_team_re, event['description']).group(1)
+
+            event['period'] = int(event['period'])
                 
             og_time = event['time']
 
@@ -4632,10 +4707,6 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
                 continue
 
-            ## Adding event descriptions to events that don't have them
-
-            
-
         events = sorted(events, key = lambda k: (k['event_idx']))
                 
         for event in events:
@@ -4643,6 +4714,8 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
             if 'period_seconds' not in event.keys():
             
                 if 'time' in event.keys():
+
+                    event['period'] = int(event['period'])
                     
                     time_split = event['time'].split(':')
                     
@@ -4781,16 +4854,38 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
     rosters = rosters[game_id]
     
     for event in html_events:
+
+        if event['event'] == 'EGPID':
+
+            continue
         
         event_data = {}
         
         event_data.update(event)
 
-        non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND', 'SOC']
+        non_team_events = ['STOP', 'ANTHEM', 'PGSTR', 'PGEND', 'PSTR', 'PEND', 'EISTR', 'EIEND', 'GEND', 'SOC', 'EGT']
 
         if event['event'] in non_team_events:
 
             api_matches = [x for x in api_events if x['event'] == event['event']
+                           and x['period'] == event['period']
+                           and x['period_seconds'] == event['period_seconds']
+                           and x['version'] == event['version']]
+
+
+        elif event['event'] == 'CHL' and event.get('event_team', '') == '':
+
+            api_matches = [x for x in api_events if x['event'] == event['event']
+                           and x['period'] == event['period']
+                           and x['period_seconds'] == event['period_seconds']
+                           and x['version'] == event['version']]
+
+        elif event['event'] == 'CHL' and event.get('event_team') is not None:
+
+            api_matches = [x for x in api_events if x['event'] == event['event']
+                            and x.get('event_team') is not None
+                            and event.get('event_team') is not None
+                            and x['event_team'] == event['event_team']
                            and x['period'] == event['period']
                            and x['period_seconds'] == event['period_seconds']
                            and x['version'] == event['version']]
@@ -4804,6 +4899,13 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
                             and x.get('player_1_eh_id') is not None
                             and event.get('player_1_eh_id') is not None
                             and x['player_1_eh_id'] == event['player_1_eh_id']
+                           and x['period'] == event['period']
+                           and x['period_seconds'] == event['period_seconds']
+                           and x['version'] == event['version']]
+
+        if event['event'] == 'FAC' and len(api_matches) == 0:
+
+            api_matches = [x for x in api_events if x['event'] == event['event']
                            and x['period'] == event['period']
                            and x['period_seconds'] == event['period_seconds']
                            and x['version'] == event['version']]
@@ -4894,18 +4996,20 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
         sort_dict = {'PGSTR': 1,
                      'PGEND': 2,
                      'ANTHEM': 3,
-                     'PSTR': 3,
-                     'CHL': 4,
-                     'DELPEN': 4,
-                     'BLOCK': 4,
-                     'GIVE': 4,
-                     'HIT': 4,
-                     'MISS': 4,
-                     'SHOT': 4,
-                     'TAKE': 4,
-                     'PENL': 5,
-                     'GOAL': 6, 
-                     'STOP': 7,
+                     'EGT': 3,
+                     'CHL': 3,
+                     'DELPEN': 3,
+                     'BLOCK': 3,
+                     'GIVE': 3,
+                     'HIT': 3,
+                     'MISS': 3,
+                     'SHOT': 3,
+                     'TAKE': 3,
+                     'PENL': 4,
+                     'GOAL': 5, 
+                     'STOP': 6,
+                     'PSTR': 7,
+                     
                      'CHANGE': 8,
                      'EISTR': 9,
                      'EIEND': 10,
@@ -5126,6 +5230,8 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
                                                     x['period'] == event['period'])]
 
             if len(faceoffs) > 0:
+
+                display(faceoffs)
 
                 event['coords_x'] = faceoffs[0]['coords_x']
 
@@ -5544,9 +5650,9 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
                    'strength_state', 'score_state', 'event_idx', 'event_team',
                    'event', 'event_type', 'description', 'zone',
                    'coords_x', 'coords_y', 'event_length', 'player_1', 'player_1_eh_id',
-                   'player_1_api_id', 'player_1_type',  'player_2',
-                   'player_2_eh_id',  'player_2_api_id', 'player_2_type', 
-                   'player_3', 'player_3_eh_id', 'player_3_api_id', 'player_3_type',
+                   'player_1_api_id', 'player_1_type', 'player_1_eh_id_api', 'player_2',
+                   'player_2_eh_id',  'player_2_api_id', 'player_2_type', 'player_2_eh_id_api', 
+                   'player_3', 'player_3_eh_id', 'player_3_api_id', 'player_3_type', 'player_3_eh_id_api', 
                    'shot_type', 'shot_distance', 'event_detail', 
                    'penalty', 'penalty_length', 'penalty_severity', 'event_dt',
                    'time_elapsed', 'time_elapsed_seconds', 'home_score',
