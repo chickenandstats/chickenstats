@@ -54,6 +54,7 @@ import re
 
 # These are dictionaries of names that are used throughout the module
 from chickenstats.chicken_nhl.info import correct_names_dict, correct_api_names_dict, team_codes
+from chickenstats.chicken_nhl.scrape_fixes import api_events_fixes
 
 ############################################## Requests functions & classes ##############################################
 
@@ -3907,8 +3908,9 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
                             'team' in play['description'].lower() or
                             'unsucc. chlg' in play['description'].lower() or
                             'bench' in play['description'].lower() or
-                            (play['description'].lower()[:5] == 'abuse')
-                            
+                            play['description'].lower()[:5] == 'abuse' or
+                            'head coach' in play['description'].lower()
+                            or 'un. chlg' in play['description'].lower()
                             )):
 
                         players.insert(0, {'player': {'fullName': 'BENCH',
@@ -3916,6 +3918,12 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
                                             'playerType': 'PENALTYON'})
                         
                         players[1]['playerType'] = 'SERVED BY'
+
+                    elif 'against' in play['description'].lower() and 'served by' in play['description'].lower():
+
+                        if players[1]['playerType'].upper() == 'SERVEDBY':
+
+                            playerse[1], players[2] = players[2], players[1]
                     
                 for idx, player in enumerate(players):
 
@@ -3993,6 +4001,8 @@ def scrape_api_events(game_ids, live_response = None, session = None, nested = T
                         version += 1
                     
                         other_event['version'] = version
+
+        game_list = api_events_fixes(game_id, game_list)
     
         games_dict.update({game_id: game_list})  
         
@@ -4179,7 +4189,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
     distance_re = re.compile('(\d+) FT')
     served_re = re.compile('([A-Z]{3})\s.+SERVED BY: #([0-9]+)')
     #served_drawn_re = re.compile('([A-Z]{3})\s#.*\sSERVED BY: #([0-9]+)')
-    drawn_re = re.compile('DRAWN BY: ([A-Z]{3}) ##([0-9]+)')
+    drawn_re = re.compile('DRAWN BY: ([A-Z]{3}) #([0-9]+)')
     
     ## Convert game IDs to list if given a single game ID
     game_ids = convert_to_list(obj = game_ids, object_type = 'game ID')
@@ -4464,7 +4474,7 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
             if event['event'] in penalty_events:
 
-                if 'TEAM' in event['description'] and 'SERVED BY' in event['description']:
+                if ('TEAM' in event['description'] or 'HEAD COACH' in event['description']) and 'SERVED BY' in event['description']:
 
                     event['player_1'] = 'BENCH'
 
@@ -4488,21 +4498,21 @@ def scrape_html_events(game_ids, roster_data = None, session = None, nested = Tr
 
                     try:
 
-                        served_by = re.search(served_re, event['description'])
-
-                        served_name = served_by.group(1) + str(served_by.group(2))
-
-                        event[f'player_2'] = actives[served_name]['player_name']
-
-                        event[f'player_2_eh_id'] = actives[served_name]['eh_id']
-
                         drawn_by = re.search(drawn_re, event['description'])
 
                         drawn_name = drawn_by.group(1) + str(drawn_by.group(2))
 
-                        event[f'player_3'] = actives[drawn_name]['player_name']
+                        event[f'player_2'] = actives[drawn_name]['player_name']
 
-                        event[f'player_3_eh_id'] = actives[drawn_name]['eh_id']
+                        event[f'player_2_eh_id'] = actives[drawn_name]['eh_id']
+
+                        served_by = re.search(served_re, event['description'])
+
+                        served_name = served_by.group(1) + str(served_by.group(2))
+
+                        event[f'player_3'] = actives[served_name]['player_name']
+
+                        event[f'player_3_eh_id'] = actives[served_name]['eh_id']
 
                     except AttributeError:
 
@@ -4955,6 +4965,7 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
 
             new_values = {'player_2': np.nan,
                             'player_2_eh_id': np.nan,
+                            'player_2_eh_id_api': np.nan,
                             'player_2_api_id': np.nan,
                             'player_2_type': np.nan}
 
@@ -4964,6 +4975,7 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
 
             new_values = {'player_3': np.nan,
                             'player_3_eh_id': np.nan,
+                            'player_3_eh_id_api': np.nan,
                             'player_3_api_id': np.nan,
                             'player_3_type': np.nan}
 
@@ -5230,8 +5242,6 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
                                                     x['period'] == event['period'])]
 
             if len(faceoffs) > 0:
-
-                display(faceoffs)
 
                 event['coords_x'] = faceoffs[0]['coords_x']
 
