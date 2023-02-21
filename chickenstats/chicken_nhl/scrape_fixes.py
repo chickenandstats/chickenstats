@@ -180,6 +180,33 @@ def api_events_fixes(game_id, api_events):
 
                 event.update(new_values)
 
+    if game_id == 2020020162:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 260 and x['event'] == 'GOAL'][0]
+
+        new_values = {'player_2': bad_event['player_3'],
+                        'player_2_eh_id': bad_event['player_3_eh_id'],
+                        'player_2_api_id': bad_event['player_3_api_id'],
+                        'player_3': bad_event['player_2'],
+                        'player_3_eh_id': bad_event['player_2_eh_id'],
+                        'player_3_api_id': bad_event['player_2_api_id'],
+        }
+
+
+        bad_event.update(new_values)
+
+    if game_id == 2020020408:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 279 and x['event'] == 'FAC'][0]
+
+        new_values = {'player_2': 'CONNOR MCDAVID',
+                        'player_2_eh_id': 'CONNOR.MCDAVID',
+                        'player_2_api_id': 8478402,
+        }
+
+
+        bad_event.update(new_values)
+
     if game_id == 2020020407:
 
         misses = {x['game_seconds']: x for x in api_events if x['event'] == 'MISS'}
@@ -238,6 +265,22 @@ def api_events_fixes(game_id, api_events):
             if block is not None:
 
                 block.update(new_values)
+
+    if game_id == 2020020810:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 224 and x['event'] == 'GOAL'][0]
+
+        new_values = {'player_2': 'HAYDN FLEURY',
+                        'player_2_eh_id': 'HAYDN.FLEURY',
+                        'player_2_api_id': 8477938,
+                        'player_3': np.nan,
+                        'player_3_eh_id': np.nan,
+                        'player_3_api_id': np.nan,
+
+        }
+
+
+        bad_event.update(new_values)
 
     if game_id == 2020020860:
 
@@ -410,7 +453,9 @@ def api_events_fixes(game_id, api_events):
                     29: {'period_seconds': 347, 'period_time': '5:47', 'game_seconds': 347,},
                     31: {'period_seconds': 300, 'period_time': '5:00', 'game_seconds': 301},
                     32: {'period_seconds': 369, 'period_time': '6:09', 'game_seconds': 369},
-                    33: {'period_seconds': 380, 'period_time': '6:20', 'game_seconds': 380},
+                    33: {'period_seconds': 380, 'period_time': '6:20', 'game_seconds': 380,
+                        'player_2': 'CHARLIE MCAVOY', 'player_2_eh_id': 'CHARLIE.MCAVOY',
+                        'player_2_api_id': 8479325},
                     39: {'period_seconds': 428, 'period_time': '7:08', 'game_seconds': 428},
                     40: {'period_seconds': 445, 'period_time': '7:25', 'game_seconds': 445},
                     41: {'period_seconds': 428, 'period_time': '7:08', 'game_seconds': 428},
@@ -426,7 +471,9 @@ def api_events_fixes(game_id, api_events):
                     55: {'period_seconds': 705, 'period_time': '11:45', 'game_seconds': 705},
                     57: {'period_seconds': 727, 'period_time': '12:07', 'game_seconds': 727},
                     58: {'period_seconds': 741, 'period_time': '12:21', 'game_seconds': 741},
-                    59: {'period_seconds': 751, 'period_time': '12:31', 'game_seconds': 751},
+                    59: {'period_seconds': 751, 'period_time': '12:31', 'game_seconds': 751,
+                            'player_2': 'CASEY FITZGERALD', 'player_2_eh_id': 'CASEY.FITZGERALD', 
+                            'player_2_api_id': 8479578},
                     63: {'period_seconds': 801, 'period_time': '13:21', 'game_seconds': 801},
                     67: {'period_seconds': 842, 'period_time': '14:02', 'game_seconds': 842,
                         'player_2': 'JEFF SKINNER', 'player_2_api_id': 8475784,
@@ -536,6 +583,7 @@ def api_events_fixes(game_id, api_events):
                     293: {'period_seconds': 922, 'period_time': '15:22', 'game_seconds': 3322},
                     294: {'period_seconds': 931, 'period_time': '15:31', 'game_seconds': 3331},
                     295: {'period_seconds': 944, 'period_time': '15:44', 'game_seconds': 3344},
+                    296: {'period_seconds': 957, 'period_time': '15:57', 'game_seconds': 3357},
                     297: {'period_seconds': 978, 'period_time': '16:18', 'game_seconds': 3378},
                     298: {'period_seconds': 991, 'period_time': '16:31', 'game_seconds': 3391},
                     301: {'period_seconds': 1001, 'period_time': '16:41', 'game_seconds': 3401},
@@ -549,6 +597,20 @@ def api_events_fixes(game_id, api_events):
 
 
         }
+
+        bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
+
+        for idx, new_values in bad_idxs.items():
+
+            event = bad_events.get(idx)
+
+            if event is not None:
+
+                event.update(new_values)
+
+    if game_id == 2021020571:
+
+        bad_idxs = {8: {'player_2': 'JAKE MCCABE', 'player_2_eh_id': 'JAKE.MCCABE', 'player_2_api_id': 8476931}}
 
         bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
 

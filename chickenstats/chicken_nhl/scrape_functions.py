@@ -4900,6 +4900,16 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
                            and x['period_seconds'] == event['period_seconds']
                            and x['version'] == event['version']]
 
+        elif event['event'] == 'PENL': 
+
+            api_matches = [x for x in api_events if x['event'] == event['event']
+                            and x['event_team'] == event['event_team']
+                            and x['player_1_eh_id'] == event['player_1_eh_id']
+                            and x.get('player_2_eh_id') == event.get('player_2_eh_id') 
+                            and x.get('player_3_eh_id') == event.get('player_3_eh_id') 
+                           and x['period'] == event['period']
+                           and x['period_seconds'] == event['period_seconds']]
+
         else:
         
             api_matches = [x for x in api_events if x['event'] == event['event']
