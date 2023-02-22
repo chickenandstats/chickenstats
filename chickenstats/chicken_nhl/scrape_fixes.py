@@ -18,7 +18,11 @@ def api_events_fixes(game_id, api_events):
 
         takes = {x['game_seconds']: x for x in api_events if x['event'] == 'TAKE'}
 
-        bad_takes = {1768: {'player_1': 'JAKE GUENTZEL', 'player_1_eh_id': 'JAKE.GUENTZEL', 'player_1_api_id': 8477404},}
+        bad_takes = {1768: {'player_1': 'JAKE GUENTZEL',
+                            'player_1_eh_id': 'JAKE.GUENTZEL',
+                            'player_1_api_id': 8477404,
+                            'player_1_age': 25.046373,
+                            'player_1_hand': 'L'},}
 
         for game_seconds, new_values in bad_takes.items():
 
@@ -53,16 +57,24 @@ def api_events_fixes(game_id, api_events):
                             'player_1': bad_faceoff['player_2'],
                             'player_1_api_id': bad_faceoff['player_2_api_id'],
                             'player_1_eh_id': bad_faceoff['player_2_eh_id'],
+                            'player_1_age': bad_faceoff['player_2_age'],
+                            'player_1_hand': bad_faceoff['player_2_hand'],
                             'player_2': bad_faceoff['player_1'],
                             'player_2_api_id': bad_faceoff['player_1_api_id'],
-                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],}
+                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],
+                            'player_2_age': bad_faceoff['player_1_age'],
+                            'player_2_hand': bad_faceoff['player_1_hand'],
+                            }
 
             bad_faceoff.update(new_values)
 
     if game_id == 2019020289:
 
-        bad_idxs = {255: {'player_1': 'NICK SCHMALTZ', 'player_1_api_id': 8477951,
-                            'player_1_eh_id': 'NICK.SCHMALTZ',}}
+        bad_idxs = {255: {'player_1': 'NICK SCHMALTZ',
+                            'player_1_api_id': 8477951,
+                            'player_1_eh_id': 'NICK.SCHMALTZ',
+                            'player_1_age': 23.723964,
+                            'player_1_hand': 'R'}}
 
         bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
 
@@ -76,11 +88,23 @@ def api_events_fixes(game_id, api_events):
 
     if game_id == 2019020416:
 
-        bad_idxs = {124: {'player_1': 'LUKE KUNIN', 'player_1_api_id': 8479316,
-                            'player_1_eh_id': 'LUKE.KUNIN', 'player_2': "ROOPE HINTZ",
-                            'player_2_api_id': 8478449, 'player_2_eh_id': "ROOPE.HINTZ"},
-                    131: {'player_1': 'ERIC STAAL', 'player_1_api_id': 8470595,
-                            'player_1_eh_id': 'ERIC.STAAL',},}
+        bad_idxs = {124: {'player_1': 'LUKE KUNIN',
+                            'player_1_api_id': 8479316,
+                            'player_1_eh_id': 'LUKE.KUNIN',
+                            'player_1_age': 21.990869,
+                            'player_1_hand': 'R',
+                            'player_2': "ROOPE HINTZ",
+                            'player_2_api_id': 8478449,
+                            'player_2_eh_id': "ROOPE.HINTZ",
+                            'player_2_age': 23.03675,
+                            'player_2_hand': 'L',
+                            },
+                    131: {'player_1': 'ERIC STAAL',
+                            'player_1_api_id': 8470595,
+                            'player_1_eh_id': 'ERIC.STAAL',
+                            'player_1_age': 35.089016,
+                            'player_1_hand': 'L',
+                            },}
 
         bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
 
@@ -94,8 +118,12 @@ def api_events_fixes(game_id, api_events):
 
     if game_id == 2019020417:
 
-        bad_idxs = {6: {'player_1': 'NICK SUZUKI', 'player_1_api_id': 8480018,
-                            'player_1_eh_id': 'NICK.SUZUKI',},}
+        bad_idxs = {6: {'player_1': 'NICK SUZUKI',
+                        'player_1_api_id': 8480018,
+                        'player_1_eh_id': 'NICK.SUZUKI',
+                        'player_1_age': 20.309794,
+                        'player_1_hand': 'R',
+                        },}
 
         bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
 
@@ -109,9 +137,15 @@ def api_events_fixes(game_id, api_events):
 
     if game_id == 2019020779:
 
-        bad_idxs = {26: {'period_seconds': 301, 'period_time': '5:01', 'game_seconds': 301,
-                            'player_1': 'NIKLAS HJALMARSSON', 'player_1_api_id': 8471769,
-                            'player_1_eh_id': 'NIKLAS.HJALMARSSON',},
+        bad_idxs = {26: {'period_seconds': 301,
+                        'period_time': '5:01',
+                        'game_seconds': 301,
+                        'player_1': 'NIKLAS HJALMARSSON',
+                        'player_1_api_id': 8471769,
+                        'player_1_eh_id': 'NIKLAS.HJALMARSSON',
+                        'player_1_age': 32.649541,
+                        'player_1_hand': 'L',
+                        },
                     61: {'period_seconds': 666, 'period_time': '11:06', 'game_seconds': 666,},
                     78: {'period_seconds': 902, 'period_time': '15:02', 'game_seconds': 902,},
                     173: {'period_seconds': 850, 'period_time': '14:10', 'game_seconds': 2050,},
@@ -165,9 +199,17 @@ def api_events_fixes(game_id, api_events):
 
         bad_idxs = {91: {'period_seconds': 46, 'period_time': '0:46', 'game_seconds': 1246,},
                     93: {'period_seconds': 48, 'period_time': '0:48', 'game_seconds': 1248,
-                            'player_1': 'TOMAS HERTL', 'player_1_api_id': 8476881,
-                            'player_1_eh_id': 'TOMAS.HERTL', 'player_2': "RYAN O'REILLY",
-                            'player_2_api_id': 8475158, 'player_2_eh_id': "RYAN.O'REILLY"},
+                            'player_1': 'TOMAS HERTL',
+                            'player_1_api_id': 8476881,
+                            'player_1_eh_id': 'TOMAS.HERTL',
+                            'player_1_age': 27.184679,
+                            'player_1_hand': 'L',
+                            'player_2': "RYAN O'REILLY",
+                            'player_2_api_id': 8475158,
+                            'player_2_eh_id': "RYAN.O'REILLY",
+                            'player_2_age': 29.947227,
+                            'player_2_hand': 'L',
+                            },
                     97: {'period_seconds': 134, 'period_time': '2:14', 'game_seconds': 1334},}
 
         bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
@@ -187,31 +229,40 @@ def api_events_fixes(game_id, api_events):
         new_values = {'player_2': bad_event['player_3'],
                         'player_2_eh_id': bad_event['player_3_eh_id'],
                         'player_2_api_id': bad_event['player_3_api_id'],
+                        'player_2_age': bad_event['player_3_age'],
+                        'player_2_hand': bad_event['player_3_hand'],
                         'player_3': bad_event['player_2'],
                         'player_3_eh_id': bad_event['player_2_eh_id'],
                         'player_3_api_id': bad_event['player_2_api_id'],
+                        'player_3_age': bad_event['player_2_age'],
+                        'player_3_hand': bad_event['player_2_hand'],
         }
 
 
         bad_event.update(new_values)
 
-    if game_id == 2020020408:
+    #if game_id == 2020020408:
 
-        bad_event = [x for x in api_events if x['event_idx'] == 279 and x['event'] == 'FAC'][0]
+        #bad_event = [x for x in api_events if x['event_idx'] == 279 and x['event'] == 'FAC'][0]
 
-        new_values = {'player_2': 'CONNOR MCDAVID',
-                        'player_2_eh_id': 'CONNOR.MCDAVID',
-                        'player_2_api_id': 8478402,
-        }
+        #new_values = {'player_2': 'CONNOR MCDAVID',
+        #                'player_2_eh_id': 'CONNOR.MCDAVID',
+        #                'player_2_api_id': 8478402,
+        #}
 
 
-        bad_event.update(new_values)
+        #bad_event.update(new_values)
 
     if game_id == 2020020407:
 
         misses = {x['game_seconds']: x for x in api_events if x['event'] == 'MISS'}
 
-        bad_misses = {511: {'player_1': 'MIKHAIL SERGACHEV', 'player_1_eh_id': 'MIKHAIL.SERGACHEV', 'player_1_api_id': 8479410},}
+        bad_misses = {511: {'player_1': 'MIKHAIL SERGACHEV',
+                            'player_1_eh_id': 'MIKHAIL.SERGACHEV',
+                            'player_1_api_id': 8479410,
+                            'player_1_age': 22.705463,
+                            'player_1_hand': 'L',
+                            },}
 
         for game_seconds, new_values in bad_misses.items():
 
@@ -246,9 +297,13 @@ def api_events_fixes(game_id, api_events):
                             'player_1': bad_faceoff['player_2'],
                             'player_1_api_id': bad_faceoff['player_2_api_id'],
                             'player_1_eh_id': bad_faceoff['player_2_eh_id'],
+                            'player_1_age': bad_faceoff['player_2_age'],
+                            'player_1_hand': bad_faceoff['player_2_hand'],
                             'player_2': bad_faceoff['player_1'],
                             'player_2_api_id': bad_faceoff['player_1_api_id'],
-                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],}
+                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],
+                            'player_2_age': bad_faceoff['player_1_age'],
+                            'player_2_hand': bad_faceoff['player_1_hand'],}
 
             bad_faceoff.update(new_values)
 
@@ -273,9 +328,11 @@ def api_events_fixes(game_id, api_events):
         new_values = {'player_2': 'HAYDN FLEURY',
                         'player_2_eh_id': 'HAYDN.FLEURY',
                         'player_2_api_id': 8477938,
-                        'player_3': np.nan,
-                        'player_3_eh_id': np.nan,
-                        'player_3_api_id': np.nan,
+                        'player_2_age': 24.813651,
+                        'player_2_hand': 'L',
+                        'player_3': '',
+                        'player_3_eh_id': '',
+                        'player_3_api_id': '',
 
         }
 
@@ -349,9 +406,13 @@ def api_events_fixes(game_id, api_events):
                             'player_1': bad_faceoff['player_2'],
                             'player_1_api_id': bad_faceoff['player_2_api_id'],
                             'player_1_eh_id': bad_faceoff['player_2_eh_id'],
+                            'player_1_age': bad_faceoff['player_2_age'],
+                            'player_1_hand': bad_faceoff['player_2_hand'],
                             'player_2': bad_faceoff['player_1'],
                             'player_2_api_id': bad_faceoff['player_1_api_id'],
-                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],}
+                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],
+                            'player_2_age': bad_faceoff['player_1_age'],
+                            'player_2_hand': bad_faceoff['player_1_hand'],}
 
             bad_faceoff.update(new_values)
 
@@ -380,9 +441,13 @@ def api_events_fixes(game_id, api_events):
                             'player_1': bad_faceoff['player_2'],
                             'player_1_api_id': bad_faceoff['player_2_api_id'],
                             'player_1_eh_id': bad_faceoff['player_2_eh_id'],
+                            'player_1_age': bad_faceoff['player_2_age'],
+                            'player_1_hand': bad_faceoff['player_2_hand'],
                             'player_2': bad_faceoff['player_1'],
                             'player_2_api_id': bad_faceoff['player_1_api_id'],
-                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],}
+                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],
+                            'player_2_age': bad_faceoff['player_1_age'],
+                            'player_2_hand': bad_faceoff['player_1_hand'],}
 
             bad_faceoff.update(new_values)
 
@@ -397,9 +462,14 @@ def api_events_fixes(game_id, api_events):
             new_values = {'player_1': 'ALEX BELZILE',
                             'player_1_api_id': 8475968,
                             'player_1_eh_id': 'ALEX.BELZILE',
+                            'player_1_age': 30.207328,
+                            'player_1_hand': 'R',
                             'player_2': 'TOMAS NOSEK',
                             'player_2_api_id': 8477931,
-                            'player_2_eh_id': 'TOMAS.NOSEK',}
+                            'player_2_eh_id': 'TOMAS.NOSEK',
+                            'player_2_age': 29.202516,
+                            'player_2_hand': 'L', 
+                            }
 
             bad_faceoff.update(new_values)
 
@@ -454,8 +524,11 @@ def api_events_fixes(game_id, api_events):
                     31: {'period_seconds': 300, 'period_time': '5:00', 'game_seconds': 301},
                     32: {'period_seconds': 369, 'period_time': '6:09', 'game_seconds': 369},
                     33: {'period_seconds': 380, 'period_time': '6:20', 'game_seconds': 380,
-                        'player_2': 'CHARLIE MCAVOY', 'player_2_eh_id': 'CHARLIE.MCAVOY',
-                        'player_2_api_id': 8479325},
+                        'player_2': 'CHARLIE MCAVOY',
+                        'player_2_eh_id': 'CHARLIE.MCAVOY',
+                        'player_2_api_id': 8479325,
+                        'player_2_age': 24.03061,
+                        'player_2_hand': 'R',},
                     39: {'period_seconds': 428, 'period_time': '7:08', 'game_seconds': 428},
                     40: {'period_seconds': 445, 'period_time': '7:25', 'game_seconds': 445},
                     41: {'period_seconds': 428, 'period_time': '7:08', 'game_seconds': 428},
@@ -465,31 +538,51 @@ def api_events_fixes(game_id, api_events):
                     47: {'period_seconds': 601, 'period_time': '10:01', 'game_seconds': 601},
                     51: {'period_seconds': 627, 'period_time': '10:27', 'game_seconds': 627},
                     52: {'period_seconds': 659, 'period_time': '10:59', 'game_seconds': 659,
-                        'player_1': 'JEFF SKINNER', 'player_1_api_id': 8475784,
-                        'player_1_eh_id': 'JEFF.SKINNER',},
+                        'player_1': 'JEFF SKINNER',
+                        'player_1_api_id': 8475784,
+                        'player_1_eh_id': 'JEFF.SKINNER',
+                        'player_1_age': 29.62963,
+                        'player_1_hand': 'L',},
                     53: {'period_seconds': 680, 'period_time': '11:20', 'game_seconds': 680},
                     55: {'period_seconds': 705, 'period_time': '11:45', 'game_seconds': 705},
                     57: {'period_seconds': 727, 'period_time': '12:07', 'game_seconds': 727},
                     58: {'period_seconds': 741, 'period_time': '12:21', 'game_seconds': 741},
                     59: {'period_seconds': 751, 'period_time': '12:31', 'game_seconds': 751,
-                            'player_2': 'CASEY FITZGERALD', 'player_2_eh_id': 'CASEY.FITZGERALD', 
-                            'player_2_api_id': 8479578},
+                            'player_2': 'CASEY FITZGERALD',
+                            'player_2_eh_id': 'CASEY.FITZGERALD', 
+                            'player_2_api_id': 8479578,
+                            'player_2_age': 24.849244,
+                            'player_2_hand': 'R',
+                            },
                     63: {'period_seconds': 801, 'period_time': '13:21', 'game_seconds': 801},
                     67: {'period_seconds': 842, 'period_time': '14:02', 'game_seconds': 842,
-                        'player_2': 'JEFF SKINNER', 'player_2_api_id': 8475784,
-                        'player_2_eh_id': 'JEFF.SKINNER',},
+                        'player_2': 'JEFF SKINNER',
+                        'player_2_api_id': 8475784,
+                        'player_2_eh_id': 'JEFF.SKINNER',
+                        'player_1_age': 29.62963,
+                        'player_1_hand': 'L',},
                     68: {'period_seconds': 853, 'period_time': '14:13', 'game_seconds': 853},
-                    73: {'player_1': 'VICTOR OLOFSSON', 'player_1_api_id': 8478109, 'player_1_eh_id': 'VICTOR.OLOFSSON',},
+                    73: {'player_1': 'VICTOR OLOFSSON',
+                        'player_1_api_id': 8478109,
+                        'player_1_eh_id': 'VICTOR.OLOFSSON',
+                        'player_1_age': 26.459133,
+                        'player_1_hand': 'L', },
                     74: {'period_seconds': 921, 'period_time': '15:21', 'game_seconds': 921},
                     81: {'period_seconds': 995, 'period_time': '16:35', 'game_seconds': 995},
                     84: {'period_seconds': 993, 'period_time': '16:33', 'game_seconds': 993,
-                        'player_1': 'CODY EAKIN', 'player_1_api_id': 8475236,
-                        'player_1_eh_id': 'CODY.EAKIN',},
+                        'player_1': 'CODY EAKIN',
+                        'player_1_api_id': 8475236,
+                        'player_1_eh_id': 'CODY.EAKIN',
+                        'player_1_age': 30.6098,
+                        'player_1_hand': 'L',},
                     85: {'period_seconds': 1020, 'period_time': '17:00', 'game_seconds': 1020},
                     88: {'period_seconds': 1029, 'period_time': '17:09', 'game_seconds': 1029},
                     89: {'period_seconds': 1058, 'period_time': '17:38', 'game_seconds': 1058,
-                        'player_2': 'CONNOR CLIFTON', 'player_2_api_id': 8477365,
-                        'player_2_eh_id': 'CONNOR.CLIFTON',},
+                        'player_2': 'CONNOR CLIFTON',
+                        'player_2_api_id': 8477365,
+                        'player_2_eh_id': 'CONNOR.CLIFTON',
+                        'player_2_age': 26.680904,
+                        'player_2_hand': 'R',},
                     92: {'period_seconds': 1080, 'period_time': '18:00', 'game_seconds': 1080},
                     93: {'period_seconds': 1093, 'period_time': '18:13', 'game_seconds': 1093},
                     96: {'period_seconds': 1115, 'period_time': '18:35', 'game_seconds': 1115},
@@ -610,7 +703,11 @@ def api_events_fixes(game_id, api_events):
 
     if game_id == 2021020571:
 
-        bad_idxs = {8: {'player_2': 'JAKE MCCABE', 'player_2_eh_id': 'JAKE.MCCABE', 'player_2_api_id': 8476931}}
+        bad_idxs = {8: {'player_2': 'JAKE MCCABE',
+                        'player_2_eh_id': 'JAKE.MCCABE',
+                        'player_2_api_id': 8476931,
+                        'player_2_age': 28.222345,
+                        'player_2_hand': 'L',}}
 
         bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
 
@@ -655,6 +752,8 @@ def api_events_fixes(game_id, api_events):
         new_values = {'player_1': 'RICKARD RAKELL',
                         'player_1_api_id': 8476483,
                         'player_1_eh_id': 'RICKARD.RAKELL',
+                        'player_1_age': 28.728858,
+                        'player_1_hand': 'R',
             }
 
         bad_shots[0].update(new_values)
@@ -735,14 +834,18 @@ def api_events_fixes(game_id, api_events):
 
                 event_team_name = 'ST. LOUIS BLUES'
 
-            new_values = {'event_team': event_team,
+            new_values = new_values = {'event_team': event_team,
                             'event_team_name': event_team_name,
                             'player_1': bad_faceoff['player_2'],
                             'player_1_api_id': bad_faceoff['player_2_api_id'],
                             'player_1_eh_id': bad_faceoff['player_2_eh_id'],
+                            'player_1_age': bad_faceoff['player_2_age'],
+                            'player_1_hand': bad_faceoff['player_2_hand'],
                             'player_2': bad_faceoff['player_1'],
                             'player_2_api_id': bad_faceoff['player_1_api_id'],
-                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],}
+                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],
+                            'player_2_age': bad_faceoff['player_1_age'],
+                            'player_2_hand': bad_faceoff['player_1_hand'],}
 
             bad_faceoff.update(new_values)
 
