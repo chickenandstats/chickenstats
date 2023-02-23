@@ -56,7 +56,7 @@ import math
 
 # These are dictionaries of names that are used throughout the module
 from chickenstats.chicken_nhl.info import correct_names_dict, correct_api_names_dict, team_codes
-from chickenstats.chicken_nhl.scrape_fixes import api_events_fixes, api_rosters_fixes, html_shifts_fixes
+from chickenstats.chicken_nhl.fixes import api_events_fixes, api_rosters_fixes, html_shifts_fixes
 
 ############################################## Requests functions & classes ##############################################
 
@@ -1090,7 +1090,7 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
         
         if game_id == game_ids[-1]:
             
-            pbar.set_description(f'Finished scraping game info data')
+            pbar.set_description(f'Finished scraping game info data'.upper())
 
             ## If this function is not nested, close the session object
 
@@ -1100,7 +1100,7 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
             
         else:
         
-            pbar.set_description(f'Finished scraping {game_id}')
+            pbar.set_description(f'Finished scraping {game_id}'.upper())
 
         ## Adding time information to the progress bar information 
         
