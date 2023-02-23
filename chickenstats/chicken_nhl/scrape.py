@@ -233,6 +233,20 @@ def game_id_info(game_id, html_id = False):
             
         return season, game_session
 
+def progressbar(message):
+
+    pbar.set_description(f'{message}'.upper())
+
+    ## Adding current time to the progress bar
+    
+    now = datetime.now()
+
+    current_time = now.strftime("%H:%M:%S")
+
+    postfix_str = f'{current_time}'
+    
+    pbar.set_postfix_str(postfix_str)
+
 ############################################## Schedule ##############################################
 
 ## []Refactored
@@ -1154,9 +1168,190 @@ def scrape_game_info(game_ids, live_response = None, session = None, nested = Tr
 
 ############################################## API rosters ##############################################
 
-## [x]Refactored
-## [x]Docstring
-## [x]Comments
+def base_scrape_api_rosters(game_id, live_response = None, session = None):
+    '''Function to scrape API rosters data and return a list of player-dictionaries'''
+
+    if session == None:
+
+        s = s_session()
+
+    ## Else reusing session object to speed up scraper
+
+    else:
+
+        s = session
+
+    ## Scraping live endpoint if have not already done so 
+
+    if live_response == None:
+        
+        response = s.get(f'https://statsapi.web.nhl.com/api/v1/game/{game_id}/feed/live').json()
+
+    else:
+
+        response = live_response
+
+    if response['gameData'] == []:
+
+        roster_info = {}
+
+    else:
+
+        roster_info = response['gameData']['players']
+
+    ## Creating list of player dictionaries 
+
+    players = list(roster_info.values())
+
+    return players
+
+def munge_api_rosters(game_id, players, game_info):
+    '''Function to munge a list of player dictionaries, returns a list of player dictionaries'''
+
+    game_rosters = []
+
+    season, game_session = game_id_info(game_id)
+
+    for player in players:
+
+        ## If no name in player, continue
+
+        if ' ' not in player['fullName']:
+
+            continue
+
+        ## Creating new dictionary to hold player information
+        
+        player_data = {}
+
+        ## Values to update the player dictionary
+        
+        new_values = {'season': int(season),
+                      'session': game_session,
+                      'game_id': int(game_id),
+                      'game_date': game_info['game_date'],
+                      'player_name': unidecode(player['fullName']).upper(),
+                      'api_id': int(player['id']),
+                      'position': player.get('primaryPosition', {}).get('code', ''),
+                      'position_type': player.get('primaryPosition', {}).get('type', '').upper(),
+                      'birth_date': player.get('birthDate', ''),
+                      'birth_city': unidecode(player.get('birthCity', '')).upper(),
+                      'birth_state_province': unidecode(player.get('birthStateProvince', '')).upper(),
+                      'birth_country': unidecode(player.get('birthCountry', '')).upper(),
+                      'nationality': player.get('nationality', ''),
+                      'height': player.get('height', ''),
+                      'weight': player.get('weight', ''),
+                      'active': player.get('active', 0),
+                      'alternate_captain': player.get('alternateCaptain', 0),
+                      'captain': player.get('captain', 0),
+                      'rookie': player.get('rookie', 0),
+                      'roster_status': player.get('rosterStatus', 0),
+                      'first_name': unidecode(player.get('firstName', '')).upper(),
+                      'last_name': unidecode(player.get('lastName', '')).upper(),
+                     }
+        
+        player_data.update(new_values)
+
+        ## Replacing certain names
+
+        player_data['player_name'] = correct_names_dict.get(player_data['player_name'], player_data['player_name'])
+
+        ## Changing to Alex and Chris
+
+        name_keys = ['player_name', 'first_name']
+
+        for name_key in name_keys:
+        
+            player_data[name_key] = player_data[name_key].replace('ALEXANDRE', 'ALEX').replace('ALEXANDER', 'ALEX').replace('CHRISTOPHER', 'CHRIS')
+
+        ## Creating ID that matches Evolving Hockey data
+
+        name_split = player_data['player_name'].split(' ', maxsplit = 1)
+
+        player_data['eh_id'] = f"{name_split[0]}.{name_split[1]}"
+
+        player_data['eh_id'] = correct_api_names_dict.get(player_data['api_id'], player_data['eh_id'])
+
+        player_data['eh_id'] = player_data['eh_id'].replace('..', '.')
+
+        ## Adding player handedness information, if exists
+        
+        if player_data['position'] == 'G':
+            
+            player_data['catches'] = player.get('shootsCatches', np.nan)
+            
+        else:
+            
+            player_data['shoots'] = player.get('shootsCatches', np.nan)
+
+        ## Changing certain columns to binary values
+            
+        cols = ['active', 'alternate_captain', 'captain', 'rookie', 'roster_status']
+        
+        for col in cols:
+            
+            if player_data[col] == True or player_data[col] == 'Y':
+                
+                player_data[col] = 1
+                
+            elif player_data[col] == False or player_data[col] != 'Y':
+                
+                player_data[col] = 0
+
+        ## Calculating player height in feet as a decimal
+
+        if player_data['height'] != '':
+                
+            height_split = player_data['height'].split("' ")
+            
+            height_ft = int(height_split[0])
+            
+            height_in = int(height_split[1].replace('''"''', ''))
+
+            player_data['height'] = height_ft + (height_in / 12)
+
+        ## Shorting position types
+        
+        position_types = {'FORWARD': 'F', 'DEFENSEMAN': 'D', 'GOALIE': 'G'}
+        
+        player_data['position_type'] = position_types.get(player_data['position_type'])
+
+        ## Adding age in years
+
+        if player_data['birth_date'] != '':
+
+            player_data['age'] = (pd.to_datetime(game_info['game_date']) - pd.to_datetime(player_data['birth_date'])).days / 365.2425
+
+        ## Appending the player data to the game roster list
+        
+        game_rosters.append(player_data)
+
+    ## If no game rosters, continue
+
+    return game_rosters
+
+def finalize_api_rosters(games_dict):
+    '''Function that preps API rosters data into a dataframe'''
+
+    roster_data = [player for players in list(games_dict.values()) for player in players]
+
+    df = pd.DataFrame(roster_data)
+
+    columns = ['season', 'session', 'game_id', 'game_date', 'player_name', 'api_id', 'eh_id',
+                'position', 'position_type', 'birth_date', 'age', 'birth_city',
+                'birth_state_province', 'birth_country', 'nationality', 'height',
+                'weight', 'shoots', 'catches', 'first_name', 'last_name', 
+                'roster_status', 'active', 'rookie', 'alternate_captain',
+                'captain', ]
+
+    columns = [x for x in columns if x in df.columns]
+
+    df = df[columns]
+
+    df = df.replace('', np.nan).replace(' ', np.nan)
+
+    return df
+
 def scrape_api_rosters(game_ids, live_response = None, session = None, nested = True):
     
     '''
@@ -1303,14 +1498,6 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
     
     for game_id in pbar:
 
-        ## Creating basic information from game ID
-
-        season, game_session = game_id_info(game_id)
-
-        ## Creating list to collect the rosters for the game
-
-        game_rosters = []
-
         ## Scraping live endpoint if have not already done so 
 
         if live_response == None:
@@ -1322,148 +1509,22 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
             response = live_response
 
         ## If no information in the live response, continue
-        
-        if response['gameData'] == []:
-                
-            bad_game_list.append(game_id)
-            
-            response = None
-            
-            continue
 
-        ## Roster information dictionary with API IDs as keys as player information dictionaries as values
-
-        game_info = scrape_game_info(game_id, live_response = live_response, session = s, nested = True)[game_id]
-
-        roster_info = response['gameData']['players']
-
-        ## Creating list of player dictionaries 
-
-        players = list(roster_info.values())
-
-        ## Iterating through the player dictionaries
-
-        for player in players:
-
-            ## If no name in player, continue
-
-            if ' ' not in player['fullName']:
-
-                continue
-
-            ## Creating new dictionary to hold player information
-            
-            player_data = {}
-
-            ## Values to update the player dictionary
-            
-            new_values = {'season': int(season),
-                          'session': game_session,
-                          'game_id': int(game_id),
-                          'game_date': game_info['game_date'],
-                          'player_name': unidecode(player['fullName']).upper(),
-                          'api_id': int(player['id']),
-                          'position': player.get('primaryPosition', {}).get('code', ''),
-                          'position_type': player.get('primaryPosition', {}).get('type', '').upper(),
-                          'birth_date': player.get('birthDate', ''),
-                          'birth_city': unidecode(player.get('birthCity', '')).upper(),
-                          'birth_state_province': unidecode(player.get('birthStateProvince', '')).upper(),
-                          'birth_country': unidecode(player.get('birthCountry', '')).upper(),
-                          'nationality': player.get('nationality', ''),
-                          'height': player.get('height', ''),
-                          'weight': player.get('weight', ''),
-                          'active': player.get('active', 0),
-                          'alternate_captain': player.get('alternateCaptain', 0),
-                          'captain': player.get('captain', 0),
-                          'rookie': player.get('rookie', 0),
-                          'roster_status': player.get('rosterStatus', 0),
-                          'first_name': unidecode(player.get('firstName', '')).upper(),
-                          'last_name': unidecode(player.get('lastName', '')).upper(),
-                         }
-            
-            player_data.update(new_values)
-
-            ## Replacing certain names
-
-            player_data['player_name'] = correct_names_dict.get(player_data['player_name'], player_data['player_name'])
-
-            ## Changing to Alex and Chris
-
-            name_keys = ['player_name', 'first_name']
-
-            for name_key in name_keys:
-            
-                player_data[name_key] = player_data[name_key].replace('ALEXANDRE', 'ALEX').replace('ALEXANDER', 'ALEX').replace('CHRISTOPHER', 'CHRIS')
-
-            ## Creating ID that matches Evolving Hockey data
-
-            name_split = player_data['player_name'].split(' ', maxsplit = 1)
-
-            player_data['eh_id'] = f"{name_split[0]}.{name_split[1]}"
-
-            player_data['eh_id'] = correct_api_names_dict.get(player_data['api_id'], player_data['eh_id'])
-
-            player_data['eh_id'] = player_data['eh_id'].replace('..', '.')
-
-            ## Adding player handedness information, if exists
-            
-            if player_data['position'] == 'G':
-                
-                player_data['catches'] = player.get('shootsCatches', np.nan)
-                
-            else:
-                
-                player_data['shoots'] = player.get('shootsCatches', np.nan)
-
-            ## Changing certain columns to binary values
-                
-            cols = ['active', 'alternate_captain', 'captain', 'rookie', 'roster_status']
-            
-            for col in cols:
-                
-                if player_data[col] == True or player_data[col] == 'Y':
-                    
-                    player_data[col] = 1
-                    
-                elif player_data[col] == False or player_data[col] != 'Y':
-                    
-                    player_data[col] = 0
-
-            ## Calculating player height in feet as a decimal
-
-            if player_data['height'] != '':
-                    
-                height_split = player_data['height'].split("' ")
-                
-                height_ft = int(height_split[0])
-                
-                height_in = int(height_split[1].replace('''"''', ''))
-
-                player_data['height'] = height_ft + (height_in / 12)
-
-            ## Shorting position types
-            
-            position_types = {'FORWARD': 'F', 'DEFENSEMAN': 'D', 'GOALIE': 'G'}
-            
-            player_data['position_type'] = position_types.get(player_data['position_type'])
-
-            ## Adding age in years
-
-            if player_data['birth_date'] != '':
-
-                player_data['age'] = (pd.to_datetime(game_info['game_date']) - pd.to_datetime(player_data['birth_date'])).days / 365.2425
-
-            ## Appending the player data to the game roster list
-            
-            game_rosters.append(player_data)
-
-        ## If no game rosters, continue
+        game_rosters = base_scrape_api_rosters(game_id, live_response = response, session = s)
 
         if game_rosters == []:
 
+            pbar_message = f'NO API ROSTER DATA FOR {game_id}'.upper()
+
+            ## Adding current time to the progress bar
+
+            progressbar(pbar_message)
+
             continue
 
-        ## Adding the game data to the dictionary that is ultimately returned
+        game_info = scrape_game_info(game_id, live_response = response, session = s, nested = True)[game_id]
+
+        game_rosters = munge_api_rosters(game_id, game_rosters, game_info)
 
         game_rosters = api_rosters_fixes(game_id, game_rosters)
 
@@ -1473,7 +1534,7 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
         
         if game_id == game_ids[-1]:
             
-            pbar.set_description(f'Finished scraping game info data')
+            pbar_message = f'FINISHED SCRAPING API ROSTER DATA'.upper()
 
             ## If function is not nested, closing the session object
 
@@ -1483,17 +1544,11 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
             
         else:
         
-            pbar.set_description(f'Finished scraping {game_id}')
+            pbar_message = f'FINISHED SCRAPING {game_id}'.upper()
 
         ## Adding current time to the progress bar
-        
-        now = datetime.now()
 
-        current_time = now.strftime("%H:%M:%S")
-
-        postfix_str = f'{current_time}'
-        
-        pbar.set_postfix_str(postfix_str)
+        progressbar(pbar_message)
 
     ## Continuing if rosters dict is empty and returning values based on nested parameter
     
@@ -1511,22 +1566,7 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
 
     if nested == False:
 
-        roster_data = [player for players in list(games_dict.values()) for player in players]
-
-        df = pd.DataFrame(roster_data)
-
-        columns = ['season', 'session', 'game_id', 'game_date', 'player_name', 'api_id', 'eh_id',
-                    'position', 'position_type', 'birth_date', 'age', 'birth_city',
-                    'birth_state_province', 'birth_country', 'nationality', 'height',
-                    'weight', 'shoots', 'catches', 'first_name', 'last_name', 
-                    'roster_status', 'active', 'rookie', 'alternate_captain',
-                    'captain', ]
-
-        columns = [x for x in columns if x in df.columns]
-
-        df = df[columns]
-
-        df = df.replace('', np.nan)
+        df = finalize_api_rosters(games_dict)
 
         return df
 
