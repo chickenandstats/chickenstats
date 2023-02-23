@@ -1,3 +1,7 @@
+import pandas as pd
+import numpy as np
+
+
 def api_events_fixes(game_id, api_events):
     '''
     
@@ -274,38 +278,53 @@ def api_events_fixes(game_id, api_events):
 
     if game_id == 2020020408:
 
-        bad_faceoffs = [740, 2400, 2734, 2834]
+        bad_idxs = [49, 186, 209, 217]
 
-        bad_faceoffs = [x for x in api_events if (x['game_seconds'] in bad_faceoffs and x['event'] == 'FAC')]
+        bad_events = [x for x in api_events if (x['event_idx'] in bad_idxs)]
 
-        for bad_faceoff in bad_faceoffs:
+        for bad_event in bad_events:
 
-            if bad_faceoff['event_team'] == 'TOR':
+            if bad_event['event_idx'] == 186:
 
-                event_team = 'WPG'
+                new_values = {'player_1': 'PAUL STASTNY',
+                                'player_1_eh_id': 'PAUL.STASTNY',
+                                'player_1_api_id': 8471669,
+                                'player_1_age': 35.198532,
+                                'player_1_hand': 'L',
+                                'player_2': 'AUSTON MATTHEWS',
+                                'player_2_eh_id': 'AUSTON.MATTHEWS',
+                                'player_2_api_id': 8479318,
+                                'player_2_age': 23.474815,
+                                'player_2_hand': 'L'}
 
-                event_team_name = 'WINNIPEG JETS'
+            else:
 
-            elif bad_faceoff['event_team'] == 'WPG':
+                if bad_event['event_team'] == 'TOR':
 
-                event_team = 'TOR'
+                    event_team = 'WPG'
 
-                event_team_name = 'TORONTO MAPLE LEAFS'
+                    event_team_name = 'WINNIPEG JETS'
 
-            new_values = {'event_team': event_team,
-                            'event_team_name': event_team_name,
-                            'player_1': bad_faceoff['player_2'],
-                            'player_1_api_id': bad_faceoff['player_2_api_id'],
-                            'player_1_eh_id': bad_faceoff['player_2_eh_id'],
-                            'player_1_age': bad_faceoff['player_2_age'],
-                            'player_1_hand': bad_faceoff['player_2_hand'],
-                            'player_2': bad_faceoff['player_1'],
-                            'player_2_api_id': bad_faceoff['player_1_api_id'],
-                            'player_2_eh_id': bad_faceoff['player_1_eh_id'],
-                            'player_2_age': bad_faceoff['player_1_age'],
-                            'player_2_hand': bad_faceoff['player_1_hand'],}
+                elif bad_event['event_team'] == 'WPG':
 
-            bad_faceoff.update(new_values)
+                    event_team = 'TOR'
+
+                    event_team_name = 'TORONTO MAPLE LEAFS'
+
+                new_values = {'event_team': event_team,
+                                'event_team_name': event_team_name,
+                                'player_1': bad_event['player_2'],
+                                'player_1_api_id': bad_event['player_2_api_id'],
+                                'player_1_eh_id': bad_event['player_2_eh_id'],
+                                'player_1_age': bad_event['player_2_age'],
+                                'player_1_hand': bad_event['player_2_hand'],
+                                'player_2': bad_event['player_1'],
+                                'player_2_api_id': bad_event['player_1_api_id'],
+                                'player_2_eh_id': bad_event['player_1_eh_id'],
+                                'player_2_age': bad_event['player_1_age'],
+                                'player_2_hand': bad_event['player_1_hand'],}
+
+                bad_event.update(new_values)
 
     if game_id == 2020020456:
 
@@ -320,6 +339,21 @@ def api_events_fixes(game_id, api_events):
             if block is not None:
 
                 block.update(new_values)
+
+    if game_id == 2020020459:
+
+        bad_events = [x for x in api_events if x['event_idx'] == 229]
+
+        for bad_event in bad_events:
+
+            new_values = {'player_2': 'JARRED TINORDI',
+                            'player_2_eh_id': 'JARRED.TINORDI',
+                            'player_2_api_id': 8475797,
+                            'player_2_age': 29.068359,
+                            'player_2_hand': 'L',
+                            'player_2_type': 'DREWBY'}
+
+            bad_event.update(new_values)
 
     if game_id == 2020020810:
 
@@ -338,6 +372,43 @@ def api_events_fixes(game_id, api_events):
 
 
         bad_event.update(new_values)
+
+    if game_id == 2020020846:
+
+        bad_idxs = {203: {'player_1': 'MATT BENNING',
+                            'player_1_eh_id': 'MATT.BENNING',
+                            'player_1_api_id': 8476988,
+                            'player_1_age': 26.960170,
+                            'player_1_hand': 'R'},
+                    204: {'player_2': 'MORGAN GEEKIE',
+                            'player_2_eh_id': 'MORGAN.GEEKIE',
+                            'player_2_api_id': 8479987,
+                            'player_2_age': 22.806765, 
+                            'player_2_hand': 'R'},
+                    205: {'player_2': 'ERIK GUDBRANSON',
+                            'player_2_eh_id': 'ERIK.GUDBRANSON',
+                            'player_2_api_id': 8475790,
+                            'player_2_age': 29.339411, 
+                            'player_2_hand': 'R'},
+                    206: {'player_2': 'MATT BENNING',
+                            'player_2_eh_id': 'MATT.BENNING',
+                            'player_2_api_id': 8476988,
+                            'player_2_age': 26.960170,
+                            'player_2_hand': 'R'},
+                    207: {'player_1': 'ERIK GUDBRANSON',
+                            'player_1_eh_id': 'ERIK.GUDBRANSON',
+                            'player_1_api_id': 8475790,
+                            'player_1_age': 29.339411, 
+                            'player_1_hand': 'R'},
+                    }
+
+        bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
+
+        for bad_idx, bad_event in bad_events.items():
+
+            new_values = bad_idxs.get(bad_idx)
+
+            bad_event.update(new_values)
 
     if game_id == 2020020860:
 
@@ -864,3 +935,109 @@ def api_events_fixes(game_id, api_events):
                 shot.update(new_values)
 
     return api_events
+
+def api_rosters_fixes(game_id, api_roster):
+
+    if game_id == 2019020951:
+
+        ayres = [x for x in api_roster if x['api_id'] == 8479188][0]
+
+        ayres.update({'catches': 'L'})
+
+    if game_id == 2021020363:
+
+        bad_player = [x for x in api_roster if x['api_id'] == 8478399][0]
+
+        new_player =  {'season': 20212022,
+                        'session': 'R', 
+                        'game_id': game_id,
+                        'player_name': 'JONAS SIEGENTHALER',
+                        'api_id': 8478399,
+                        'eh_id': 'JONAS.SIEGENTHALER',
+                        'position': 'D',
+                        'position_type': 'D', 
+                        'birth_date': '1997-05-06',
+                        'birth_city': 'ZURICH',
+                        'birth_state_province': '',
+                        'birth_country': 'CHE',
+                        'nationality': 'CHE',
+                        'height': "6' 2",
+                        'weight': 218,
+                        'shoots': 'L',
+                        'roster_status': 1,
+                        'active': 1,
+                        'rookie': 0,
+                        'alternate_captain': 0,
+                        'captain': 0}
+
+        game_date = api_roster[0]['game_date']
+
+        new_player['age'] = (pd.to_datetime(game_date) - pd.to_datetime(new_player['birth_date'])).days / 365.2425
+
+        height_split = new_player['height'].split("' ")
+                
+        height_ft = int(height_split[0])
+        
+        height_in = int(height_split[1].replace('''"''', ''))
+
+        new_player['height'] = height_ft + (height_in / 12)
+
+        bad_player.update(new_player)
+
+    studenic_ids = [2022020820, 2022020837, 2022020861]
+
+    if game_id in studenic_ids:
+
+        players = [x['player_name'] for x in api_roster]
+
+        if 'MARIAN STUDENIC' not in players:
+
+            new_player =  {'season': 20222023,
+                            'session': 'R', 
+                            'game_id': game_id,
+                            'player_name': 'MARIAN STUDENIC',
+                            'api_id': 8480226,
+                            'eh_id': 'MARIAN.STUDENIC',
+                            'position': 'L',
+                            'position_type': 'F', 
+                            'birth_date': '1998-10-28',
+                            'birth_city': 'SKALICA',
+                            'birth_state_province': '',
+                            'birth_country': 'SVK',
+                            'nationality': 'SVK',
+                            'height': "6' 1",
+                            'weight': 190,
+                            'shoots': 'L',
+                            'roster_status': 0,
+                            'active': 1,
+                            'rookie': 0,
+                            'alternate_captain': 0,
+                            'captain': 0}
+
+            game_date = api_roster[0]['game_date']
+
+            new_player['age'] = (pd.to_datetime(game_date) - pd.to_datetime(new_player['birth_date'])).days / 365.2425
+
+            height_split = new_player['height'].split("' ")
+                    
+            height_ft = int(height_split[0])
+            
+            height_in = int(height_split[1].replace('''"''', ''))
+
+            new_player['height'] = height_ft + (height_in / 12)
+
+            api_roster.append(new_player)
+
+    return api_roster
+
+def html_shifts_fixes(game_id, html_shifts):
+
+    if game_id == 2021021028:
+
+        bad_shifts = [x for x in html_shifts if x['start_time'].strip() == '31:23']
+
+        for bad_shift in bad_shifts:
+            
+            html_shifts.remove(bad_shift)
+
+    return html_shifts

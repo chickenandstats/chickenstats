@@ -56,7 +56,7 @@ import math
 
 # These are dictionaries of names that are used throughout the module
 from chickenstats.chicken_nhl.info import correct_names_dict, correct_api_names_dict, team_codes
-from chickenstats.chicken_nhl.scrape_fixes import api_events_fixes
+from chickenstats.chicken_nhl.scrape_fixes import api_events_fixes, api_rosters_fixes, html_shifts_fixes
 
 ############################################## Requests functions & classes ##############################################
 
@@ -96,7 +96,7 @@ def s_session():
     s = requests.Session()
     
     retry = urllib3.Retry(total = 5, backoff_factor = 1, respect_retry_after_header = False,
-                          status_forcelist=[60, 401, 403, 404, 408, 429, 500, 502, 503, 504])
+                          status_forcelist=[54, 60, 401, 403, 404, 408, 429, 500, 502, 503, 504])
     
     adapter = TimeoutHTTPAdapter(max_retries = retry, timeout = 3)
     
@@ -1360,6 +1360,7 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
             new_values = {'season': int(season),
                           'session': game_session,
                           'game_id': int(game_id),
+                          'game_date': game_info['game_date'],
                           'player_name': unidecode(player['fullName']).upper(),
                           'api_id': int(player['id']),
                           'position': player.get('primaryPosition', {}).get('code', ''),
@@ -1370,7 +1371,7 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
                           'birth_country': unidecode(player.get('birthCountry', '')).upper(),
                           'nationality': player.get('nationality', ''),
                           'height': player.get('height', ''),
-                          'weight': float(player.get('weight', np.nan)),
+                          'weight': player.get('weight', ''),
                           'active': player.get('active', 0),
                           'alternate_captain': player.get('alternateCaptain', 0),
                           'captain': player.get('captain', 0),
@@ -1464,6 +1465,8 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
 
         ## Adding the game data to the dictionary that is ultimately returned
 
+        game_rosters = api_rosters_fixes(game_id, game_rosters)
+
         games_dict.update({game_id: game_rosters})
 
         ## If this is the last game ID, changing progress bar information
@@ -1512,7 +1515,7 @@ def scrape_api_rosters(game_ids, live_response = None, session = None, nested = 
 
         df = pd.DataFrame(roster_data)
 
-        columns = ['season', 'session', 'game_id', 'player_name', 'api_id', 'eh_id',
+        columns = ['season', 'session', 'game_id', 'game_date', 'player_name', 'api_id', 'eh_id',
                     'position', 'position_type', 'birth_date', 'age', 'birth_city',
                     'birth_state_province', 'birth_country', 'nationality', 'height',
                     'weight', 'shoots', 'catches', 'first_name', 'last_name', 
@@ -2941,6 +2944,8 @@ def scrape_shifts(game_ids, roster_data = None, session = None, nested = True):
         ## Sorting values
 
         game_list = sorted(game_list, key = lambda k: (k['away'], k['goalie'], k['jersey'], k['shift_count']))
+
+        game_list = html_shifts_fixes(game_id, game_list)
 
         ## Adding the game data to the dictionary that will eventually be returned
 
@@ -5237,6 +5242,8 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
 
                         event['away_defense_positions'].append(player['position'])
 
+                        #display(player)
+
                         event['away_defense_ages'].append(round(player['age'], 2))
 
                         event['away_defense_hands'].append(player['shoots'])
@@ -5338,7 +5345,7 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
 
                     event['event_angle'] = np.degrees(abs(np.arctan(np.nan)))
 
-        if event['event'] in ['GOAL', 'SHOT', 'MISS'] and event['zone'] == 'DEF' and event.get('event_distance', 0) <= 64:
+        if event['event'] in ['GOAL', 'SHOT', 'MISS'] and event.get('zone') == 'DEF' and event.get('event_distance', 0) <= 64:
 
             event['zone'] = 'OFF'
 
@@ -5905,7 +5912,13 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
 
             for list_field in [x for x in list_fields if x in event.keys()]:
 
-                event[list_field] = ', '.join([str(x) for x in event[list_field]])
+                if 'age' in list_field or 'ages' in list_field:
+
+                    event[list_field] = ', '.join([str(x) for x in event[list_field]])
+
+                else:
+
+                    event[list_field] = ', '.join(event[list_field])
 
         df = pd.DataFrame(events_data)
 
