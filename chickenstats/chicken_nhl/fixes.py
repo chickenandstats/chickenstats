@@ -18,6 +18,197 @@ def api_events_fixes(game_id, api_events):
 
     '''
 
+    if game_id == 2012020660:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 155][0]
+
+        new_values = {'player_1': 'BENCH',
+                        'player_1_eh_id': 'BENCH',
+                        'player_1_api_id': 'BENCH',
+                        'player_1_hand': '',
+                        'player_1_age': '',
+                        'player_2': bad_event['player_1'],
+                        'player_2_eh_id': bad_event['player_1_eh_id'],
+                        'player_2_api_id': bad_event['player_1_api_id'],
+                        'player_2_hand': bad_event['player_1_hand'],
+                        'player_2_age': bad_event['player_1_age'],
+                        'player_2_type': 'SERVEDBY',
+                        'player_3': bad_event['player_2'],
+                        'player_3_eh_id': bad_event['player_2_eh_id'],
+                        'player_3_api_id': bad_event['player_2_api_id'],
+                        'player_3_hand': bad_event['player_2_hand'],
+                        'player_3_age': bad_event['player_2_age'],
+                        'player_3_type': 'DRAWNBY'
+                        }
+
+        bad_event.update(new_values)
+
+
+    if game_id == 2012020671:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 303][0]
+
+        new_values = {'player_1': 'BENCH',
+                        'player_1_eh_id': 'BENCH',
+                        'player_1_api_id': 'BENCH',
+                        'player_1_hand': '',
+                        'player_1_age': '',
+                        'player_2': bad_event['player_1'],
+                        'player_2_eh_id': bad_event['player_1_eh_id'],
+                        'player_2_api_id': bad_event['player_1_api_id'],
+                        'player_2_hand': bad_event['player_1_hand'],
+                        'player_2_age': bad_event['player_1_age'],
+                        'player_2_type': 'DRAWNBY',}
+
+        bad_event.update(new_values)
+
+    if game_id == 2013020445:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 273][0]
+
+        new_values = {'player_1': bad_event['player_2'],
+                        'player_1_eh_id': bad_event['player_2_eh_id'],
+                        'player_1_api_id': bad_event['player_2_api_id'],
+                        'player_1_hand': bad_event['player_2_hand'],
+                        'player_1_age': bad_event['player_2_age'],
+                        'player_2': bad_event['player_1'],
+                        'player_2_eh_id': bad_event['player_1_eh_id'],
+                        'player_2_api_id': bad_event['player_1_api_id'],
+                        'player_2_hand': bad_event['player_1_hand'],
+                        'player_2_age': bad_event['player_1_age']}
+
+        bad_event.update(new_values)
+
+    if game_id == 2014020120:
+
+        bad_idxs = {346: {'player_2_type': 'DREWBY',
+                        'player_3_type': 'SERVEDBY'},
+                    378: {'player_1': 'MATT BELESKEY',
+                        'player_1_eh_id': 'MATT.BELESKEY',
+                        'player_1_api_id': 8473492,
+                        'player_1_hand': 'L',
+                        'player_1_age': 26.385210,
+                        'player_3': 'WILLIAM KARLSSON',
+                        'player_3_eh_id': 'WILLIAM.KARLSSON',
+                        'player_3_api_id': 8476448,
+                        'player_3_hand': 'L',
+                        'player_3_age': 21.796478,
+                        'player_3_type': 'SERVEDBY',}
+                        }
+
+        bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
+
+        for bad_idx, new_values in bad_idxs.items():
+
+            bad_event = bad_events.get(bad_idx)
+
+            bad_event.update(new_values)
+
+    if game_id == 2014020945:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 303][0]
+
+        new_values = {'period_seconds': 1069, 'game_seconds': 3469, 'period_time': '17:49'}
+
+        bad_event.update(new_values)
+
+    if game_id == 2014021127:
+
+        bad_idxs = {294: {'period_seconds': 1124, 'period_time': '18:44', 'game_seconds': 3524},
+                    295: {'period_seconds': 1127, 'period_time': '18:47', 'game_seconds': 3527},
+                    296: {'period_seconds': 1125, 'period_time': '18:45', 'game_seconds': 3525, 'version': 1},}
+
+        bad_events = {x['event_idx']: x for x in api_events if x['event_idx'] in bad_idxs.keys()}
+
+        for bad_idx, new_values in bad_idxs.items():
+
+            bad_event = bad_events.get(bad_idx)
+
+            bad_event.update(new_values)
+
+    if game_id == 2015020193:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 199][0]
+
+        new_values = {'player_1': 'NICK BJUGSTAD',
+                        'player_1_eh_id': 'NICK.BJUGSTAD',
+                        'player_1_api_id': 8475760,
+                        'player_1_hand': 'R',
+                        'player_1_age': 23.302327,}
+
+        bad_event.update(new_values)
+
+    if game_id == 2016021165:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 43][0]
+
+        new_values = {'player_1': bad_event['player_2'],
+                        'player_1_eh_id': bad_event['player_2_eh_id'],
+                        'player_1_api_id': bad_event['player_2_api_id'],
+                        'player_1_hand': bad_event['player_2_hand'],
+                        'player_1_age': bad_event['player_2_age'],
+                        'player_2': bad_event['player_3'],
+                        'player_2_eh_id': bad_event['player_3_eh_id'],
+                        'player_2_api_id': bad_event['player_3_api_id'],
+                        'player_2_hand': bad_event['player_3_hand'],
+                        'player_2_age': bad_event['player_3_age'],
+                        'player_3': 'SEAN KURALY',
+                        'player_3_eh_id': 'SEAN.KURALY',
+                        'player_3_api_id': 8476374,
+                        'player_3_hand': 'L',
+                        'player_3_age': 24.197622}
+
+        bad_event.update(new_values)
+
+    if game_id == 2018020063:
+
+        new_event = {'season': 20182019,
+                     'session': 'R',
+                     'game_id': game_id,
+                     'event_idx': '',
+                     'period': 3,
+                     'period_time': '19:59',
+                     'period_seconds': 1199,
+                     'event': 'FAC',
+                     'event_type': 'FACEOFF',
+                     'description': 'MIHAIL SERGACHEV FACEOFF WON AGAINST RILEY NASH',
+                     'event_team': 'TBL',
+                     'event_team_name': 'TAMPA BAY LIGHTNING',
+                     'coords_x': '',
+                     'coords_y': '',
+                     'home_score': 0,
+                     'away_score': 1,
+                     'game_winning_goal': 0,
+                     'empty_net_goal': 0,
+                     'game_seconds': 3599,
+                     'player_1': 'MIKHAIL SERGACHEV',
+                     'player_1_api_id': 8479410,
+                     'player_1_eh_id': 'MIKHAIL SERGACHEV',
+                     'player_1_age': 22.420720480228887,
+                     'player_1_hand': 'L',
+                     'player_1_type': 'WINNER',
+                     'player_2': 'RILEY NASH',
+                     'player_2_api_id': 8474062,
+                     'player_2_eh_id': 'RILEY.NASH',
+                     'player_2_age': 29.429762418119466,
+                     'player_2_hand': 'R',
+                     'player_2_type': 'LOSER',
+                     'version': 1}
+
+        api_events.append(new_event)
+
+    if game_id == 2018021087:
+
+        bad_event = [x for x in api_events if x['event_idx'] == 291][0]
+
+        new_values = {'player_1': 'BENCH',
+                        'player_1_eh_id': 'BENCH',
+                        'player_1_api_id': 'BENCH',
+                        'player_1_age': '',
+                        'player_1_hand': ''}
+
+        bad_event.update(new_values)
+
     if game_id == 2019020144:
 
         takes = {x['game_seconds']: x for x in api_events if x['event'] == 'TAKE'}
@@ -165,6 +356,43 @@ def api_events_fixes(game_id, api_events):
             if event is not None:
 
                 event.update(new_values)
+
+    if game_id == 2019020796:
+
+        new_event = {'season': 20192020,
+                     'session': 'R',
+                     'game_id': game_id,
+                     'event_idx': '',
+                     'period': 3,
+                     'period_time': '4:22',
+                     'period_seconds': 262,
+                     'event': 'FAC',
+                     'event_type': 'FACEOFF',
+                     'description': 'RYAN STROME FACEOFF WON AGAINST VALTTERI FILPPULA',
+                     'event_team': 'NYR',
+                     'event_team_name': 'NEW YORK RANGERS',
+                     'coords_x': '',
+                     'coords_y': '',
+                     'home_score': 0,
+                     'away_score': 1,
+                     'game_winning_goal': 0,
+                     'empty_net_goal': 0,
+                     'game_seconds': 2662,
+                     'player_1': 'RYAN STROME',
+                     'player_1_api_id': 8476458,
+                     'player_1_eh_id': 'RYAN.STROME',
+                     'player_1_age': 26.560435874795512,
+                     'player_1_hand': 'R',
+                     'player_1_type': 'WINNER',
+                     'player_2': 'VALTTERI FILPPULA',
+                     'player_2_api_id': 8470047,
+                     'player_2_eh_id': 'VALTTERI.FILPPULA',
+                     'player_2_age': 35.86931969855644,
+                     'player_2_hand': 'L',
+                     'player_2_type': 'LOSER',
+                     'version': 1}
+
+        api_events.append(new_event)
 
     if game_id == 2019020840:
 
@@ -937,6 +1165,14 @@ def api_events_fixes(game_id, api_events):
     return api_events
 
 def api_rosters_fixes(game_id, api_roster):
+
+    hedberg_ids = [2011021092, 2011020170]
+
+    if game_id in hedberg_ids:
+
+        hedberg = [x for x in api_roster if x['api_id'] == 8460704][0]
+
+        hedberg.update({'catches': 'L'})
 
     if game_id == 2019020951:
 
