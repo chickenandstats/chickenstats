@@ -408,15 +408,9 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
         
         if season == 2004:
 
-            pbar.set_description(f'{season} cancelled due to lockout')
-        
-            now = datetime.now()
+            pbar_message = f'{season} CANCELLED DUE TO LOCKOUT'
 
-            current_time = now.strftime("%H:%M:%S")
-
-            postfix_str = f'{current_time}'
-            
-            pbar.set_postfix_str(postfix_str)
+            progressbar(pbar, pbar_message)
             
             continue
         
@@ -444,12 +438,12 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
 
             url = f'https://statsapi.web.nhl.com/api/v1/schedule?season={season_id}'
 
-        response = s.get(url, timeout = 1).json()
+        response = s.get(url).json()
         
         ## Setting up initial season schedule dataframe
         season_df = pd.json_normalize(response['dates'], record_path = 'games', sep = '_')
 
-        season_df['season'] = season_id
+        season_df['season'] = season_df.gamePk.astype(str)[:4] + str(season_df.gamePk.astype(str).str[:4].astype(int) + 1)
         
         ## Removing game types based on function argument. Game types dictionary is function argument.
         ## By default, only regular season and playoff game types are included
@@ -485,7 +479,7 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
         
         for col in cols:
             
-            season_df[f'{col}_team_code'] = season_df[f'teams_{col}_team_name'].map(team_codes)
+            season_df[f'{col}_team'] = season_df[f'teams_{col}_team_name'].map(team_codes)
 
         if teams != None:
 
@@ -502,31 +496,15 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
         
         if season == seasons[-1]:
 
-            if len(seasons) == 1:
+            pbar_message = 'FINISHED SCRAPING SCHEDULE DATA'
 
-                season_length = season
-
-            elif str(seasons[0])[0:2] != str(seasons[-1])[0:2]:
-
-                season_length = f'{seasons[0]}-{seasons[-1]}'
-
-            elif len(seasons) > 1:
-
-                season_length = f'{seasons[0]}-{str(seasons[-1])[-2:]}'
-            
-            pbar.set_description(f'Finished scraping schedule data ({season_length})')
+            s.close()
             
         else:
         
-            pbar.set_description(f'Finished scraping {season}-{season + 1}')
-        
-        now = datetime.now()
+            pbar_message = f'FINISHED SCRAPING {season}-{season + 1} SCHEDULE'
 
-        current_time = now.strftime("%H:%M:%S")
-
-        postfix_str = f'{current_time}'
-        
-        pbar.set_postfix_str(postfix_str)
+        progressbar(pbar, pbar_message)
         
     try:
     
@@ -789,7 +767,7 @@ def scrape_standings(seasons = 2022, disable_print = False):
 
         standings['team_code'] = standings.team.map(team_codes)
 
-        cols = ['season', 'team', 'team_code', 'games_played', 'points', 'points_percentage',
+        cols = ['season', 'team', 'team_name', 'games_played', 'points', 'points_percentage',
                 'win', 'loss', 'otl', 'streak',
                 'regulation_wins', 'league_rank', 'confrence_rank', 'division_rank', 'wildcard_rank',
                 'goals_scored', 'goals_against', 'team_id', 'team_link', 'division_rank_home', 'division_rank_road',
@@ -805,33 +783,15 @@ def scrape_standings(seasons = 2022, disable_print = False):
 
         if season == seasons[-1]:
 
-            if len(seasons) == 1:
+            pbar_message = 'FINISHED SCRAPING STANDINGS DATA'
 
-                season_length = season
-
-            elif str(seasons[0])[0:2] != str(seasons[-1])[0:2]:
-
-                season_length = f'{seasons[0]}-{seasons[-1]}'
-
-            elif len(seasons) > 1:
-
-                season_length = f'{seasons[0]}-{str(seasons[-1])[-2:]}'
-            
-            pbar.set_description(f'Finished scraping standings data ({season_length})')
+            s.close()
             
         else:
         
-            pbar.set_description(f'Finished scraping {season}-{season + 1}')
-        
-        now = datetime.now()
+            pbar_message = f'FINISHED SCRAPING {season}-{season + 1} STANDINGS'
 
-        current_time = now.strftime("%H:%M:%S")
-
-        postfix_str = f'{current_time}'
-        
-        pbar.set_postfix_str(postfix_str)
-
-    s.close()
+        progressbar(pbar, pbar_message)
         
     standings = pd.concat(standings_list, ignore_index = True)
 
@@ -3678,27 +3638,49 @@ def munge_api_events(game_id, plays, roster, game_info):
                     
             if (play['event'] == 'PENL'):
 
-                if ('served by' in play['description'].lower() and
-                    ('too many' in play['description'].lower() or
-                        'team' in play['description'].lower() or
-                        'unsucc. chlg' in play['description'].lower() or
-                        'bench' in play['description'].lower() or
-                        play['description'].lower()[:5] == 'abuse' or
-                        'head coach' in play['description'].lower() or
-                        'un. chlg' in play['description'].lower() or
-                        'face-off violation' in play['description'].lower() or
-                        #'delay of game' in play['description'].lower() or
-                        'illegal substitution' in play['description'].lower() or
-                        'objects on ice' in play['description'].lower() or 
-                        'abusive language' in play['description'].lower() or 
-                        'leaving penalty box' in play['description'].lower()
-                        )):
+                if 'SERVED BY' and ('BENCH' or
+                                    'TEAM' or
+                                    'COACH' or
+                                    'BENCH' or
+                                    'TOO MANY' or
+                                    'UN. CHLG' or
+                                    'UNSUCC. CHLG' or
+                                    'UNSUCC CHLG' or
+                                    'FACE-OFF VIOLATION' or
+                                    'ILLEGAL SUBSTITUTION' or
+                                    'OBJECTS ON ICE' or
+                                    'ABUSIVE LANGUAGE' or
+                                    'LEAVING PENALTY BOX') in play['description'].upper():
 
                     players.insert(0, {'player': {'fullName': 'BENCH',
                                                     'id': 'BENCH',},
                                         'playerType': 'PENALTYON'})
                     
-                    players[1]['playerType'] = 'SERVED BY'
+                    players[1]['playerType'] = 'SERVEDBY'
+
+                elif ('DELAY OF GAME' and 'SERVED BY' in play['description']) and len(players) == 1:
+
+                    players.insert(0, {'player': {'fullName': 'BENCH',
+                                                    'id': 'BENCH',},
+                                        'playerType': 'PENALTYON'})
+                    
+                    players[1]['playerType'] = 'SERVEDBY'
+
+                elif ('TOO MANY MEN' in play['description']) and len(players) == 1:
+
+                    players.insert(0, {'player': {'fullName': 'BENCH',
+                                                    'id': 'BENCH',},
+                                        'playerType': 'PENALTYON'})
+                    
+                    players[1]['playerType'] = 'SERVEDBY'
+
+                elif 'HEAD COACH' in play['description'].upper() and len(players) == 1:
+
+                    players.insert(0, {'player': {'fullName': 'BENCH',
+                                                    'id': 'BENCH',},
+                                        'playerType': 'PENALTYON'})
+                    
+                    players[1]['playerType'] = 'SERVEDBY'
 
                 elif 'against' in play['description'].lower() and 'served by' in play['description'].lower():
 
@@ -3738,6 +3720,8 @@ def munge_api_events(game_id, plays, roster, game_info):
 
                     play[f'player_{num}_age'] = roster.get(player_data['id'], {}).get('age', '')
 
+                    play[f'player_{num}_position'] = roster.get(player_data['id'], {}).get('position', '')
+
                     if 'shoots' in roster.get(player_data['id'], {}).keys():
 
                         play[f'player_{num}_hand'] = roster.get(player_data['id'], {}).get('shoots', '')
@@ -3753,6 +3737,8 @@ def munge_api_events(game_id, plays, roster, game_info):
                     play[f'player_{num}_age'] = ''
 
                     play[f'player_{num}_hand'] = ''
+
+                    play[f'player_{num}_position'] = ''
                 
                 play[f'player_{num}_type'] = player['playerType'].upper()
             
@@ -3817,10 +3803,10 @@ def finalize_api_events(games_dict):
                    'event_idx', 'period', 'period_seconds', 'game_seconds',
                    'event', 'event_type',  'description', 'coords_x', 'coords_y',
                    'home_score', 'away_score', 'player_1', 'player_1_api_id', 'player_1_eh_id',
-                   'player_1_type', 'player_1_age', 'player_1_hand', 'player_2', 'player_2_api_id', 'player_2_eh_id',
-                   'player_2_type', 'player_2_age', 'player_2_hand',
-                   'player_3', 'player_3_api_id', 'player_3_eh_id', 'player_3_type', 'player_3_age', 'player_3_hand', 'player_4',
-                   'player_4_api_id', 'player_4_eh_id', 'player_4_type', 'player_4_age', 'player_4_hand', 'game_winning_goal',
+                   'player_1_type', 'player_1_age', 'player_1_position', 'player_1_hand', 'player_2', 'player_2_api_id', 'player_2_eh_id',
+                   'player_2_type', 'player_2_age', 'player_2_position', 'player_2_hand',
+                   'player_3', 'player_3_api_id', 'player_3_eh_id', 'player_3_type', 'player_3_age', 'player_3_position', 'player_3_hand', 'player_4',
+                   'player_4_api_id', 'player_4_eh_id', 'player_4_type', 'player_4_age', 'player_4_position', 'player_4_hand', 'game_winning_goal',
                    'empty_net_goal', 'penalty_severity', 'penalty_minutes', 'event_dt', 'time_elapsed',
                    'time_elapsed_seconds', 'version']
 
@@ -4256,6 +4242,18 @@ def munge_html_events(game_id, events, roster):
         if game_id == 2018021133:
 
             event['description'] = event['description'].replace('WSH TAKEAWAY - #71 CIRELLI', 'TBL TAKEAWAY - #71 CIRELLI')
+
+        if game_id == 2019020179:
+
+            if event['event_idx'] == 259:
+
+                event['description'] = 'SJS HEAD COACH GAME MISCONDUCT (0 MIN), SERVED BY: #65 KARLSSON, DEF. ZONE'
+
+        if game_id == 2019020316:
+
+            if event['event_idx'] == 212:
+
+                event['description'] = 'ANA #6 GUDBRANSON ROUGHING(2 MIN) SERVED BY: #24 ROWNEY, DEF. ZONE DRAWN BY: WSH #21 HATHAWAY'
 
         if game_id == 2021020224:
 
@@ -5356,8 +5354,16 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
                 
     for idx, event in enumerate(game_list):
 
+        if idx == 0:
+
+            event_length_idx = 0
+
+        else:
+
+            event_length_idx = idx - 1
+
         new_values = {'event_idx': idx + 1,
-                        #'event_length': event['game_seconds'] - game_list[idx - 1]['game_seconds'],
+                        'event_length': event['game_seconds'] - game_list[event_length_idx]['game_seconds'],
                         'home_on_id': event['home_forwards_id'] + event['home_defense_id'],
                         'home_on': event['home_forwards'] + event['home_defense'],
                         'home_on_positions': event['home_forwards_positions'] + event['home_defense_positions'],
@@ -6049,13 +6055,13 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
                    'period', 'period_seconds', 'game_seconds',
                    'strength_state', 'score_state', 'event_idx', 'event_team',
                    'event', 'event_type', 'description', 'zone',
-                   'coords_x', 'coords_y', 'event_length', 'player_1', 'player_1_eh_id',
+                   'coords_x', 'coords_y', 'player_1', 'player_1_eh_id',
                    'player_1_api_id', 'player_1_age', 'player_1_hand', 'player_1_position', 'player_1_type', 'player_1_eh_id_api',
                    'player_2', 'player_2_eh_id',  'player_2_api_id', 'player_2_age', 'player_2_hand', 'player_2_position', 'player_2_type',
                    'player_2_eh_id_api', 
                    'player_3', 'player_3_eh_id', 'player_3_api_id', 'player_3_age', 'player_3_hand', 'player_3_position', 'player_3_type',
                    'player_3_eh_id_api', 
-                   'shot_type', 'event_distance', 'event_angle', 'pbp_distance', 'event_detail', 
+                   'shot_type', 'event_length', 'event_distance', 'event_angle', 'pbp_distance', 'event_detail', 
                    'penalty', 'penalty_length', 'penalty_severity', 'event_dt',
                    'time_elapsed', 'time_elapsed_seconds', 'home_score',
                    'away_score', 'is_home', 'is_away', 'home_team', 'home_team_name',
@@ -6093,6 +6099,7 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
 
         return games_dict
 
+############################################## Stats functions ##############################################
 
 ## End
 
