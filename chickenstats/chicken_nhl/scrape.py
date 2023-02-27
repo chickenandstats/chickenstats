@@ -429,7 +429,8 @@ def scrape_schedule(seasons = 2022, game_types = ['R', 'P'], date = None, final_
         ## Setting up initial season schedule dataframe
         season_df = pd.json_normalize(response['dates'], record_path = 'games', sep = '_')
 
-        season_df['season'] = season_df.gamePk.astype(str)[:4] + str(season_df.gamePk.astype(str).str[:4].astype(int) + 1)
+        season_df['season'] = (season_df.gamePk.astype(str).str[:4] +
+                                (season_df.gamePk.astype(str).str[:4].astype(int) + 1).astype(str)).astype(int)
         
         ## Removing game types based on function argument. Game types dictionary is function argument.
         ## By default, only regular season and playoff game types are included
@@ -5253,6 +5254,14 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
     
     for event in game_list:
 
+        if event.get('event_team') == event['home_team']:
+
+            event['opp_team'] = event['away_team'] 
+
+        elif event.get('event_team') == event['away_team']:
+
+            event['opp_team'] = event['home_team'] 
+
         event['home_forwards_id'] = []
         event['home_forwards'] = []
         event['home_forwards_positions'] = []
@@ -5714,6 +5723,199 @@ def prep_pbp(game_id, game_info, html_events, api_events, changes, rosters):
 
     return {game_id: game_list}
 
+def finalize_pbp(games_dict):
+
+    list_fields = ['home_on_id',
+                         'home_on',
+                         'home_on_positions',
+                         'home_on_ages',
+                         'home_on_hands',
+                         'home_goalie_id',
+                         'home_goalie',
+                         'home_goalie_age',
+                         'home_goalie_catches',
+                         'away_on_id',
+                         'away_on',
+                         'away_on_positions',
+                         'away_on_ages',
+                         'away_on_hands',
+                         'away_goalie_id',
+                         'away_goalie',
+                         'away_goalie_age',
+                         'away_goalie_catches',
+                         'event_team_on_id',
+                         'event_team_on',
+                         'event_team_on_positions',
+                         'event_team_on_ages',
+                         'event_team_on_hands',
+                         'event_team_forwards_id',
+                         'event_team_forwards',
+                         'event_team_forwards_ages',
+                         'event_team_forwards_hands',
+                         'event_team_defense_id',
+                         'event_team_defense',
+                         'event_team_defense_ages',
+                         'event_team_defense_hands',
+                         'event_team_goalie_id',
+                         'event_team_goalie',
+                         'event_team_goalie_age',
+                         'event_team_goalie_catches',
+                         'opp_team_on_id',
+                         'opp_team_on',
+                         'opp_team_on_positions',
+                         'opp_team_on_ages',
+                         'opp_team_on_hands',
+                         'opp_team_forwards_id',
+                         'opp_team_forwards',
+                         'opp_team_forwards_ages',
+                         'opp_team_forwards_hands',
+                         'opp_team_defense_id',
+                         'opp_team_defense',
+                         'opp_team_defense_ages',
+                         'opp_team_defense_hands',
+                         'opp_team_goalie_id',
+                         'opp_team_goalie',
+                         'opp_team_goalie_age',
+                         'opp_team_goalie_catches',
+                         'change_on',
+                         'change_on_id',
+                         'change_on_positions',
+                         'change_off',
+                         'change_off_id', 
+                         'change_off_positions',
+                         'change_on_forwards',
+                         'change_on_forwards_id',
+                         'change_off_forwards',
+                         'change_off_forwards_id',
+                         'change_on_defense',
+                         'change_on_defense_id',
+                         'change_off_defense',
+                         'change_off_defense_id',
+                         'change_on_goalie',
+                         'change_on_goalie_id',
+                         'change_off_goalie',
+                         'change_off_goalie_id'
+                         ]
+
+    events = [event for events in games_dict.values() for event in events]
+
+    for event in events:
+
+        for list_field in [x for x in list_fields if x in event.keys()]:
+
+            if 'age' in list_field or 'ages' in list_field:
+
+                event[list_field] = ', '.join([str(x) for x in event[list_field]])
+
+            else:
+
+                event[list_field] = ', '.join(event[list_field])
+
+    df = pd.DataFrame(events)
+
+    df = df.replace('', np.nan).replace(' ', np.nan)
+
+    dummy_cols = ['event', 'zone', 'penalty_length', 'change_zone']
+
+    for dummy_col in dummy_cols:
+
+        if dummy_col not in df.columns:
+
+            continue
+        
+        if dummy_col == 'zone':
+            
+            dummies = pd.get_dummies(df.loc[df.event == 'FAC'][dummy_col])
+            
+            new_cols = {'OFF': 'ozf', 'NEU': 'nzf', 'DEF': 'dzf'}
+
+        elif dummy_col == 'penalty_length':
+
+            dummies = pd.get_dummies(df[dummy_col])
+
+            new_cols = {0.0: 'pen0', 2.0: 'pen2', 4.0: 'pen4', 5.0: 'pen5', 10.0: 'pen10',}
+
+        elif dummy_col == 'change_zone':
+
+            dummies = pd.get_dummies(df[dummy_col])
+
+            new_cols = new_cols = {'OFF': 'ozc', 'NEU': 'nzc', 'DEF': 'dzc', 'OTF': 'otf'}
+            
+        else:
+            
+            dummies = pd.get_dummies(df[dummy_col])
+
+            new_cols = {x: x.lower() for x in dummies.columns}
+    
+        dummies = dummies.rename(columns = new_cols)
+
+        df = pd.concat([df, dummies], axis = 1)
+
+    na_cols = ['dzf', 'nzf', 'ozf']
+
+    for na_col in na_cols:
+
+        df[na_col] = df[na_col].fillna(0).astype(int)
+    
+    df.shot = df.shot + df.goal
+    
+    df['fenwick'] = df.shot + df.goal + df.miss
+    
+    df['corsi'] = df.shot + df.goal + df.miss + df.block
+
+    goalie_cols = ['home_goalie', 'home_goalie_id', 'home_goalie_catches', 'home_goalie_age',
+                   'away_goalie', 'away_goalie_id', 'away_goalie_catches', 'away_goalie_age',
+                   'event_team_goalie', 'event_team_goalie_id', 'event_team_goalie_catches', 'event_team_goalie_age',
+                   'opp_team_goalie', 'opp_team_goalie_id', 'opp_team_goalie_catches', 'opp_team_goalie_age',]
+
+    for col in goalie_cols:
+
+        df[col] = df[col].fillna('EMPTY NET')
+
+    columns = ['season', 'session', 'game_id', 'game_date',
+               'period', 'period_seconds', 'game_seconds',
+               'strength_state', 'score_state', 'score_diff', 'event_idx', 'event_team', 'opp_team',
+               'event', 'event_type', 'description', 'zone',
+               'coords_x', 'coords_y', 'player_1', 'player_1_eh_id',
+               'player_1_api_id', 'player_1_age', 'player_1_hand', 'player_1_position', 'player_1_type', 'player_1_eh_id_api',
+               'player_2', 'player_2_eh_id',  'player_2_api_id', 'player_2_age', 'player_2_hand', 'player_2_position', 'player_2_type',
+               'player_2_eh_id_api', 
+               'player_3', 'player_3_eh_id', 'player_3_api_id', 'player_3_age', 'player_3_hand', 'player_3_position', 'player_3_type',
+               'player_3_eh_id_api', 
+               'shot_type', 'event_length', 'event_distance', 'event_angle', 'pbp_distance', 'event_detail', 
+               'penalty', 'penalty_length', 'penalty_severity', 'event_dt',
+               'time_elapsed', 'time_elapsed_seconds', 'home_score', 'home_score_diff',
+               'away_score', 'away_score_diff', 'is_home', 'is_away', 'home_team', 'home_team_name',
+               'away_team', 'away_team_name', 'home_skaters', 'away_skaters', 'score_state', 'score_diff',
+               'event_team_skaters', 'event_team_on_id', 'event_team_on', 'event_team_on_positions',
+               'event_team_on_ages', 'event_team_on_hands',
+               'event_team_goalie_id', 'event_team_goalie', 'event_team_goalie_age', 'event_team_goalie_catches', 'event_team_forwards_id',
+               'event_team_forwards', 'event_team_forwards_ages', 'event_team_forwards_hands', 'event_team_defense_id', 'event_team_defense',
+               'event_team_defense_ages', 'event_team_defense_hands', 'opp_strength_state', 'opp_score_state', 'opp_score_diff',
+               'opp_team_skaters', 'opp_team_on_id', 'opp_team_on', 'opp_team_on_positions', 'opp_team_on_ages', 'opp_team_on_hands', 'opp_team_goalie_id',
+               'opp_team_goalie', 'opp_team_goalie_age', 'opp_team_goalie_catches', 'opp_team_forwards_id', 'opp_team_forwards',
+               'opp_team_forwards_ages', 'opp_team_forwards_hands', 'opp_team_defense_id',
+               'opp_team_defense', 'opp_team_defense_ages', 'opp_team_defense_hands', 'home_on_id', 'home_on', 'home_on_positions',
+               'home_on_ages', 'home_on_hands', 'home_goalie_id',
+               'home_goalie', 'home_goalie_age', 'home_goalie_catches',
+               'away_on_id', 'away_on', 'away_on_positions', 'away_on_ages', 'away_on_hands', 'away_goalie_id', 'away_goalie',
+               'away_goalie_age', 'away_goalie_catches', 'change_zone', 'change_on_count', 'change_off_count', 'change_on', 'change_on_id', 'change_on_positions',
+               'change_off', 'change_off_id', 'change_off_positions', 'change_on_forwards_count',
+               'change_off_forwards_count', 'change_on_forwards', 'change_on_forwards_id', 'change_off_forwards',
+               'change_off_forwards_id', 'change_on_defense_count', 'change_off_defense_count',
+               'change_on_defense', 'change_on_defense_id',  'change_off_defense', 'change_off_defense_id',
+               'change_on_goalie_count', 'change_off_goalie_count',
+               'change_on_goalie', 'change_on_goalie_id','change_off_goalie', 'change_off_goalie_id', 'version', 'block',
+               'change', 'chl', 'corsi', 'fac', 'fenwick', 'give', 'goal', 'hit', 'miss', 'penl', 'pen0', 'pen2', 'pen4', 'pen5', 'pen10','shot', 'stop', 'take', 'dzf',
+               'nzf', 'ozf', 'dzc', 'nzc', 'ozc', 'otf',
+    ]
+
+    columns = [x for x in columns if x in df.columns]
+
+    df = df[columns]
+
+    return df
+
 def scrape_pbp(game_ids, nested = False, disable_print = False):
     
     '''
@@ -6043,165 +6245,19 @@ def scrape_pbp(game_ids, nested = False, disable_print = False):
 
         if game_id == game_ids[-1]:
             
-            pbar.set_description(f'FINISHED SCRAPING PLAY-BY-PLAY DATA')
+            pbar_message = f'FINISHED SCRAPING PLAY-BY-PLAY DATA'
+
+            s.close()
             
         else:
         
-            pbar.set_description(f'FINISHED SCRAPING {game_id}')
+            pbar_message = f'FINISHED SCRAPING {game_id}'
         
-        now = datetime.now()
+        progressbar(pbar, pbar_message)
 
-        current_time = now.strftime("%H:%M:%S")
+    df = finalize_pbp(games_dict)
 
-        postfix_str = f'{current_time}'
-        
-        pbar.set_postfix_str(postfix_str)
-
-    if nested == False:
-
-        events_data = [event for events in games_dict.values() for event in events]
-
-        list_fields = ['home_on_id',
-                         'home_on',
-                         'home_on_positions',
-                         'home_on_ages',
-                         'home_on_hands',
-                         'home_goalie_id',
-                         'home_goalie',
-                         'home_goalie_age',
-                         'home_goalie_catches',
-                         'away_on_id',
-                         'away_on',
-                         'away_on_positions',
-                         'away_on_ages',
-                         'away_on_hands',
-                         'away_goalie_id',
-                         'away_goalie',
-                         'away_goalie_age',
-                         'away_goalie_catches',
-                         'event_team_on_id',
-                         'event_team_on',
-                         'event_team_on_positions',
-                         'event_team_on_ages',
-                         'event_team_on_hands',
-                         'event_team_forwards_id',
-                         'event_team_forwards',
-                         'event_team_forwards_ages',
-                         'event_team_forwards_hands',
-                         'event_team_defense_id',
-                         'event_team_defense',
-                         'event_team_defense_ages',
-                         'event_team_defense_hands',
-                         'event_team_goalie_id',
-                         'event_team_goalie',
-                         'event_team_goalie_age',
-                         'event_team_goalie_catches',
-                         'opp_team_on_id',
-                         'opp_team_on',
-                         'opp_team_on_positions',
-                         'opp_team_on_ages',
-                         'opp_team_on_hands',
-                         'opp_team_forwards_id',
-                         'opp_team_forwards',
-                         'opp_team_forwards_ages',
-                         'opp_team_forwards_hands',
-                         'opp_team_defense_id',
-                         'opp_team_defense',
-                         'opp_team_defense_ages',
-                         'opp_team_defense_hands',
-                         'opp_team_goalie_id',
-                         'opp_team_goalie',
-                         'opp_team_goalie_age',
-                         'opp_team_goalie_catches',
-                         'change_on',
-                         'change_on_id',
-                         'change_on_positions',
-                         'change_off',
-                         'change_off_id', 
-                         'change_off_positions',
-                         'change_on_forwards',
-                         'change_on_forwards_id',
-                         'change_off_forwards',
-                         'change_off_forwards_id',
-                         'change_on_defense',
-                         'change_on_defense_id',
-                         'change_off_defense',
-                         'change_off_defense_id',
-                         'change_on_goalie',
-                         'change_on_goalie_id',
-                         'change_off_goalie',
-                         'change_off_goalie_id'
-                         ]
-
-        for event in events_data:
-
-            for list_field in [x for x in list_fields if x in event.keys()]:
-
-                if 'age' in list_field or 'ages' in list_field:
-
-                    event[list_field] = ', '.join([str(x) for x in event[list_field]])
-
-                else:
-
-                    try:
-
-                        event[list_field] = ', '.join(event[list_field])
-
-                    except:
-
-                        #display(event)
-
-                        pass
-
-        df = pd.DataFrame(events_data)
-
-        columns = ['season', 'session', 'game_id', 'game_date',
-                   'period', 'period_seconds', 'game_seconds',
-                   'strength_state', 'score_state', 'score_diff', 'event_idx', 'event_team',
-                   'event', 'event_type', 'description', 'zone',
-                   'coords_x', 'coords_y', 'player_1', 'player_1_eh_id',
-                   'player_1_api_id', 'player_1_age', 'player_1_hand', 'player_1_position', 'player_1_type', 'player_1_eh_id_api',
-                   'player_2', 'player_2_eh_id',  'player_2_api_id', 'player_2_age', 'player_2_hand', 'player_2_position', 'player_2_type',
-                   'player_2_eh_id_api', 
-                   'player_3', 'player_3_eh_id', 'player_3_api_id', 'player_3_age', 'player_3_hand', 'player_3_position', 'player_3_type',
-                   'player_3_eh_id_api', 
-                   'shot_type', 'event_length', 'event_distance', 'event_angle', 'pbp_distance', 'event_detail', 
-                   'penalty', 'penalty_length', 'penalty_severity', 'event_dt',
-                   'time_elapsed', 'time_elapsed_seconds', 'home_score', 'home_score_diff',
-                   'away_score', 'away_score_diff', 'is_home', 'is_away', 'home_team', 'home_team_name',
-                   'away_team', 'away_team_name', 'home_skaters', 'away_skaters', 'score_state', 'score_diff',
-                   'event_team_skaters', 'event_team_on_id', 'event_team_on', 'event_team_on_positions',
-                   'event_team_on_ages', 'event_team_on_hands',
-                   'event_team_goalie_id', 'event_team_goalie', 'event_team_goalie_age', 'event_team_goalie_catches', 'event_team_forwards_id',
-                   'event_team_forwards', 'event_team_forwards_ages', 'event_team_forwards_hands', 'event_team_defense_id', 'event_team_defense',
-                   'event_team_defense_ages', 'event_team_defense_hands', 'opp_strength_state', 'opp_score_state', 'opp_score_diff',
-                   'opp_team_skaters', 'opp_team_on_id', 'opp_team_on', 'opp_team_on_positions', 'opp_team_on_ages', 'opp_team_on_hands', 'opp_team_goalie_id',
-                   'opp_team_goalie', 'opp_team_goalie_age', 'opp_team_goalie_catches', 'opp_team_forwards_id', 'opp_team_forwards',
-                   'opp_team_forwards_ages', 'opp_team_forwards_hands', 'opp_team_defense_id',
-                   'opp_team_defense', 'opp_team_defense_ages', 'opp_team_defense_hands', 'home_on_id', 'home_on', 'home_on_positions',
-                   'home_on_ages', 'home_on_hands', 'home_goalie_id',
-                   'home_goalie', 'home_goalie_age', 'home_goalie_catches',
-                   'away_on_id', 'away_on', 'away_on_positions', 'away_on_ages', 'away_on_hands', 'away_goalie_id', 'away_goalie',
-                   'away_goalie_age', 'away_goalie_catches', 'change_zone', 'change_on_count', 'change_off_count', 'change_on', 'change_on_id', 'change_on_positions',
-                   'change_off', 'change_off_id', 'change_off_positions', 'change_on_forwards_count',
-                   'change_off_forwards_count', 'change_on_forwards', 'change_on_forwards_id', 'change_off_forwards',
-                   'change_off_forwards_id', 'change_on_defense_count', 'change_off_defense_count',
-                   'change_on_defense', 'change_on_defense_id',  'change_off_defense', 'change_off_defense_id',
-                   'change_on_goalie_count', 'change_off_goalie_count',
-                   'change_on_goalie', 'change_on_goalie_id','change_off_goalie', 'change_off_goalie_id', 'version'
-        ]
-
-        columns = [x for x in columns if x in df.columns]
-
-        df = df[columns]
-
-        df = df.replace('', np.nan).replace(' ', np.nan)
-
-        return df
-
-    else:
-
-        return games_dict
+    return df
 
 ############################################## Stats functions ##############################################
 

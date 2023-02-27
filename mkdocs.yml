@@ -1,1 +1,74 @@
-site_name: My Docs
+site_name: chickenstats
+
+site_author: Chicken and Stats
+
+repo_url: https://github.com/chickenandstats/chickenstats
+
+nav:
+  - Introduction: 'index.md'
+  - 'User Guide':
+    - chicken_nhl: 'user_guide/chicken_nhl.md'
+    - evolving_hockey: 'user_guide/evolving_hockey.md'
+    - capfriendly: 'user_guide/capfriendly.md'
+
+theme:
+
+  name: material
+
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+    - header.autohide
+
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: 
+        icon: material/toggle-switch
+        name: Switch to dark mode 
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: 
+        icon: material/toggle-switch-off-outline
+        name: Switch to light mode 
+
+  #logo: assets/logo.png
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/chickenandstats
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/chickenandstats
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - footnotes
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+copyright: |
+  &copy; 2023 <a href="https://www.chickenandstats.com"  target="_blank" rel="noopener">Chicken and Stats</a>
+
+
+
+

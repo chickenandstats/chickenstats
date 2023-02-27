@@ -175,17 +175,7 @@ def munge_pbp(pbp):
     bad_times = [x * 60 * 20 for x in range(0, 9)]
 
     max_game_seconds = df.groupby('game_id')['game_seconds'].transform('max')
-    
-    #conds = np.logical_and.reduce([~df.game_seconds.isin(bad_times),
-    #                               df.game_seconds != max_game_seconds,
-    #                               np.logical_and.reduce([
-    #                                   df.game_period == 4,
-    #                                   df.game_seconds == 3600, 
-    #                                   df.session == 'R']),
-    #                               df.event_type == 'FAC'
-    #                              ]
-    #                             )
-    
+        
     conds = df.event_type == 'FAC'
     
     columns = {'DEF': 'DZF', 'NEU': 'NZF', 'OFF': 'OZF'}
@@ -193,15 +183,6 @@ def munge_pbp(pbp):
     df = df.merge(pd.get_dummies(df[conds].event_zone).rename(columns = columns),
                   how = 'left', left_index = True, right_index = True)
     
-    #conds = np.logical_and.reduce([~df.game_seconds.isin(bad_times),
-    #                               df.game_seconds != max_game_seconds,
-    #                               np.logical_and.reduce([
-    #                                   df.game_period == 4,
-    #                                   df.game_seconds == 3600, 
-    #                                   df.session == 'R']),
-    #                               df.event_type == 'CHANGE'
-    #                              ]
-    #                             )
     
     conds = df.event_type == 'CHANGE'
     
