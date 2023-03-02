@@ -475,6 +475,7 @@ def munge_rosters(shifts):
         df.player.str.normalize("NFKD")
         .str.encode("ascii", errors="ignore")
         .str.decode("utf-8")
+        .str.replace('..', '.', regex = False)
     )
 
     df["EH_ID"] = np.where(np.logical_or.reduce(DUOS), df.player + "2", df.player)
