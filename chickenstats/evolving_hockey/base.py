@@ -41,13 +41,13 @@ def munge_pbp(pbp):
     ## Adding opp_goalie and own goalie
 
     values = [df.away_goalie, df.home_goalie]
-    df["opp_team_goalie"] = np.select(
+    df["opp_goalie"] = np.select(
         conditions, values, np.nan
     )  # Uses same conditions as opp_team
     df.opp_goalie = df.opp_goalie.fillna("EMPTY NET")
 
     values.reverse()
-    df["event_team_goalie"] = np.select(
+    df["own_goalie"] = np.select(
         conditions, values, np.nan
     )  # Uses same conditions as opp_team
     df.own_goalie = df.own_goalie.fillna("EMPTY NET")
@@ -186,8 +186,8 @@ def munge_pbp(pbp):
     df["opp_score_state"] = np.select(conditions, values, np.nan)
 
     values = [
-        int(score_split[0]) - int(score_split[1]),
-        int(score_split[1]) - int(score_split[0]),
+        score_split[0].astype(int) - score_split[1].astype(int),
+        score_split[1].astype(int) - score_split[0].astype(int),
     ]
 
     df["score_diff"] = np.select(conditions, values, 0)
@@ -307,6 +307,7 @@ def munge_pbp(pbp):
             .str.normalize("NFKD")
             .str.encode("ascii", errors="ignore")
             .str.decode("utf-8")
+            .str.replace('..', '.', regex = False)
         )
 
     # Replacing team names with codes that match NHL API
@@ -518,6 +519,7 @@ def add_positions(pbp, rosters):
             .str.normalize("NFKD")
             .str.encode("ascii", errors="ignore")
             .str.decode("utf-8")
+            .str.replace('..', '.', regex = False)
         )  # .replace(EH_REPLACE[year])
 
         keep_list = ["game_id", "player", "EH_ID", "position"]
@@ -530,7 +532,7 @@ def add_positions(pbp, rosters):
             rosters[keep_list], how="left", left_on=left_on, right_on=right_on
         )
 
-        pbp = pbp.rename(columns={"position": col + "_pos", "EH_ID": col + "_id"}).drop(
+        pbp = pbp.rename(columns={"position": col + "_position", "EH_ID": col + "_id"}).drop(
             "player", axis=1
         )
 
@@ -554,7 +556,7 @@ def add_positions(pbp, rosters):
 
             for player_col in player_cols:
 
-                cond = pbp[f"{player_col}_pos"].isin(positions)
+                cond = pbp[f"{player_col}_position"].isin(positions)
 
                 pbp[col] = np.where(cond, pbp[col] + pbp[player_col] + "_", pbp[col])
 
@@ -588,13 +590,13 @@ def add_positions(pbp, rosters):
         "opp_team",
         "event_player_1",
         "event_player_1_id",
-        "event_player_1_pos",
+        "event_player_1_position",
         "event_player_2",
         "event_player_2_id",
-        "event_player_2_pos",
+        "event_player_2_position",
         "event_player_3",
         "event_player_3_id",
-        "event_player_3_pos",
+        "event_player_3_position",
         "event_length",
         "coords_x",
         "coords_y",
@@ -604,25 +606,25 @@ def add_positions(pbp, rosters):
         "players_off",
         "event_on_1",
         "event_on_1_id",
-        "event_on_1_pos",
+        "event_on_1_position",
         "event_on_2",
         "event_on_2_id",
-        "event_on_2_pos",
+        "event_on_2_position",
         "event_on_3",
         "event_on_3_id",
-        "event_on_3_pos",
+        "event_on_3_position",
         "event_on_4",
         "event_on_4_id",
-        "event_on_4_pos",
+        "event_on_4_position",
         "event_on_5",
         "event_on_5_id",
-        "event_on_5_pos",
+        "event_on_5_position",
         "event_on_6",
         "event_on_6_id",
-        "event_on_6_pos",
+        "event_on_6_position",
         "event_on_7",
         "event_on_7_id",
-        "event_on_7_pos",
+        "event_on_7_position",
         "event_on_f",
         "event_on_f_id",
         "event_on_d",
@@ -631,25 +633,25 @@ def add_positions(pbp, rosters):
         "event_on_g_id",
         "opp_on_1",
         "opp_on_1_id",
-        "opp_on_1_pos",
+        "opp_on_1_position",
         "opp_on_2",
         "opp_on_2_id",
-        "opp_on_2_pos",
+        "opp_on_2_position",
         "opp_on_3",
         "opp_on_3_id",
-        "opp_on_3_pos",
+        "opp_on_3_position",
         "opp_on_4",
         "opp_on_4_id",
-        "opp_on_4_pos",
+        "opp_on_4_position",
         "opp_on_5",
         "opp_on_5_id",
-        "opp_on_5_pos",
+        "opp_on_5_position",
         "opp_on_6",
         "opp_on_6_id",
-        "opp_on_6_pos",
+        "opp_on_6_position",
         "opp_on_7",
         "opp_on_7_id",
-        "opp_on_7_pos",
+        "opp_on_7_position",
         "opp_on_f",
         "opp_on_f_id",
         "opp_on_d",
@@ -712,6 +714,38 @@ def add_positions(pbp, rosters):
     cols = [x.lower() for x in cols if x.lower() in pbp.columns]
 
     pbp = pbp[cols]
+
+    new_cols = {'event_index': 'event_idx',
+            'event_type': 'event',
+            'event_description': 'description',
+            'event_zone': 'zone',
+            'event_player_1': 'player_1',
+            'event_player_1_id': 'player_1_id',
+            'event_player_1_position': 'player_1_position',
+            'event_player_2': 'player_2',
+            'event_player_2_id': 'player_2_id',
+            'event_player_2_position': 'player_2_position',
+            'event_player_3': 'player_3',
+            'event_player_3_id': 'player_3_id',
+            'event_player_3_position': 'player_3_position',
+            'num_on': 'change_on_count',
+            'num_off': 'change_off_count', 
+            'players_on': 'change_on_players',
+            'players_off': 'change_off_players',
+            'event_on_f': 'forwards',
+            'event_on_f_id': 'forwards_id',
+            'event_on_d': 'defense',
+            'event_on_d_id': 'defense_id',
+            'event_on_g': 'own_goalie',
+            'event_on_g_id': 'own_goalie_id',
+            'opp_on_f': 'opp_forwards',
+            'opp_on_f_id': 'opp_forwards_id',
+            'opp_on_d': 'opp_defense',
+            'opp_on_d_id': 'opp_defense_id',
+            'opp_on_g': 'opp_own_goalie',
+            'opp_on_g_id': 'opp_goalie_id',}
+
+    pbp = pbp.rename(columns = new_cols)
 
     return pbp
 
