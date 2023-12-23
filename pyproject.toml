@@ -1,0 +1,39 @@
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chickenstats"
+version = "1.7.3.8.9.10.25"
+authors = [
+    {name = "Chicken and Stats", email = "chicken@chickenandstats.com"},]
+description = "A library for scraping, munging, & visualizing sports statistics."
+readme = {file = "README.md", content-type = "text/markdown"}
+
+dependencies = [
+  "requests",
+  "pandas",
+  "numpy",
+  "beautifulsoup4",
+  "lxml",
+  "tqdm",
+  "unidecode",
+  "shapely",
+  "xgboost",
+  "scikit-learn",
+  "mlflow",
+  "optuna",
+  "python-dotenv",
+  "geopandas",
+  
+]
+
+license = {text = "GPL-3.0-only"}
+classifiers = ["License :: OSI Approved :: GNU General Public License v3 (GPLv3)"]
+
+[project.urls]
+homepage = "https://github.com/chickenandstats/chickenstats"
+documentation = "https://www.chickenstats.com"
+repository = "https://github.com/chickenandstats/chickenstats.git"
+

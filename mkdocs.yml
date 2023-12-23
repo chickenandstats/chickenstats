@@ -1,0 +1,142 @@
+site_name: chickenstats
+
+site_author: Chicken and Stats
+
+repo_url: https://github.com/chickenandstats/chickenstats
+
+site_url: https://chickenstats.com/
+
+site_description: "Python library for scraping and analyzing sports statistics"
+
+nav:
+  - Home:
+    - Introduction: 'index.md'
+    - 'Getting Started': 'home/getting_started.md'
+    - Help: 'home/help.md'
+  - 'User Guide': 
+    - 'User Guide': 'guide/guide.md'
+    - Modules:
+      - chicken_nhl: 'guide/chicken_nhl/chicken_nhl.md'
+      - capfriendly: 'guide/capfriendly/capfriendly.md'
+    - Tutorials:
+      - "Shot Maps": 'guide/tutorials/shot_maps.md'
+      - "Faceoff Win Rate": 'guide/tutorials/faceoff_wins.md'
+      - "GSaX": 'guide/tutorials/gsax.md'
+    - Examples:
+      - Gallery: 'guide/examples/gallery.md'
+      - "Original Research": 'guide/examples/original_research.md'
+  - Reference:
+    - 'Reference': 'reference/reference.md'
+    - chicken_nhl: 
+      - "scrape": 'reference/chicken_nhl/scrape.md'
+      - "info": 'reference/chicken_nhl/info.md'
+    - capfriendly:
+      - "scrape": 'reference/capfriendly/scrape.md'
+  - "xG Model":
+    - 'xG Model': 'xg_model/xg_model.md'
+    - 'The Model':
+      - Overview: 'xg_model/overview.md'
+  - Contribute:
+    - Contribute: 'contribute/contribute.md'
+    - "Known Issues": 'contribute/known_issues.md'
+    - Roadmap: 'contribute/roadmap.md'
+
+theme:
+
+  name: material
+
+  features:
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - header.autohide
+    - navigation.instant
+    - navigation.path
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - search.share
+    - toc.follow
+    - toc.integrate
+  
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: 
+        icon: material/toggle-switch
+        name: Switch to dark mode 
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: 
+        icon: material/toggle-switch-off-outline
+        name: Switch to light mode 
+
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  analytics:
+    provider: google
+    property: G-S4K9S6V8XX
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/chickenandstats
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/chickenandstats
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.mark
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+plugins:
+  - search
+  - typeset
+  - meta
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: chickenstats
+          options:
+            docstring_style: numpy
+            show_root_heading: True
+            show_source: True
+            show_root_toc_entry: True
+            show_root_full_path: False
+            separate_signature: True
+
+copyright: |
+  &copy; 2023 <a href="https://www.chickenandstats.com"  target="_blank" rel="noopener">Chicken and Stats</a>
+
+
+
+
