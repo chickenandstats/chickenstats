@@ -35,6 +35,9 @@ xgboost = "^2.0.3"
 mlflow = "^2.9.2"
 optuna = "^3.5.0"
 python-dotenv = "^1.0.0"
+black = "^23.12.1"
+ruff = "^0.1.9"
+jupyter = "^1.0.0"
 
 
 [tool.poetry.group.test]

@@ -1,1 +1,1 @@
-from .scrape import scrape_capfriendly
+from chickenstats.capfriendly.scrape import scrape_capfriendly

@@ -60,7 +60,7 @@ def munge_cf(df, scrape_year):
 
     split = df["date_of_birth"].str.split(",", n=1, expand=True)
     df["birth_year"] = split[1].str.strip().astype(int)
-    df["birth_date_dt"] = pd.to_datetime(df["date_of_birth"], format = 'mixed')
+    df["birth_date_dt"] = pd.to_datetime(df["date_of_birth"], format="mixed")
     df["birth_date"] = df.birth_date_dt.dt.strftime("%Y-%m-%d")
 
     today = pd.to_datetime(datetime.today())
@@ -185,7 +185,7 @@ def munge_cf(df, scrape_year):
 
     df["years_remaining_pct"] = df.years_remaining / df.length
 
-    df["signing_date_dt"] = pd.to_datetime(df.signing_date, format = 'mixed')
+    df["signing_date_dt"] = pd.to_datetime(df.signing_date, format="mixed")
 
     df.signing_date = df.signing_date_dt.dt.strftime("%Y-%m-%d")
 

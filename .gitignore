@@ -153,3 +153,4 @@ cython_debug/
 
 # Others
 *.DS_Store
+/sandbox/*

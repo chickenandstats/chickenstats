@@ -1,4 +1,4 @@
-########################## Import dependencies ##########################
+# Import dependencies #
 
 import pandas as pd
 import numpy as np
@@ -7,11 +7,11 @@ import geopandas as gpd
 
 from shapely.geometry.polygon import Polygon
 
-########################## Functions ##########################
+# Functions #
 
 
-## Function to munge play-by-play data
-def munge_pbp(pbp):
+# Function to munge play-by-play data
+def munge_pbp(pbp: pd.DataFrame) -> pd.DataFrame:
     """
     Cleans csv file pulled from play-by-play query tool at evolving-hockey.com.
 
@@ -26,21 +26,21 @@ def munge_pbp(pbp):
 
     df = pbp.copy()
 
-    ## Common column names for ease of typing later
+    # Common column names for ease of typing later
 
     EVENT_TEAM = df.event_team
     HOME_TEAM = df.home_team
     AWAY_TEAM = df.away_team
     EVENT_TYPE = df.event_type
 
-    ## Adding opp_team
+    # Adding opp_team
 
     conditions = [EVENT_TEAM == HOME_TEAM, EVENT_TEAM == AWAY_TEAM]
     values = [AWAY_TEAM, HOME_TEAM]
 
     df["opp_team"] = np.select(conditions, values, np.nan)
 
-    ## Adding opp_goalie and own goalie
+    # Adding opp_goalie and own goalie
 
     values = [df.away_goalie, df.home_goalie]
     df["opp_goalie"] = np.select(
@@ -54,7 +54,7 @@ def munge_pbp(pbp):
     )  # Uses same conditions as opp_team
     df.own_goalie = df.own_goalie.fillna("EMPTY NET")
 
-    ## Adding event_on and opp_on
+    # Adding event_on and opp_on
 
     for num in range(1, 8):
         home = df[f"home_on_{num}"]
@@ -69,7 +69,7 @@ def munge_pbp(pbp):
 
         df[f"opp_on_{num}"] = np.select(conditions, values, np.nan)
 
-    ## Adding zone_start
+    # Adding zone_start
 
     conds_1 = np.logical_and(
         np.logical_and(EVENT_TYPE == "CHANGE", EVENT_TYPE.shift(-1) == "FAC"),
@@ -159,7 +159,7 @@ def munge_pbp(pbp):
 
     df.event_zone = df.event_zone.str.upper()
 
-    ## Fixing strength states for changes preceding different strength states
+    # Fixing strength states for changes preceding different strength states
 
     conditions = [conds_1, conds_2, conds_3, conds_4]
 
@@ -172,7 +172,7 @@ def munge_pbp(pbp):
 
     df.game_strength_state = np.select(conditions, values, df.game_strength_state)
 
-    ## Adding strength state & score state
+    # Adding strength state & score state
 
     conditions = [EVENT_TEAM == HOME_TEAM, EVENT_TEAM == AWAY_TEAM]
 
@@ -200,7 +200,7 @@ def munge_pbp(pbp):
     values.reverse()
     df["opp_score_state"] = np.select(conditions, values, np.nan)
 
-    ## Swapping faceoff event_players
+    # Swapping faceoff event_players
 
     conditions = np.logical_and(df.event_type == "FAC", EVENT_TEAM == HOME_TEAM)
 
@@ -210,14 +210,14 @@ def munge_pbp(pbp):
         [df.event_player_1, df.event_player_2],
     )
 
-    ## Adding is_home dummy variable
+    # Adding is_home dummy variable
 
     conditions = [df.event_team == df.home_team, df.event_team == df.away_team]
     values = [1, 0]
 
     df["is_home"] = np.select(conditions, values, np.nan)
 
-    ## Adding dummy variables
+    # Adding dummy variables
 
     dummies = pd.get_dummies(df.event_type, dtype=int)
 
@@ -259,7 +259,7 @@ def munge_pbp(pbp):
 
     df[dummy_cols] = df[dummy_cols].fillna(0).astype(int)
 
-    ## Calculating shots, corsi, & fenwick
+    # Calculating shots, corsi, & fenwick
 
     df["corsi"] = df.goal + df.shot + df.miss + df.block
 
@@ -267,7 +267,7 @@ def munge_pbp(pbp):
 
     df.shot = df.goal + df.shot
 
-    ## Adding penalty columns
+    # Adding penalty columns
 
     is_penalty = df.event_type == "PENL"
 
@@ -283,7 +283,7 @@ def munge_pbp(pbp):
 
     df = pd.concat([df.copy(), pd.get_dummies(df.penalty_type, dtype=int)], axis=1)
 
-    ## Fixing opening change
+    # Fixing opening change
 
     conditions = (
         (df.event_type == "CHANGE")
@@ -440,10 +440,10 @@ def munge_pbp(pbp):
 
     df["hd_miss"] = df.high_danger * df.miss
 
-    ## Adding adjusted G, xG, shot, corsi, and fenwick figures
+    # Adding adjusted G, xG, shot, corsi, and fenwick figures
 
     conds = [
-        ## 5v5
+        # 5v5
         np.logical_and.reduce(
             [
                 df.strength_state == "5v5",
@@ -542,7 +542,7 @@ def munge_pbp(pbp):
                 df.home_score - df.away_score >= 3,
             ]
         ),
-        ## 4v4
+        # 4v4
         np.logical_and.reduce(
             [
                 df.strength_state == "4v4",
@@ -641,10 +641,10 @@ def munge_pbp(pbp):
                 df.home_score - df.away_score >= 3,
             ]
         ),
-        ## 3v3
+        # 3v3
         np.logical_and(df.strength_state == "3v3", df.is_home == 1),
         np.logical_and(df.strength_state == "3v3", df.is_home == 0),
-        ## 5v4
+        # 5v4
         np.logical_and.reduce(
             [
                 df.strength_state == "5v4",
@@ -694,7 +694,7 @@ def munge_pbp(pbp):
                 df.home_score - df.away_score < 0,
             ]
         ),
-        ## 4v5
+        # 4v5
         np.logical_and.reduce(
             [
                 df.strength_state == "4v5",
@@ -730,7 +730,7 @@ def munge_pbp(pbp):
                 df.home_score - df.away_score > 0,
             ]
         ),
-        ## 5v3
+        # 5v3
         np.logical_and.reduce(
             [
                 df.strength_state == "5v3",
@@ -773,7 +773,7 @@ def munge_pbp(pbp):
                 df.home_score - df.away_score > 0,
             ]
         ),
-        ## 3v5
+        # 3v5
         np.logical_and.reduce(
             [
                 df.strength_state == "3v5",
@@ -816,7 +816,7 @@ def munge_pbp(pbp):
                 df.home_score - df.away_score > 0,
             ]
         ),
-        ## 4v3
+        # 4v3
         np.logical_and.reduce(
             [
                 df.strength_state == "4v3",
@@ -859,7 +859,7 @@ def munge_pbp(pbp):
                 df.home_score - df.away_score > 0,
             ]
         ),
-        ## 3v4
+        # 3v4
         np.logical_and.reduce(
             [
                 df.strength_state == "3v4",
@@ -902,7 +902,7 @@ def munge_pbp(pbp):
                 df.home_score - df.away_score > 0,
             ]
         ),
-        ## 1v0
+        # 1v0
         np.logical_and.reduce(
             [
                 df.strength_state == "1v0",
@@ -948,160 +948,160 @@ def munge_pbp(pbp):
     ]
 
     weights = (
-        ## Home goal, while home team trailing, at 5v5
+        # Home goal, while home team trailing, at 5v5
         ([0.938] * 3)
         +
-        ## Home goal, score tied at 5v5
+        # Home goal, score tied at 5v5
         [0.945]
         +
-        ## Home goal, while home team leading, at 5v5
+        # Home goal, while home team leading, at 5v5
         ([0.988] * 3)
         +
-        ## Away goal, while home team trailing, at 5v5
+        # Away goal, while home team trailing, at 5v5
         ([1.071] * 3)
         +
-        ## Away goal, score tied at 5v5
+        # Away goal, score tied at 5v5
         [1.061]
         +
-        ## Away goal, while home team leading, at 5v5
+        # Away goal, while home team leading, at 5v5
         ([1.012] * 3)
         +
-        ## Home goal, at 4v4
+        # Home goal, at 4v4
         ([0.929] * 7)
         +
-        ## Away goal at 4v4
+        # Away goal at 4v4
         ([1.082] * 7)
         +
-        ## Home goal at 3v3
+        # Home goal at 3v3
         [1.033]
         +
-        ## Away goal at 3v3
+        # Away goal at 3v3
         [0.969]
         +
-        ## Home goal, while home team trailing, at 5v4
+        # Home goal, while home team trailing, at 5v4
         [0.860]
         +
-        ## Home goal, while score tied, at 5v4
+        # Home goal, while score tied, at 5v4
         [0.933]
         +
-        ## Home goal, while home team leading, at 5v4
+        # Home goal, while home team leading, at 5v4
         [0.980]
         +
-        ## Away goal, while home team trailing, at 5v4
+        # Away goal, while home team trailing, at 5v4
         [1.183]
         +
-        ## Away goal, while score tied, at 5v4
+        # Away goal, while score tied, at 5v4
         [1.077]
         +
-        ## Away goal, while home team leading, at 5v4
+        # Away goal, while home team leading, at 5v4
         [1.006]
         +
-        ## Home goal, while home team trailing, at 4v5
+        # Home goal, while home team trailing, at 4v5
         [1.183]
         +
-        ## Home goal, while score tied, at 4v5
+        # Home goal, while score tied, at 4v5
         [1.077]
         +
-        ## Home goal, while home team leading, at 4v5
+        # Home goal, while home team leading, at 4v5
         [1.006]
         +
-        ## Away goal, while home team trailing, at 4v5
+        # Away goal, while home team trailing, at 4v5
         [0.860]
         +
-        ## Away goal, while score tied, at 4v5
+        # Away goal, while score tied, at 4v5
         [0.933]
         +
-        ## Away goal, while home team leading, at 4v5
+        # Away goal, while home team leading, at 4v5
         [0.980]
         +
-        ## Home goal, while home team trailing, at 5v3
+        # Home goal, while home team trailing, at 5v3
         [0.840]
         +
-        ## Home goal, while score tied, at 5v3
+        # Home goal, while score tied, at 5v3
         [0.927]
         +
-        ## Home goal, while home team leading, at 5v3
+        # Home goal, while home team leading, at 5v3
         [0.935]
         +
-        ## Away goal, while home team trailing, at 5v3
+        # Away goal, while home team trailing, at 5v3
         [1.234]
         +
-        ## Away goal, while score tied, at 5v3
+        # Away goal, while score tied, at 5v3
         [1.085]
         +
-        ## Away goal, while home team leading, at 5v3
+        # Away goal, while home team leading, at 5v3
         [1.075]
         +
-        ## Home goal, while home team trailing, at 3v5
+        # Home goal, while home team trailing, at 3v5
         [1.234]
         +
-        ## Home goal, while score tied, at 3v5
+        # Home goal, while score tied, at 3v5
         [1.085]
         +
-        ## Home goal, while home team leading, at 3v5
+        # Home goal, while home team leading, at 3v5
         [1.075]
         +
-        ## Away goal, while home team trailing, at 3v5
+        # Away goal, while home team trailing, at 3v5
         [0.840]
         +
-        ## Away goal, while score tied, at 3v5
+        # Away goal, while score tied, at 3v5
         [0.927]
         +
-        ## Away goal, while home team leading, at 3v5
+        # Away goal, while home team leading, at 3v5
         [0.935]
         +
-        ## Home goal, while home team trailing, at 4v3
+        # Home goal, while home team trailing, at 4v3
         [0.769]
         +
-        ## Home goal, while score tied, at 4v3
+        # Home goal, while score tied, at 4v3
         [0.923]
         +
-        ## Home goal, while home team leading, at 4v3
+        # Home goal, while home team leading, at 4v3
         [0.883]
         +
-        ## Away goal, while home team trailing, at 4v3
+        # Away goal, while home team trailing, at 4v3
         [1.429]
         +
-        ## Away goal, while score tied, at 4v3
+        # Away goal, while score tied, at 4v3
         [1.091]
         +
-        ## Away goal, while home team leading, at 4v3
+        # Away goal, while home team leading, at 4v3
         [1.153]
         +
-        ## Home goal, while home team trailing, at 3v4
+        # Home goal, while home team trailing, at 3v4
         [1.429]
         +
-        ## Home goal, while score tied, at 3v4
+        # Home goal, while score tied, at 3v4
         [1.091]
         +
-        ## Home goal, while home team leading, at 3v4
+        # Home goal, while home team leading, at 3v4
         [1.153]
         +
-        ## Away goal, while home team trailing, at 3v4
+        # Away goal, while home team trailing, at 3v4
         [0.769]
         +
-        ## Away goal, while score tied, at 3v4
+        # Away goal, while score tied, at 3v4
         [0.923]
         +
-        ## Away goal, while home team leading, at 3v4
+        # Away goal, while home team leading, at 3v4
         [0.883]
         +
-        ## Home goal, while home team trailing, at 1v0
+        # Home goal, while home team trailing, at 1v0
         [1.172]
         +
-        ## Home goal, score tied at 1v0
+        # Home goal, score tied at 1v0
         [1.053]
         +
-        ## Home goal, while home team leading, at 1v0
+        # Home goal, while home team leading, at 1v0
         [0.958]
         +
-        ## Away goal, while home team trailing, at 1v0
-        [.872]
+        # Away goal, while home team trailing, at 1v0
+        [0.872]
         +
-        ## Away goal, score tied at 1v0
-        [.952]
+        # Away goal, score tied at 1v0
+        [0.952]
         +
-        ## Away goal, while home team leading, at 1v0
+        # Away goal, while home team leading, at 1v0
         [1.045]
     )
 
@@ -1111,145 +1111,145 @@ def munge_pbp(pbp):
 
     conds = conds[:-6]  # Don't need the 1v0 conditions for the other adjustments
 
-    ## xG weights
+    # xG weights
 
     weights = (
-        ## Home xG, while home team trailing, at 5v5
+        # Home xG, while home team trailing, at 5v5
         ([0.923] * 3)
         +
-        ## Home xG, score tied at 5v5
+        # Home xG, score tied at 5v5
         [0.954]
         +
-        ## Home xG, while home team leading, at 5v5
+        # Home xG, while home team leading, at 5v5
         ([0.991] * 3)
         +
-        ## Away xG, while home team trailing, at 5v5
+        # Away xG, while home team trailing, at 5v5
         ([1.091] * 3)
         +
-        ## Away xG, score tied at 5v5
+        # Away xG, score tied at 5v5
         [1.051]
         +
-        ## Away xG, while home team leading, at 5v5
+        # Away xG, while home team leading, at 5v5
         ([1.010] * 3)
         +
-        ## Home xG, at 4v4
+        # Home xG, at 4v4
         ([0.951] * 7)
         +
-        ## Away xG at 4v4
+        # Away xG at 4v4
         ([1.055] * 7)
         +
-        ## Home xG at 3v3
+        # Home xG at 3v3
         [1.006]
         +
-        ## Away xG at 3v3
+        # Away xG at 3v3
         [0.994]
         +
-        ## Home xG, while home team trailing, at 5v4
+        # Home xG, while home team trailing, at 5v4
         [0.844]
         +
-        ## Home xG, while score tied, at 5v4
+        # Home xG, while score tied, at 5v4
         [0.912]
         +
-        ## Home xG, while home team leading, at 5v4
+        # Home xG, while home team leading, at 5v4
         [1.006]
         +
-        ## Away xG, while home team trailing, at 5v4
+        # Away xG, while home team trailing, at 5v4
         [1.226]
         +
-        ## Away xG, while score tied, at 5v4
+        # Away xG, while score tied, at 5v4
         [1.107]
         +
-        ## Away xG, while home team leading, at 5v4
+        # Away xG, while home team leading, at 5v4
         [0.994]
         +
-        ## Home xG, while home team trailing, at 4v5
+        # Home xG, while home team trailing, at 4v5
         [1.226]
         +
-        ## Home xG, while score tied, at 4v5
+        # Home xG, while score tied, at 4v5
         [1.107]
         +
-        ## Home xG, while home team leading, at 4v5
+        # Home xG, while home team leading, at 4v5
         [0.994]
         +
-        ## Away xG, while home team trailing, at 4v5
+        # Away xG, while home team trailing, at 4v5
         [0.844]
         +
-        ## Away xG, while score tied, at 4v5
+        # Away xG, while score tied, at 4v5
         [0.912]
         +
-        ## Away xG, while home team leading, at 4v5
+        # Away xG, while home team leading, at 4v5
         [1.006]
         +
-        ## Home xG, while home team trailing, at 5v3
+        # Home xG, while home team trailing, at 5v3
         [0.801]
         +
-        ## Home xG, while score tied, at 5v3
+        # Home xG, while score tied, at 5v3
         [0.896]
         +
-        ## Home xG, while home team leading, at 5v3
+        # Home xG, while home team leading, at 5v3
         [0.913]
         +
-        ## Away xG, while home team trailing, at 5v3
+        # Away xG, while home team trailing, at 5v3
         [1.330]
         +
-        ## Away xG, while score tied, at 5v3
+        # Away xG, while score tied, at 5v3
         [1.131]
         +
-        ## Away xG, while home team leading, at 5v3
+        # Away xG, while home team leading, at 5v3
         [1.105]
         +
-        ## Home xG, while home team trailing, at 3v5
+        # Home xG, while home team trailing, at 3v5
         [1.330]
         +
-        ## Home xG, while score tied, at 3v5
+        # Home xG, while score tied, at 3v5
         [1.131]
         +
-        ## Home xG, while home team leading, at 3v5
+        # Home xG, while home team leading, at 3v5
         [1.105]
         +
-        ## Away xG, while home team trailing, at 3v5
+        # Away xG, while home team trailing, at 3v5
         [0.801]
         +
-        ## Away xG, while score tied, at 3v5
+        # Away xG, while score tied, at 3v5
         [0.896]
         +
-        ## Away xG, while home team leading, at 3v5
+        # Away xG, while home team leading, at 3v5
         [0.913]
         +
-        ## Home xG, while home team trailing, at 4v3
+        # Home xG, while home team trailing, at 4v3
         [0.820]
         +
-        ## Home xG, while score tied, at 4v3
+        # Home xG, while score tied, at 4v3
         [0.912]
         +
-        ## Home xG, while home team leading, at 4v3
+        # Home xG, while home team leading, at 4v3
         [0.898]
         +
-        ## Away xG, while home team trailing, at 4v3
+        # Away xG, while home team trailing, at 4v3
         [1.282]
         +
-        ## Away xG, while score tied, at 4v3
+        # Away xG, while score tied, at 4v3
         [1.106]
         +
-        ## Away xG, while home team leading, at 4v3
+        # Away xG, while home team leading, at 4v3
         [1.129]
         +
-        ## Home xG, while home team trailing, at 3v4
+        # Home xG, while home team trailing, at 3v4
         [1.282]
         +
-        ## Home xG, while score tied, at 3v4
+        # Home xG, while score tied, at 3v4
         [1.106]
         +
-        ## Home xG, while home team leading, at 3v4
+        # Home xG, while home team leading, at 3v4
         [1.129]
         +
-        ## Away xG, while home team trailing, at 3v4
+        # Away xG, while home team trailing, at 3v4
         [0.820]
         +
-        ## Away xG, while score tied, at 3v4
+        # Away xG, while score tied, at 3v4
         [0.912]
         +
-        ## Away xG, while home team leading, at 3v4
+        # Away xG, while home team leading, at 3v4
         [0.898]
     )
 
@@ -1257,181 +1257,181 @@ def munge_pbp(pbp):
 
     df["pred_goal_adj"] = np.select(conds, values)
 
-    ## shot weights
+    # shot weights
 
     weights = (
-        ## Home shot, while home team trailing by more than 3, at 5v5
+        # Home shot, while home team trailing by more than 3, at 5v5
         [0.862]
         +
-        ## Home shot, while home team trailing by 2, at 5v5
+        # Home shot, while home team trailing by 2, at 5v5
         [0.890]
         +
-        ## Home shot, while home team trailing by 1, at 5v5
+        # Home shot, while home team trailing by 1, at 5v5
         [0.915]
         +
-        ## Home shot, score tied at 5v5
+        # Home shot, score tied at 5v5
         [0.972]
         +
-        ## Home shot, while home team leading by 1, at 5v5
+        # Home shot, while home team leading by 1, at 5v5
         [1.037]
         +
-        ## Home shot, while home team leading by 2, at 5v5
+        # Home shot, while home team leading by 2, at 5v5
         [1.077]
         +
-        ## Home shot, while home team leading by more than 3, at 5v5
+        # Home shot, while home team leading by more than 3, at 5v5
         [1.104]
         +
-        ## Away shot, while home team trailing by more than 3, at 5v5
+        # Away shot, while home team trailing by more than 3, at 5v5
         [1.191]
         +
-        ## Away shot, while home team trailing by 2, at 5v5
+        # Away shot, while home team trailing by 2, at 5v5
         [1.141]
         +
-        ## Away shot, while home team trailing by 1, at 5v5
+        # Away shot, while home team trailing by 1, at 5v5
         [1.102]
         +
-        ## Away shot, score tied at 5v5
+        # Away shot, score tied at 5v5
         [1.029]
         +
-        ## Away shot, while home team leading by 1, at 5v5
+        # Away shot, while home team leading by 1, at 5v5
         [0.966]
         +
-        ## Away shot, while home team leading by 2, at 5v5
+        # Away shot, while home team leading by 2, at 5v5
         [0.933]
         +
-        ## Away shot, while home team leading by more than 3, at 5v5
+        # Away shot, while home team leading by more than 3, at 5v5
         [0.914]
         +
-        ## Home shot, while home team trailing, at 4v4
+        # Home shot, while home team trailing, at 4v4
         ([0.939] * 3)
         +
-        ## Home shot, score tied at 4v4
+        # Home shot, score tied at 4v4
         [0.969]
         +
-        ## Home shot, while home team leading, at 4v4
+        # Home shot, while home team leading, at 4v4
         ([1.029] * 3)
         +
-        ## Away shot, while home team trailing, at 4v4
+        # Away shot, while home team trailing, at 4v4
         ([1.070] * 3)
         +
-        ## Away shot, score tied at 4v4
+        # Away shot, score tied at 4v4
         [1.033]
         +
-        ## Away shot, while home team leading, at 4v4
+        # Away shot, while home team leading, at 4v4
         ([0.973] * 3)
         +
-        ## Home shot at 3v3
+        # Home shot at 3v3
         [0.991]
         +
-        ## Away shot at 3v3
+        # Away shot at 3v3
         [1.009]
         +
-        ## Home shot, while home team trailing, at 5v4
+        # Home shot, while home team trailing, at 5v4
         [0.844]
         +
-        ## Home shot, while score tied, at 5v4
+        # Home shot, while score tied, at 5v4
         [0.930]
         +
-        ## Home shot, while home team leading, at 5v4
+        # Home shot, while home team leading, at 5v4
         [1.046]
         +
-        ## Away shot, while home team trailing, at 5v4
+        # Away shot, while home team trailing, at 5v4
         [1.226]
         +
-        ## Away shot, while score tied, at 5v4
+        # Away shot, while score tied, at 5v4
         [1.081]
         +
-        ## Away shot, while home team leading, at 5v4
+        # Away shot, while home team leading, at 5v4
         [0.958]
         +
-        ## Home shot, while home team trailing, at 4v5
+        # Home shot, while home team trailing, at 4v5
         [1.226]
         +
-        ## Home shot, while score tied, at 4v5
+        # Home shot, while score tied, at 4v5
         [1.081]
         +
-        ## Home shot, while home team leading, at 4v5
+        # Home shot, while home team leading, at 4v5
         [0.958]
         +
-        ## Away shot, while home team trailing, at 4v5
+        # Away shot, while home team trailing, at 4v5
         [0.844]
         +
-        ## Away shot, while score tied, at 4v5
+        # Away shot, while score tied, at 4v5
         [0.930]
         +
-        ## Away shot, while home team leading, at 4v5
+        # Away shot, while home team leading, at 4v5
         [1.046]
         +
-        ## Home shot, while home team trailing, at 5v3
+        # Home shot, while home team trailing, at 5v3
         [0.799]
         +
-        ## Home shot, while score tied, at 5v3
+        # Home shot, while score tied, at 5v3
         [0.915]
         +
-        ## Home shot, while home team leading, at 5v3
+        # Home shot, while home team leading, at 5v3
         [0.949]
         +
-        ## Away shot, while home team trailing, at 5v3
+        # Away shot, while home team trailing, at 5v3
         [1.336]
         +
-        ## Away shot, while score tied, at 5v3
+        # Away shot, while score tied, at 5v3
         [1.102]
         +
-        ## Away shot, while home team leading, at 5v3
+        # Away shot, while home team leading, at 5v3
         [1.057]
         +
-        ## Home shot, while home team trailing, at 3v5
+        # Home shot, while home team trailing, at 3v5
         [1.336]
         +
-        ## Home shot, while score tied, at 3v5
+        # Home shot, while score tied, at 3v5
         [1.102]
         +
-        ## Home shot, while home team leading, at 3v5
+        # Home shot, while home team leading, at 3v5
         [1.057]
         +
-        ## Away shot, while home team trailing, at 3v5
+        # Away shot, while home team trailing, at 3v5
         [0.799]
         +
-        ## Away shot, while score tied, at 3v5
+        # Away shot, while score tied, at 3v5
         [0.915]
         +
-        ## Away shot, while home team leading, at 3v5
+        # Away shot, while home team leading, at 3v5
         [0.949]
         +
-        ## Home shot, while home team trailing, at 4v3
+        # Home shot, while home team trailing, at 4v3
         [0.839]
         +
-        ## Home shot, while score tied, at 4v3
+        # Home shot, while score tied, at 4v3
         [0.913]
         +
-        ## Home shot, while home team leading, at 4v3
+        # Home shot, while home team leading, at 4v3
         [0.975]
         +
-        ## Away shot, while home team trailing, at 4v3
+        # Away shot, while home team trailing, at 4v3
         [1.238]
         +
-        ## Away shot, while score tied, at 4v3
+        # Away shot, while score tied, at 4v3
         [1.105]
         +
-        ## Away shot, while home team leading, at 4v3
+        # Away shot, while home team leading, at 4v3
         [1.026]
         +
-        ## Home shot, while home team trailing, at 3v4
+        # Home shot, while home team trailing, at 3v4
         [1.238]
         +
-        ## Home shot, while score tied, at 3v4
+        # Home shot, while score tied, at 3v4
         [1.105]
         +
-        ## Home shot, while home team leading, at 3v4
+        # Home shot, while home team leading, at 3v4
         [1.026]
         +
-        ## Away shot, while home team trailing, at 3v4
+        # Away shot, while home team trailing, at 3v4
         [0.839]
         +
-        ## Away shot, while score tied, at 3v4
+        # Away shot, while score tied, at 3v4
         [0.913]
         +
-        ## Away shot, while home team leading, at 3v4
+        # Away shot, while home team leading, at 3v4
         [0.975]
     )
 
@@ -1439,205 +1439,205 @@ def munge_pbp(pbp):
 
     df["shot_adj"] = np.select(conds, values)
 
-    ## fenwwick weights
+    # fenwwick weights
 
     weights = (
-        ## Home fenwick, while home team trailing by more than 3, at 5v5
+        # Home fenwick, while home team trailing by more than 3, at 5v5
         [0.859]
         +
-        ## Home fenwick, while home team trailing by 2, at 5v5
+        # Home fenwick, while home team trailing by 2, at 5v5
         [0.881]
         +
-        ## Home fenwick, while home team trailing by 1, at 5v5
+        # Home fenwick, while home team trailing by 1, at 5v5
         [0.909]
         +
-        ## Home fenwick, score tied at 5v5
+        # Home fenwick, score tied at 5v5
         [0.968]
         +
-        ## Home fenwick, while home team leading by 1, at 5v5
+        # Home fenwick, while home team leading by 1, at 5v5
         [1.037]
         +
-        ## Home fenwick, while home team leading by 2, at 5v5
+        # Home fenwick, while home team leading by 2, at 5v5
         [1.078]
         +
-        ## Home fenwick, while home team leading by more than 3, at 5v5
+        # Home fenwick, while home team leading by more than 3, at 5v5
         [1.109]
         +
-        ## Away fenwick, while home team trailing by more than 3, at 5v5
+        # Away fenwick, while home team trailing by more than 3, at 5v5
         [1.197]
         +
-        ## Away fenwick, while home team trailing by 2, at 5v5
+        # Away fenwick, while home team trailing by 2, at 5v5
         [1.155]
         +
-        ## Away fenwick, while home team trailing by 1, at 5v5
+        # Away fenwick, while home team trailing by 1, at 5v5
         [1.111]
         +
-        ## Away fenwick, score tied at 5v5
+        # Away fenwick, score tied at 5v5
         [1.034]
         +
-        ## Away fenwick, while home team leading by 1, at 5v5
+        # Away fenwick, while home team leading by 1, at 5v5
         [0.966]
         +
-        ## Away fenwick, while home team leading by 2, at 5v5
+        # Away fenwick, while home team leading by 2, at 5v5
         [0.933]
         +
-        ## Away fenwick, while home team leading by more than 3, at 5v5
+        # Away fenwick, while home team leading by more than 3, at 5v5
         [0.911]
         +
-        ## Home fenwick, while home team trailing by more than 3, at 4v4
+        # Home fenwick, while home team trailing by more than 3, at 4v4
         [0.933]
         +
-        ## Home fenwick, while home team trailing by 2, at 4v4
+        # Home fenwick, while home team trailing by 2, at 4v4
         [0.931]
         +
-        ## Home fenwick, while home team trailing by 1, at 4v4
+        # Home fenwick, while home team trailing by 1, at 4v4
         [0.938]
         +
-        ## Home fenwick, score tied at 4v4
+        # Home fenwick, score tied at 4v4
         [0.973]
         +
-        ## Home fenwick, while home team leading by 1, at 4v4
+        # Home fenwick, while home team leading by 1, at 4v4
         [1.027]
         +
-        ## Home fenwick, while home team leading by 2, at 4v4
+        # Home fenwick, while home team leading by 2, at 4v4
         [1.040]
         +
-        ## Home fenwick, while home team leading by more than 3, at 4v4
+        # Home fenwick, while home team leading by more than 3, at 4v4
         [1.060]
         +
-        ## Away fenwick, while home team trailing by more than 3, at 4v4
+        # Away fenwick, while home team trailing by more than 3, at 4v4
         [1.077]
         +
-        ## Away fenwick, while home team trailing by 2, at 4v4
+        # Away fenwick, while home team trailing by 2, at 4v4
         [1.079]
         +
-        ## Away fenwick, while home team trailing by 1, at 4v4
+        # Away fenwick, while home team trailing by 1, at 4v4
         [1.071]
         +
-        ## Away fenwick, score tied at 4v4
+        # Away fenwick, score tied at 4v4
         [1.029]
         +
-        ## Away fenwick, while home team leading by 1, at 4v4
+        # Away fenwick, while home team leading by 1, at 4v4
         [0.975]
         +
-        ## Away fenwick, while home team leading by 2, at 4v4
+        # Away fenwick, while home team leading by 2, at 4v4
         [0.963]
         +
-        ## Away fenwick, while home team leading by more than 3, at 4v4
+        # Away fenwick, while home team leading by more than 3, at 4v4
         [0.947]
         +
-        ## Home fenwick at 3v3
+        # Home fenwick at 3v3
         [1.001]
         +
-        ## Away fenwick at 3v3
+        # Away fenwick at 3v3
         [0.999]
         +
-        ## Home fenwick, while home team trailing, at 5v4
+        # Home fenwick, while home team trailing, at 5v4
         [0.843]
         +
-        ## Home fenwick, while score tied, at 5v4
+        # Home fenwick, while score tied, at 5v4
         [0.926]
         +
-        ## Home fenwick, while home team leading, at 5v4
+        # Home fenwick, while home team leading, at 5v4
         [1.039]
         +
-        ## Away fenwick, while home team trailing, at 5v4
+        # Away fenwick, while home team trailing, at 5v4
         [1.229]
         +
-        ## Away fenwick, while score tied, at 5v4
+        # Away fenwick, while score tied, at 5v4
         [1.087]
         +
-        ## Away fenwick, while home team leading, at 5v4
+        # Away fenwick, while home team leading, at 5v4
         [0.964]
         +
-        ## Home fenwick, while home team trailing, at 4v5
+        # Home fenwick, while home team trailing, at 4v5
         [1.229]
         +
-        ## Home fenwick, while score tied, at 4v5
+        # Home fenwick, while score tied, at 4v5
         [1.087]
         +
-        ## Home fenwick, while home team leading, at 4v5
+        # Home fenwick, while home team leading, at 4v5
         [0.964]
         +
-        ## Away fenwick, while home team trailing, at 4v5
+        # Away fenwick, while home team trailing, at 4v5
         [0.843]
         +
-        ## Away fenwick, while score tied, at 4v5
+        # Away fenwick, while score tied, at 4v5
         [0.926]
         +
-        ## Away fenwick, while home team leading, at 4v5
+        # Away fenwick, while home team leading, at 4v5
         [1.039]
         +
-        ## Home fenwick, while home team trailing, at 5v3
+        # Home fenwick, while home team trailing, at 5v3
         [0.798]
         +
-        ## Home fenwick, while score tied, at 5v3
+        # Home fenwick, while score tied, at 5v3
         [0.906]
         +
-        ## Home fenwick, while home team leading, at 5v3
+        # Home fenwick, while home team leading, at 5v3
         [0.932]
         +
-        ## Away fenwick, while home team trailing, at 5v3
+        # Away fenwick, while home team trailing, at 5v3
         [1.340]
         +
-        ## Away fenwick, while score tied, at 5v3
+        # Away fenwick, while score tied, at 5v3
         [1.115]
         +
-        ## Away fenwick, while home team leading, at 5v3
+        # Away fenwick, while home team leading, at 5v3
         [1.078]
         +
-        ## Home fenwick, while home team trailing, at 3v5
+        # Home fenwick, while home team trailing, at 3v5
         [1.340]
         +
-        ## Home fenwick, while score tied, at 3v5
+        # Home fenwick, while score tied, at 3v5
         [1.115]
         +
-        ## Home fenwick, while home team leading, at 3v5
+        # Home fenwick, while home team leading, at 3v5
         [1.078]
         +
-        ## Away fenwick, while home team trailing, at 3v5
+        # Away fenwick, while home team trailing, at 3v5
         [0.798]
         +
-        ## Away fenwick, while score tied, at 3v5
+        # Away fenwick, while score tied, at 3v5
         [0.906]
         +
-        ## Away fenwick, while home team leading, at 3v5
+        # Away fenwick, while home team leading, at 3v5
         [0.932]
         +
-        ## Home fenwick, while home team trailing, at 4v3
+        # Home fenwick, while home team trailing, at 4v3
         [0.814]
         +
-        ## Home fenwick, while score tied, at 4v3
+        # Home fenwick, while score tied, at 4v3
         [0.921]
         +
-        ## Home fenwick, while home team leading, at 4v3
+        # Home fenwick, while home team leading, at 4v3
         [0.941]
         +
-        ## Away fenwick, while home team trailing, at 4v3
+        # Away fenwick, while home team trailing, at 4v3
         [1.297]
         +
-        ## Away fenwick, while score tied, at 4v3
+        # Away fenwick, while score tied, at 4v3
         [1.093]
         +
-        ## Away fenwick, while home team leading, at 4v3
+        # Away fenwick, while home team leading, at 4v3
         [1.066]
         +
-        ## Home fenwick, while home team trailing, at 3v4
+        # Home fenwick, while home team trailing, at 3v4
         [1.297]
         +
-        ## Home fenwick, while score tied, at 3v4
+        # Home fenwick, while score tied, at 3v4
         [1.093]
         +
-        ## Home fenwick, while home team leading, at 3v4
+        # Home fenwick, while home team leading, at 3v4
         [1.066]
         +
-        ## Away fenwick, while home team trailing, at 3v4
+        # Away fenwick, while home team trailing, at 3v4
         [0.814]
         +
-        ## Away fenwick, while score tied, at 3v4
+        # Away fenwick, while score tied, at 3v4
         [0.921]
         +
-        ## Away fenwick, while home team leading, at 3v4
+        # Away fenwick, while home team leading, at 3v4
         [0.941]
     )
 
@@ -1645,205 +1645,205 @@ def munge_pbp(pbp):
 
     df["fenwick_adj"] = np.select(conds, values)
 
-    ## corsi weights
+    # corsi weights
 
     weights = (
-        ## Home corsi, while home team trailing by more than 3, at 5v5
+        # Home corsi, while home team trailing by more than 3, at 5v5
         [0.843]
         +
-        ## Home corsi, while home team trailing by 2, at 5v5
+        # Home corsi, while home team trailing by 2, at 5v5
         [0.866]
         +
-        ## Home corsi, while home team trailing by 1, at 5v5
+        # Home corsi, while home team trailing by 1, at 5v5
         [0.899]
         +
-        ## Home corsi, score tied at 5v5
+        # Home corsi, score tied at 5v5
         [0.970]
         +
-        ## Home corsi, while home team leading by 1, at 5v5
+        # Home corsi, while home team leading by 1, at 5v5
         [1.053]
         +
-        ## Home corsi, while home team leading by 2, at 5v5
+        # Home corsi, while home team leading by 2, at 5v5
         [1.105]
         +
-        ## Home corsi, while home team leading by more than 3, at 5v5
+        # Home corsi, while home team leading by more than 3, at 5v5
         [1.140]
         +
-        ## Away corsi, while home team trailing by more than 3, at 5v5
+        # Away corsi, while home team trailing by more than 3, at 5v5
         [1.230]
         +
-        ## Away corsi, while home team trailing by 2, at 5v5
+        # Away corsi, while home team trailing by 2, at 5v5
         [1.182]
         +
-        ## Away corsi, while home team trailing by 1, at 5v5
+        # Away corsi, while home team trailing by 1, at 5v5
         [1.127]
         +
-        ## Away corsi, score tied at 5v5
+        # Away corsi, score tied at 5v5
         [1.032]
         +
-        ## Away corsi, while home team leading by 1, at 5v5
+        # Away corsi, while home team leading by 1, at 5v5
         [0.952]
         +
-        ## Away corsi, while home team leading by 2, at 5v5
+        # Away corsi, while home team leading by 2, at 5v5
         [0.913]
         +
-        ## Away corsi, while home team leading by more than 3, at 5v5
+        # Away corsi, while home team leading by more than 3, at 5v5
         [0.891]
         +
-        ## Home corsi, while home team trailing by more than 3, at 4v4
+        # Home corsi, while home team trailing by more than 3, at 4v4
         [0.890]
         +
-        ## Home corsi, while home team trailing by 2, at 4v4
+        # Home corsi, while home team trailing by 2, at 4v4
         [0.914]
         +
-        ## Home corsi, while home team trailing by 1, at 4v4
+        # Home corsi, while home team trailing by 1, at 4v4
         [0.923]
         +
-        ## Home corsi, score tied at 4v4
+        # Home corsi, score tied at 4v4
         [0.977]
         +
-        ## Home corsi, while home team leading by 1, at 4v4
+        # Home corsi, while home team leading by 1, at 4v4
         [1.043]
         +
-        ## Home corsi, while home team leading by 2, at 4v4
+        # Home corsi, while home team leading by 2, at 4v4
         [1.050]
         +
-        ## Home corsi, while home team leading by more than 3, at 4v4
+        # Home corsi, while home team leading by more than 3, at 4v4
         [1.089]
         +
-        ## Away corsi, while home team trailing by more than 3, at 4v4
+        # Away corsi, while home team trailing by more than 3, at 4v4
         [1.141]
         +
-        ## Away corsi, while home team trailing by 2, at 4v4
+        # Away corsi, while home team trailing by 2, at 4v4
         [1.103]
         +
-        ## Away corsi, while home team trailing by 1, at 4v4
+        # Away corsi, while home team trailing by 1, at 4v4
         [1.091]
         +
-        ## Away corsi, score tied at 4v4
+        # Away corsi, score tied at 4v4
         [1.024]
         +
-        ## Away corsi, while home team leading by 1, at 4v4
+        # Away corsi, while home team leading by 1, at 4v4
         [0.960]
         +
-        ## Away corsi, while home team leading by 2, at 4v4
+        # Away corsi, while home team leading by 2, at 4v4
         [0.954]
         +
-        ## Away corsi, while home team leading by more than 3, at 4v4
+        # Away corsi, while home team leading by more than 3, at 4v4
         [0.925]
         +
-        ## Home corsi at 3v3
+        # Home corsi at 3v3
         [0.99]
         +
-        ## Away corsi at 3v3
+        # Away corsi at 3v3
         [1.01]
         +
-        ## Home corsi, while home team trailing, at 5v4
+        # Home corsi, while home team trailing, at 5v4
         [0.841]
         +
-        ## Home corsi, while score tied, at 5v4
+        # Home corsi, while score tied, at 5v4
         [0.930]
         +
-        ## Home corsi, while home team leading, at 5v4
+        # Home corsi, while home team leading, at 5v4
         [1.052]
         +
-        ## Away corsi, while home team trailing, at 5v4
+        # Away corsi, while home team trailing, at 5v4
         [1.233]
         +
-        ## Away corsi, while score tied, at 5v4
+        # Away corsi, while score tied, at 5v4
         [1.082]
         +
-        ## Away corsi, while home team leading, at 5v4
+        # Away corsi, while home team leading, at 5v4
         [0.953]
         +
-        ## Home corsi, while home team trailing, at 4v5
+        # Home corsi, while home team trailing, at 4v5
         [1.233]
         +
-        ## Home corsi, while score tied, at 4v5
+        # Home corsi, while score tied, at 4v5
         [1.082]
         +
-        ## Home corsi, while home team leading, at 4v5
+        # Home corsi, while home team leading, at 4v5
         [0.953]
         +
-        ## Away corsi, while home team trailing, at 4v5
+        # Away corsi, while home team trailing, at 4v5
         [0.841]
         +
-        ## Away corsi, while score tied, at 4v5
+        # Away corsi, while score tied, at 4v5
         [0.930]
         +
-        ## Away corsi, while home team leading, at 4v5
+        # Away corsi, while home team leading, at 4v5
         [1.052]
         +
-        ## Home corsi, while home team trailing, at 5v3
+        # Home corsi, while home team trailing, at 5v3
         [0.798]
         +
-        ## Home corsi, while score tied, at 5v3
+        # Home corsi, while score tied, at 5v3
         [0.903]
         +
-        ## Home corsi, while home team leading, at 5v3
+        # Home corsi, while home team leading, at 5v3
         [0.954]
         +
-        ## Away corsi, while home team trailing, at 5v3
+        # Away corsi, while home team trailing, at 5v3
         [1.338]
         +
-        ## Away corsi, while score tied, at 5v3
+        # Away corsi, while score tied, at 5v3
         [1.121]
         +
-        ## Away corsi, while home team leading, at 5v3
+        # Away corsi, while home team leading, at 5v3
         [1.051]
         +
-        ## Home corsi, while home team trailing, at 3v5
+        # Home corsi, while home team trailing, at 3v5
         [1.338]
         +
-        ## Home corsi, while score tied, at 3v5
+        # Home corsi, while score tied, at 3v5
         [1.121]
         +
-        ## Home corsi, while home team leading, at 3v5
+        # Home corsi, while home team leading, at 3v5
         [1.051]
         +
-        ## Away corsi, while home team trailing, at 3v5
+        # Away corsi, while home team trailing, at 3v5
         [0.798]
         +
-        ## Away corsi, while score tied, at 3v5
+        # Away corsi, while score tied, at 3v5
         [0.903]
         +
-        ## Away corsi, while home team leading, at 3v5
+        # Away corsi, while home team leading, at 3v5
         [0.954]
         +
-        ## Home corsi, while home team trailing, at 4v3
+        # Home corsi, while home team trailing, at 4v3
         [0.841]
         +
-        ## Home corsi, while score tied, at 4v3
+        # Home corsi, while score tied, at 4v3
         [0.925]
         +
-        ## Home corsi, while home team leading, at 4v3
+        # Home corsi, while home team leading, at 4v3
         [0.953]
         +
-        ## Away corsi, while home team trailing, at 4v3
+        # Away corsi, while home team trailing, at 4v3
         [1.234]
         +
-        ## Away corsi, while score tied, at 4v3
+        # Away corsi, while score tied, at 4v3
         [1.088]
         +
-        ## Away corsi, while home team leading, at 4v3
+        # Away corsi, while home team leading, at 4v3
         [1.052]
         +
-        ## Home corsi, while home team trailing, at 3v4
+        # Home corsi, while home team trailing, at 3v4
         [1.234]
         +
-        ## Home corsi, while score tied, at 3v4
+        # Home corsi, while score tied, at 3v4
         [1.088]
         +
-        ## Home corsi, while home team leading, at 3v4
+        # Home corsi, while home team leading, at 3v4
         [1.052]
         +
-        ## Away corsi, while home team trailing, at 3v4
+        # Away corsi, while home team trailing, at 3v4
         [0.841]
         +
-        ## Away corsi, while score tied, at 3v4
+        # Away corsi, while score tied, at 3v4
         [0.925]
         +
-        ## Away corsi, while home team leading, at 3v4
+        # Away corsi, while home team leading, at 3v4
         [0.953]
     )
 
@@ -1851,7 +1851,7 @@ def munge_pbp(pbp):
 
     df["corsi_adj"] = np.select(conds, values)
 
-    ## Reordering columns
+    # Reordering columns
 
     columns = [
         "season",
@@ -1968,8 +1968,8 @@ def munge_pbp(pbp):
     return df
 
 
-## Function to munge the shifts data and create roster
-def munge_rosters(shifts):
+# Function to munge the shifts data and create roster
+def munge_rosters(shifts: pd.DataFrame) -> pd.DataFrame:
     """
     Preps roster data from csv file pulled from shifts query tool at evolving-hockey.com.
 
@@ -2020,8 +2020,8 @@ def munge_rosters(shifts):
     return df
 
 
-## Function to add positions to the play-by-play data
-def add_positions(pbp, rosters):
+# Function to add positions to the play-by-play data
+def add_positions(pbp: pd.DataFrame, rosters: pd.DataFrame) -> pd.DataFrame:
     """
     Adds position data to the play-by-play data from evolving-hockey.com.
 
@@ -2370,8 +2370,14 @@ def add_positions(pbp, rosters):
     return pbp
 
 
-## Function to make individual stats dataframe
-def prep_ind(pbp, level="game", score=False, teammates=False, opposition=False):
+# Function to make individual stats dataframe
+def prep_ind(
+    pbp: pd.DataFrame,
+    level: str = "game",
+    score: bool = False,
+    teammates: bool = False,
+    opposition: bool = False,
+) -> pd.DataFrame:
     """
     Prepares DataFrame of individual stats from play-by-play data.
 
@@ -2397,7 +2403,7 @@ def prep_ind(pbp, level="game", score=False, teammates=False, opposition=False):
 
     players = ["event_player_1", "event_player_2", "event_player_3"]
 
-    if level == "session":
+    if level == "session" or level == "season":
         merge_list = [
             "season",
             "session",
@@ -2624,7 +2630,7 @@ def prep_ind(pbp, level="game", score=False, teammates=False, opposition=False):
             # drop_list = [x for x in stats if x not in new_cols.keys() and x in player_df.columns]
 
         if player == "event_player_2":
-            ## Getting on-ice stats against for player 2
+            # Getting on-ice stats against for player 2
 
             strength_group1 = ["opp_strength_state"]
 
@@ -2760,7 +2766,7 @@ def prep_ind(pbp, level="game", score=False, teammates=False, opposition=False):
                 .rename(columns=new_cols_1)
             )
 
-            ## Getting primary assists and primary assists xG from player 2
+            # Getting primary assists and primary assists xG from player 2
 
             stats_2 = ["goal", "pred_goal"]
 
@@ -2847,7 +2853,7 @@ def prep_ind(pbp, level="game", score=False, teammates=False, opposition=False):
 
         ind_stats = ind_stats.merge(player_df, on=merge_list, how="outer").fillna(0)
 
-    ## Fixing some stats
+    # Fixing some stats
 
     ind_stats["gax"] = ind_stats.g - ind_stats.ixg
 
@@ -2970,8 +2976,14 @@ def prep_ind(pbp, level="game", score=False, teammates=False, opposition=False):
     return ind_stats
 
 
-## Function to prep the on-ice stats
-def prep_oi(pbp, level="game", score=False, teammates=False, opposition=False):
+# Function to prep the on-ice stats
+def prep_oi(
+    pbp: pd.DataFrame,
+    level: str = "game",
+    score: bool = False,
+    teammates: bool = False,
+    opposition: bool = False,
+) -> pd.DataFrame:
     """
     Prepares DataFrame of on-ice stats from play-by-play data.
 
@@ -3040,7 +3052,7 @@ def prep_oi(pbp, level="game", score=False, teammates=False, opposition=False):
 
         player_id = f"{player}_id"
 
-        if level == "session":
+        if level == "session" or level == "season":
             group_list = ["season", "session"]
 
         if level == "game":
@@ -3064,7 +3076,7 @@ def prep_oi(pbp, level="game", score=False, teammates=False, opposition=False):
                 "game_period",
             ]
 
-        ## Accounting for desired player
+        # Accounting for desired player
 
         if "event_on" in player:
             if level == "session":
@@ -3238,7 +3250,7 @@ def prep_oi(pbp, level="game", score=False, teammates=False, opposition=False):
         else:
             opp_list.append(player_df)
 
-    ## On-ice stats
+    # On-ice stats
 
     merge_cols = [
         "season",
@@ -3453,8 +3465,14 @@ def prep_oi(pbp, level="game", score=False, teammates=False, opposition=False):
     return oi_stats
 
 
-## Function to prep the zones
-def prep_zones(pbp, level="game", score=False, teammates=False, opposition=False):
+# Function to prep the zones
+def prep_zones(
+    pbp: pd.DataFrame,
+    level: str = "game",
+    score: bool = False,
+    teammates: bool = False,
+    opposition: bool = False,
+) -> pd.DataFrame:
     """
     Prepares DataFrame of zone stats from play-by-play data.
 

@@ -10,8 +10,10 @@ from chickenstats.evolving_hockey.base import (
 )
 
 
-## Function combining them all to create dataframe
-def prep_pbp(pbp, shifts, columns="full"):
+# Function combining them all to create dataframe
+def prep_pbp(
+    pbp: pd.DataFrame, shifts: pd.DataFrame, columns: str = "full"
+) -> pd.DataFrame:
     """
     Prepares a play-by-play dataframe using EvolvingHockey data, but with additional stats and information.
     Columns keyword argument determines information returned.
@@ -561,8 +563,14 @@ def prep_pbp(pbp, shifts, columns="full"):
     return pbp
 
 
-## Function combining the on-ice and individual stats
-def prep_stats(df, level="game", score=False, teammates=False, opposition=False):
+# Function combining the on-ice and individual stats
+def prep_stats(
+    df: pd.DataFrame,
+    level: str = "game",
+    score: bool = False,
+    teammates: bool = False,
+    opposition: bool = False,
+) -> pd.DataFrame:
     """
     Prepares an individual and on-ice stats dataframe using EvolvingHockey data,
     aggregated to desired level. Capable of returning cuts that account for strength state,
@@ -1148,9 +1156,14 @@ def prep_stats(df, level="game", score=False, teammates=False, opposition=False)
     return stats
 
 
-## Function to prep the lines data
+# Function to prep the lines data
 def prep_lines(
-    data, position, level="game", score=False, teammates=False, opposition=False
+    data: pd.DataFrame,
+    position: str,
+    level: str = "game",
+    score: bool = False,
+    teammates: bool = False,
+    opposition: bool = False,
 ):
     """
     Prepares an individual and on-ice stats dataframe using EvolvingHockey data,
@@ -1161,8 +1174,10 @@ def prep_lines(
 
     Parameters
     ----------
-    df : dataframe
+    data : dataframe
         Dataframe from the prep_pbp function with the default columns argument
+    position : str
+        Used to indicate whether to include forwards or defense
     level : str, default='game'
         Level to aggregate stats, e.g., 'game'
     score: bool, default=False
@@ -1346,7 +1361,7 @@ def prep_lines(
     >>> pbp = prep_pbp(raw_pbp, shifts)
 
     Basic game-level stats for forwards, with no teammates or opposition
-    >>> lines = prep_lines(pbp, position='f'')
+    >>> lines = prep_lines(pbp, position='f')
 
     Period-level stats for defense, grouped by teammates
     >>> lines = prep_lines(pbp, position='d', level='period', teammates=True)
@@ -1358,7 +1373,7 @@ def prep_lines(
 
     # Creating the "for" dataframe
 
-    ## Accounting for desired level of aggregation
+    # Accounting for desired level of aggregation
 
     if level == "session":
         group_base = ["season", "session", "event_team", "strength_state"]
@@ -1386,16 +1401,16 @@ def prep_lines(
             "strength_state",
         ]
 
-    ## Accounting for score state
+    # Accounting for score state
 
     if score is True:
         group_base = group_base + ["score_state"]
 
-    ## Accounting for desired position
+    # Accounting for desired position
 
     group_list = group_base + [f"event_on_{position}", f"event_on_{position}_id"]
 
-    ## Accounting for teammates
+    # Accounting for teammates
 
     if teammates is True:
         if position.lower() in ["f", "for", "fwd", "fwds", "forward", "forwards"]:
@@ -1418,7 +1433,7 @@ def prep_lines(
                 "event_on_g_id",
             ]
 
-    ## Accounting for opposition
+    # Accounting for opposition
 
     if opposition is True:
         group_list = group_list + [
@@ -1430,7 +1445,7 @@ def prep_lines(
             "opp_on_g_id",
         ]
 
-    ## Creating dictionary of statistics for the groupby function
+    # Creating dictionary of statistics for the groupby function
 
     stats = [
         "pred_goal",
@@ -1466,11 +1481,11 @@ def prep_lines(
 
     agg_stats = {x: "sum" for x in stats if x in data.columns}
 
-    ## Aggregating the "for" dataframe
+    # Aggregating the "for" dataframe
 
     lines_f = data.groupby(group_list, as_index=False, dropna=False).agg(agg_stats)
 
-    ## Creating the dictionary to change column names
+    # Creating the dictionary to change column names
 
     columns = [
         "xgf",
@@ -1506,7 +1521,7 @@ def prep_lines(
 
     columns = dict(zip(stats, columns))
 
-    ## Accounting for positions
+    # Accounting for positions
 
     columns.update(
         {
@@ -1552,7 +1567,7 @@ def prep_lines(
 
     # Creating the against dataframe
 
-    ## Accounting for desired level of aggregation
+    # Accounting for desired level of aggregation
 
     if level == "session":
         group_base = ["season", "session", "opp_team", "opp_strength_state"]
@@ -1580,16 +1595,16 @@ def prep_lines(
             "opp_strength_state",
         ]
 
-    ## Accounting for score state
+    # Accounting for score state
 
     if score is True:
         group_base = group_base + ["opp_score_state"]
 
-    ## Accounting for desired position
+    # Accounting for desired position
 
     group_list = group_base + [f"opp_on_{position}", f"opp_on_{position}_id"]
 
-    ## Accounting for teammates
+    # Accounting for teammates
 
     if teammates is True:
         if position.lower() in ["f", "for", "fwd", "fwds", "forward", "forwards"]:
@@ -1612,7 +1627,7 @@ def prep_lines(
                 "opp_on_g_id",
             ]
 
-    ## Accounting for opposition
+    # Accounting for opposition
 
     if opposition is True:
         group_list = group_list + [
@@ -1624,7 +1639,7 @@ def prep_lines(
             "event_on_g_id",
         ]
 
-    ## Creating dictionary of statistics for the groupby function
+    # Creating dictionary of statistics for the groupby function
 
     stats = [
         "pred_goal",
@@ -1658,11 +1673,11 @@ def prep_lines(
 
     agg_stats = {x: "sum" for x in stats if x in data.columns}
 
-    ## Aggregating "aggainst" dataframe
+    # Aggregating "aggainst" dataframe
 
     lines_a = data.groupby(group_list, as_index=False, dropna=False).agg(agg_stats)
 
-    ## Creating the dictionary to change column names
+    # Creating the dictionary to change column names
 
     columns = [
         "xga",
@@ -1696,7 +1711,7 @@ def prep_lines(
 
     columns = dict(zip(stats, columns))
 
-    ## Accounting for positions
+    # Accounting for positions
 
     columns.update(
         {
@@ -2057,31 +2072,47 @@ def prep_lines(
     return lines
 
 
-## Function to prep the team stats
-def prep_team(data, level="game", strengths=True, score=False):
+# Function to prep the team stats
+def prep_team(
+    data: pd.DataFrame, level: str = "game", strengths: bool = True, score: bool = False
+) -> pd.DataFrame:
     """
-    Function to prep team stats from pbp dataframe
+    Prepares an individual and on-ice stats dataframe using EvolvingHockey data,
+    aggregated to desired level. Capable of returning cuts that account for strength state,
+    period, score state, teammates, and opposition.
 
-    Arguments:
-        data: pbp dataframe from evolving hockey
-        level: can be game or season
+    Returns a DataFrame.
+
+    Parameters
+    ----------
+    data : pd.Dataframe
+        Pandas DataFrame from the prep_pbp function with the default columns argument
+    level : str, default='game'
+        Level to aggregate stats, e.g., 'game'
+    strengths: bool, default=True
+        Whether to aggregate to strength-state level
+    score: bool, default=False
+        Whether to aggregate to score state level
+
+
+    Returns
+    ----------
     """
 
-    ## Getting the "for" stats
+    # Getting the "for" stats
 
     group_list = ["season", "session", "event_team"]
 
     if strengths is True:
         group_list.append("strength_state")
 
-    if level == "game" or level == 'period':
+    if level == "game" or level == "period":
         group_list.insert(3, "opp_team")
 
         group_list[2:2] = ["game_id", "game_date"]
 
-    if level == 'period':
-
-        group_list.append('game_period')
+    if level == "period":
+        group_list.append("game_period")
 
     if score is True:
         group_list.append("score_state")
@@ -2160,21 +2191,20 @@ def prep_team(data, level="game", strengths=True, score=False):
         data.groupby(group_list, as_index=False).agg(agg_dict).rename(columns=new_cols)
     )
 
-    ## Getting the "against" stats
+    # Getting the "against" stats
 
     group_list = ["season", "session", "opp_team"]
 
     if strengths is True:
         group_list.append("opp_strength_state")
 
-    if level == "game" or level == 'period':
+    if level == "game" or level == "period":
         group_list.insert(3, "event_team")
 
         group_list[2:2] = ["game_id", "game_date"]
 
-    if level == 'period':
-
-        group_list.append('game_period')
+    if level == "period":
+        group_list.append("game_period")
 
     if score is True:
         group_list.append("opp_score_state")
@@ -2429,7 +2459,7 @@ def prep_team(data, level="game", strengths=True, score=False):
     return team_stats
 
 
-## Function to prep the GAR dataframe
+# Function to prep the GAR dataframe
 def prep_gar(skater_data, goalie_data):
     gar = pd.concat([skater_data, goalie_data], ignore_index=True)
 
@@ -2456,7 +2486,7 @@ def prep_gar(skater_data, goalie_data):
     return gar
 
 
-## Function to prep the xGAR dataframe
+# Function to prep the xGAR dataframe
 def prep_xgar(data):
     xgar = data.copy()
 
