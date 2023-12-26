@@ -172,9 +172,9 @@ class Game:
     """
 
     def __init__(
-        self,
-        game_id: str | int | float,
-        requests_session: requests.Session | None = None,
+            self,
+            game_id: str | int | float,
+            requests_session: requests.Session | None = None,
     ):
         if str(game_id).isdigit() is False or len(str(game_id)) != 10:
             raise Exception(f"{game_id} IS NOT A VALID GAME ID")
@@ -495,8 +495,8 @@ class Game:
                     event_info["penalty_duration"] = event["details"].get("duration")
 
                     if (
-                        event_info["penalty_type"] == "BEN"
-                        and event["details"].get("committedByPlayerId") is None
+                            event_info["penalty_type"] == "BEN"
+                            and event["details"].get("committedByPlayerId") is None
                     ):
                         event_info["player_1"] = "BENCH"
                         event_info["player_1_api_id"] = "BENCH"
@@ -508,8 +508,8 @@ class Game:
                         event_info["player_2_type"] = "SERVED BY"
 
                     elif (
-                        "HEAD-COACH" in event_info["penalty_reason"]
-                        or "TEAM-STAFF" in event_info["penalty_reason"]
+                            "HEAD-COACH" in event_info["penalty_reason"]
+                            or "TEAM-STAFF" in event_info["penalty_reason"]
                     ) and event["details"].get("committedByPlayerId") is None:
                         event_info["player_1"] = "BENCH"
                         event_info["player_1_api_id"] = "BENCH"
@@ -606,11 +606,11 @@ class Game:
                 x
                 for x in event_list
                 if x != event
-                and x["event"] == event["event"]
-                and x["game_seconds"] == event["game_seconds"]
-                and x.get("player_1") is not None
-                and x["period"] == event["period"]
-                and x.get("player_1_api_id") == event.get("player_1_api_id")
+                   and x["event"] == event["event"]
+                   and x["game_seconds"] == event["game_seconds"]
+                   and x.get("player_1") is not None
+                   and x["period"] == event["period"]
+                   and x.get("player_1_api_id") == event.get("player_1_api_id")
             ]
 
             version = 1
@@ -747,7 +747,7 @@ class Game:
             player_name = correct_names_dict.get(player_name, player_name)
 
             eh_id = (
-                player_name.split(" ", 1)[0] + "." + player_name.split(" ", 1)[1]
+                    player_name.split(" ", 1)[0] + "." + player_name.split(" ", 1)[1]
             ).replace("..", ".")
 
             eh_id = correct_api_names_dict.get(player["playerId"], eh_id)
@@ -874,8 +874,8 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                        and x["start_time_seconds"] == change_on
-                        and x["team_venue"] == team
+                           and x["start_time_seconds"] == change_on
+                           and x["team_venue"] == team
                     ]
 
                     players_on = sorted(players_on, key=lambda k: (k["jersey"]))
@@ -886,9 +886,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                        and x["start_time_seconds"] == change_on
-                        and x["team_venue"] == team
-                        and x["position"] in f_positions
+                           and x["start_time_seconds"] == change_on
+                           and x["team_venue"] == team
+                           and x["position"] in f_positions
                     ]
 
                     forwards_on = sorted(forwards_on, key=lambda k: (k["jersey"]))
@@ -897,9 +897,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                        and x["start_time_seconds"] == change_on
-                        and x["team_venue"] == team
-                        and x["position"] == "D"
+                           and x["start_time_seconds"] == change_on
+                           and x["team_venue"] == team
+                           and x["position"] == "D"
                     ]
 
                     defense_on = sorted(defense_on, key=lambda k: (k["jersey"]))
@@ -908,9 +908,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                        and x["start_time_seconds"] == change_on
-                        and x["team_venue"] == team
-                        and x["position"] == "G"
+                           and x["start_time_seconds"] == change_on
+                           and x["team_venue"] == team
+                           and x["position"] == "G"
                     ]
 
                     goalies_on = sorted(goalies_on, key=lambda k: (k["jersey"]))
@@ -984,8 +984,8 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                        and x["end_time_seconds"] == change_off
-                        and x["team_venue"] == team
+                           and x["end_time_seconds"] == change_off
+                           and x["team_venue"] == team
                     ]
 
                     players_off = sorted(players_off, key=lambda k: (k["jersey"]))
@@ -996,9 +996,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                        and x["end_time_seconds"] == change_off
-                        and x["team_venue"] == team
-                        and x["position"] in f_positions
+                           and x["end_time_seconds"] == change_off
+                           and x["team_venue"] == team
+                           and x["position"] in f_positions
                     ]
 
                     forwards_off = sorted(forwards_off, key=lambda k: (k["jersey"]))
@@ -1007,9 +1007,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                        and x["end_time_seconds"] == change_off
-                        and x["team_venue"] == team
-                        and x["position"] == "D"
+                           and x["end_time_seconds"] == change_off
+                           and x["team_venue"] == team
+                           and x["position"] == "D"
                     ]
 
                     defense_off = sorted(defense_off, key=lambda k: (k["jersey"]))
@@ -1018,9 +1018,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                        and x["end_time_seconds"] == change_off
-                        and x["team_venue"] == team
-                        and x["position"] == "G"
+                           and x["end_time_seconds"] == change_off
+                           and x["team_venue"] == team
+                           and x["position"] == "G"
                     ]
 
                     goalies_off = sorted(goalies_off, key=lambda k: (k["jersey"]))
@@ -1459,8 +1459,8 @@ class Game:
             event["period_time"] = time_split[0] + ":" + time_split[1][:2]
 
             event["period_seconds"] = (
-                60 * int(event["period_time"].split(":")[0])
-            ) + int(event["period_time"].split(":")[1])
+                                              60 * int(event["period_time"].split(":")[0])
+                                      ) + int(event["period_time"].split(":")[1])
 
             event["game_seconds"] = (int(event["period"]) - 1) * 1200 + event[
                 "period_seconds"
@@ -1489,15 +1489,15 @@ class Game:
                 event_players.insert(0, "TEAMMATE")
 
             elif (
-                event["event"] == "BLOCK" and "BLOCKED BY OTHER" in event["description"]
+                    event["event"] == "BLOCK" and "BLOCKED BY OTHER" in event["description"]
             ):
                 event["event_team"] = "OTHER"
 
                 event_players.insert(0, "REFEREE")
 
             elif (
-                event["event"] == "BLOCK"
-                and event["event_team"] not in event_players[0]
+                    event["event"] == "BLOCK"
+                    and event["event_team"] not in event_players[0]
             ):
                 event_players[0], event_players[1] = event_players[1], event_players[0]
 
@@ -1548,8 +1548,8 @@ class Game:
 
             if event["event"] == "PENL":
                 if (
-                    "TEAM" in event["description"]
-                    and "SERVED BY" in event["description"]
+                        "TEAM" in event["description"]
+                        and "SERVED BY" in event["description"]
                 ) or ("HEAD COACH" in event["description"]):
                     event["player_1"] = "BENCH"
 
@@ -1578,8 +1578,8 @@ class Game:
                     event["player_2_position"] = actives[name]["position"]
 
                 if (
-                    "SERVED BY" in event["description"]
-                    and "DRAWN BY" in event["description"]
+                        "SERVED BY" in event["description"]
+                        and "DRAWN BY" in event["description"]
                 ):
                     try:
                         drawn_by = re.search(drawn_re, event["description"])
@@ -1608,8 +1608,8 @@ class Game:
                         event["player_3_position"] = actives[served_name]["position"]
 
                         if (
-                            "TEAM" in event["description"]
-                            or "HEAD COACH" in event["description"]
+                                "TEAM" in event["description"]
+                                or "HEAD COACH" in event["description"]
                         ):
                             event["player_2"], event["player_3"] = (
                                 event["player_3"],
@@ -1685,62 +1685,62 @@ class Game:
                     continue
 
                 if (
-                    "INTERFERENCE" in event["description"]
-                    and "GOALKEEPER" in event["description"]
+                        "INTERFERENCE" in event["description"]
+                        and "GOALKEEPER" in event["description"]
                 ):
                     event["penalty"] = "GOALKEEPER INTERFERENCE"
 
                 elif (
-                    "CROSS" in event["description"]
-                    and "CHECKING" in event["description"]
+                        "CROSS" in event["description"]
+                        and "CHECKING" in event["description"]
                 ):
                     event["penalty"] = "CROSS-CHECKING"
 
                 elif (
-                    "DELAY" in event["description"]
-                    and "GAME" in event["description"]
-                    and "PUCK OVER" in event["description"]
+                        "DELAY" in event["description"]
+                        and "GAME" in event["description"]
+                        and "PUCK OVER" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - PUCK OVER GLASS"
 
                 elif (
-                    "DELAY" in event["description"]
-                    and "GAME" in event["description"]
-                    and "FO VIOL" in event["description"]
+                        "DELAY" in event["description"]
+                        and "GAME" in event["description"]
+                        and "FO VIOL" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - FACEOFF VIOLATION"
 
                 elif (
-                    "DELAY" in event["description"]
-                    and "GAME" in event["description"]
-                    and "EQUIPMENT" in event["description"]
+                        "DELAY" in event["description"]
+                        and "GAME" in event["description"]
+                        and "EQUIPMENT" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - EQUIPMENT"
 
                 elif (
-                    "DELAY" in event["description"]
-                    and "GAME" in event["description"]
-                    and "UNSUCC" in event["description"]
+                        "DELAY" in event["description"]
+                        and "GAME" in event["description"]
+                        and "UNSUCC" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - UNSUCCESSFUL CHALLENGE"
 
                 elif (
-                    "DELAY" in event["description"]
-                    and "GAME" in event["description"]
-                    and "SMOTHERING" in event["description"]
+                        "DELAY" in event["description"]
+                        and "GAME" in event["description"]
+                        and "SMOTHERING" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - SMOTHERING THE PUCK"
 
                 elif (
-                    "ILLEGAL" in event["description"]
-                    and "CHECK" in event["description"]
-                    and "HEAD" in event["description"]
+                        "ILLEGAL" in event["description"]
+                        and "CHECK" in event["description"]
+                        and "HEAD" in event["description"]
                 ):
                     event["penalty"] = "ILLEGAL CHECK TO HEAD"
 
                 elif (
-                    "HIGH-STICKING" in event["description"]
-                    and "- DOUBLE" in event["description"]
+                        "HIGH-STICKING" in event["description"]
+                        and "- DOUBLE" in event["description"]
                 ):
                     event["penalty"] = "HIGH-STICKING - DOUBLE MINOR"
 
@@ -1751,21 +1751,21 @@ class Game:
                     event["penalty"] = "MATCH PENALTY"
 
                 elif (
-                    "NET" in event["description"]
-                    and "DISPLACED" in event["description"]
+                        "NET" in event["description"]
+                        and "DISPLACED" in event["description"]
                 ):
                     event["penalty"] = "DISPLACED NET"
 
                 elif (
-                    "THROW" in event["description"]
-                    and "OBJECT" in event["description"]
-                    and "AT PUCK" in event["description"]
+                        "THROW" in event["description"]
+                        and "OBJECT" in event["description"]
+                        and "AT PUCK" in event["description"]
                 ):
                     event["penalty"] = "THROWING OBJECT AT PUCK"
 
                 elif (
-                    "INSTIGATOR" in event["description"]
-                    and "FACE SHIELD" in event["description"]
+                        "INSTIGATOR" in event["description"]
+                        and "FACE SHIELD" in event["description"]
                 ):
                     event["penalty"] = "INSTIGATOR - FACE SHIELD"
 
@@ -1773,37 +1773,37 @@ class Game:
                     event["penalty"] = "LEAVING THE CREASE"
 
                 elif (
-                    "REMOVING" in event["description"]
-                    and "HELMET" in event["description"]
+                        "REMOVING" in event["description"]
+                        and "HELMET" in event["description"]
                 ):
                     event["penalty"] = "REMOVING OPPONENT HELMET"
 
                 elif (
-                    "BROKEN" in event["description"] and "STICK" in event["description"]
+                        "BROKEN" in event["description"] and "STICK" in event["description"]
                 ):
                     event["penalty"] = "HOLDING BROKEN STICK"
 
                 elif (
-                    "HOOKING" in event["description"]
-                    and "BREAKAWAY" in event["description"]
+                        "HOOKING" in event["description"]
+                        and "BREAKAWAY" in event["description"]
                 ):
                     event["penalty"] = "HOOKING - BREAKAWAY"
 
                 elif (
-                    "HOLDING" in event["description"]
-                    and "BREAKAWAY" in event["description"]
+                        "HOLDING" in event["description"]
+                        and "BREAKAWAY" in event["description"]
                 ):
                     event["penalty"] = "HOLDING - BREAKAWAY"
 
                 elif (
-                    "TRIPPING" in event["description"]
-                    and "BREAKAWAY" in event["description"]
+                        "TRIPPING" in event["description"]
+                        and "BREAKAWAY" in event["description"]
                 ):
                     event["penalty"] = "TRIPPING - BREAKAWAY"
 
                 elif (
-                    "SLASH" in event["description"]
-                    and "BREAKAWAY" in event["description"]
+                        "SLASH" in event["description"]
+                        and "BREAKAWAY" in event["description"]
                 ):
                     event["penalty"] = "SLASHING - BREAKAWAY"
 
@@ -1811,25 +1811,25 @@ class Game:
                     event["penalty"] = "TOO MANY MEN ON THE ICE"
 
                 elif (
-                    "HOLDING" in event["description"]
-                    and "STICK" in event["description"]
+                        "HOLDING" in event["description"]
+                        and "STICK" in event["description"]
                 ):
                     event["penalty"] = "HOLDING THE STICK"
 
                 elif (
-                    "THROWING" in event["description"]
-                    and "STICK" in event["description"]
+                        "THROWING" in event["description"]
+                        and "STICK" in event["description"]
                 ):
                     event["penalty"] = "THROWING STICK"
 
                 elif (
-                    "CLOSING" in event["description"] and "HAND" in event["description"]
+                        "CLOSING" in event["description"] and "HAND" in event["description"]
                 ):
                     event["penalty"] = "CLOSING HAND ON PUCK"
 
                 elif (
-                    "ABUSE" in event["description"]
-                    and "OFFICIALS" in event["description"]
+                        "ABUSE" in event["description"]
+                        and "OFFICIALS" in event["description"]
                 ):
                     event["penalty"] = "ABUSE OF OFFICIALS"
 
@@ -1837,9 +1837,9 @@ class Game:
                     event["penalty"] = "UNSPORTSMANLIKE CONDUCT"
 
                 elif (
-                    "PUCK" in event["description"]
-                    and "THROWN" in event["description"]
-                    and "FWD" in event["description"]
+                        "PUCK" in event["description"]
+                        and "THROWN" in event["description"]
+                        and "FWD" in event["description"]
                 ):
                     event["penalty"] = "PUCK THROWN FORWARD - GOALKEEPER"
 
@@ -1888,8 +1888,8 @@ class Game:
                     event["period_time"] = time_split[0] + ":" + time_split[1][:2]
 
                     event["period_seconds"] = (
-                        60 * int(event["period_time"].split(":")[0])
-                    ) + int(event["period_time"].split(":")[1])
+                                                      60 * int(event["period_time"].split(":")[0])
+                                              ) + int(event["period_time"].split(":")[1])
 
             if "game_seconds" not in event.keys():
                 event["game_seconds"] = (int(event["period"]) - 1) * 1200 + event[
@@ -1904,12 +1904,12 @@ class Game:
                     x
                     for x in self._html_events
                     if x != event
-                    and x["event"] == event["event"]
-                    and x.get("game_seconds") == event["game_seconds"]
-                    and x["period"] == event["period"]
-                    and x.get("player_1_eh_id") is not None
-                    and event.get("player_1_eh_id") is not None
-                    and x["player_1_eh_id"] == event["player_1_eh_id"]
+                       and x["event"] == event["event"]
+                       and x.get("game_seconds") == event["game_seconds"]
+                       and x["period"] == event["period"]
+                       and x.get("player_1_eh_id") is not None
+                       and event.get("player_1_eh_id") is not None
+                       and x["player_1_eh_id"] == event["player_1_eh_id"]
                 ]
 
                 version = 1
@@ -2400,9 +2400,9 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                    and x["period"] == event["period"]
-                    and x["period_seconds"] == event["period_seconds"]
-                    and x["version"] == event["version"]
+                       and x["period"] == event["period"]
+                       and x["period_seconds"] == event["period_seconds"]
+                       and x["version"] == event["version"]
                 ]
 
             elif event["event"] == "CHL" and event.get("event_team") is None:
@@ -2410,9 +2410,9 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                    and x["period"] == event["period"]
-                    and x["period_seconds"] == event["period_seconds"]
-                    and x["version"] == event["version"]
+                       and x["period"] == event["period"]
+                       and x["period_seconds"] == event["period_seconds"]
+                       and x["version"] == event["version"]
                 ]
 
             elif event["event"] == "CHL" and event.get("event_team") is not None:
@@ -2420,12 +2420,12 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                    and x.get("event_team") is not None
-                    and event.get("event_team") is not None
-                    and x["event_team"] == event["event_team"]
-                    and x["period"] == event["period"]
-                    and x["period_seconds"] == event["period_seconds"]
-                    and x["version"] == event["version"]
+                       and x.get("event_team") is not None
+                       and event.get("event_team") is not None
+                       and x["event_team"] == event["event_team"]
+                       and x["period"] == event["period"]
+                       and x["period_seconds"] == event["period_seconds"]
+                       and x["version"] == event["version"]
                 ]
 
             elif event["event"] == "PENL":
@@ -2433,12 +2433,12 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                    and x["event_team"] == event["event_team"]
-                    and x["player_1_eh_id"] == event["player_1_eh_id"]
-                    and x.get("player_2_eh_id") == event.get("player_2_eh_id")
-                    and x.get("player_3_eh_id") == event.get("player_3_eh_id")
-                    and x["period"] == event["period"]
-                    and x["period_seconds"] == event["period_seconds"]
+                       and x["event_team"] == event["event_team"]
+                       and x["player_1_eh_id"] == event["player_1_eh_id"]
+                       and x.get("player_2_eh_id") == event.get("player_2_eh_id")
+                       and x.get("player_3_eh_id") == event.get("player_3_eh_id")
+                       and x["period"] == event["period"]
+                       and x["period_seconds"] == event["period_seconds"]
                 ]
 
             elif event["event"] == "BLOCK" and event["player_1"] == "TEAMMATE":
@@ -2446,12 +2446,12 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                    and x.get("event_team") is not None
-                    and event.get("event_team") is not None
-                    and x["event_team"] == event["event_team"]
-                    and x["period"] == event["period"]
-                    and x["period_seconds"] == event["period_seconds"]
-                    and x["version"] == event["version"]
+                       and x.get("event_team") is not None
+                       and event.get("event_team") is not None
+                       and x["event_team"] == event["event_team"]
+                       and x["period"] == event["period"]
+                       and x["period_seconds"] == event["period_seconds"]
+                       and x["version"] == event["version"]
                 ]
 
             else:
@@ -2459,15 +2459,15 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                    and x.get("event_team") is not None
-                    and event.get("event_team") is not None
-                    and x["event_team"] == event["event_team"]
-                    and x.get("player_1_eh_id") is not None
-                    and event.get("player_1_eh_id") is not None
-                    and x["player_1_eh_id"] == event["player_1_eh_id"]
-                    and x["period"] == event["period"]
-                    and x["period_seconds"] == event["period_seconds"]
-                    and x["version"] == event["version"]
+                       and x.get("event_team") is not None
+                       and event.get("event_team") is not None
+                       and x["event_team"] == event["event_team"]
+                       and x.get("player_1_eh_id") is not None
+                       and event.get("player_1_eh_id") is not None
+                       and x["player_1_eh_id"] == event["player_1_eh_id"]
+                       and x["period"] == event["period"]
+                       and x["period_seconds"] == event["period_seconds"]
+                       and x["version"] == event["version"]
                 ]
 
             if event["event"] == "FAC" and len(api_matches) == 0:
@@ -2475,9 +2475,9 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                    and x["period"] == event["period"]
-                    and x["period_seconds"] == event["period_seconds"]
-                    and x["version"] == event["version"]
+                       and x["period"] == event["period"]
+                       and x["period_seconds"] == event["period_seconds"]
+                       and x["version"] == event["version"]
                 ]
 
             if len(api_matches) == 0:
@@ -2634,16 +2634,16 @@ class Game:
                         x
                         for x in self._play_by_play
                         if x["event"] == "GOAL"
-                        and x["period"] == 5
-                        and x["event_team"] == event["home_team"]
+                           and x["period"] == 5
+                           and x["event_team"] == event["home_team"]
                     ]
 
                     away_goals = [
                         x
                         for x in self._play_by_play
                         if x["event"] == "GOAL"
-                        and x["period"] == 5
-                        and x["event_team"] == event["away_team"]
+                           and x["period"] == 5
+                           and x["event_team"] == event["away_team"]
                     ]
 
                     if event == ot_events[-1] and len(home_goals) > len(away_goals):
@@ -2667,16 +2667,16 @@ class Game:
                         x
                         for x in self._play_by_play
                         if x["event"] == "GOAL"
-                        and x["period"] == 5
-                        and x["event_team"] == event["home_team"]
+                           and x["period"] == 5
+                           and x["event_team"] == event["home_team"]
                     ]
 
                     away_goals = [
                         x
                         for x in self._play_by_play
                         if x["event"] == "GOAL"
-                        and x["period"] == 5
-                        and x["event_team"] == event["away_team"]
+                           and x["period"] == 5
+                           and x["event_team"] == event["away_team"]
                     ]
 
                     if event == ot_events[-1] and len(away_goals) > len(home_goals):
@@ -2703,9 +2703,9 @@ class Game:
 
             for event in self._play_by_play:
                 if (
-                    event.get("event_team", "NaN") in player["team_jersey"]
-                    and event["event"] == "CHANGE"
-                    and event.get("change_on") is not None
+                        event.get("event_team", "NaN") in player["team_jersey"]
+                        and event["event"] == "CHANGE"
+                        and event.get("change_on") is not None
                 ):
                     players_on = [
                         x
@@ -2717,9 +2717,9 @@ class Game:
                         counter += 1
 
                 if (
-                    event.get("event_team", "NaN") in player["team_jersey"]
-                    and event["event"] == "CHANGE"
-                    and event.get("change_off") is not None
+                        event.get("event_team", "NaN") in player["team_jersey"]
+                        and event["event"] == "CHANGE"
+                        and event.get("change_off") is not None
                 ):
                     players_off = [
                         x
@@ -2816,21 +2816,21 @@ class Game:
             new_values = {
                 "event_idx": idx + 1,
                 "event_length": event["game_seconds"]
-                - self._play_by_play[event_length_idx]["game_seconds"],
+                                - self._play_by_play[event_length_idx]["game_seconds"],
                 "home_on_eh_id": event["home_forwards_eh_id"]
-                + event["home_defense_eh_id"],
+                                 + event["home_defense_eh_id"],
                 "home_on_api_id": event["home_forwards_api_id"]
-                + event["home_defense_api_id"],
+                                  + event["home_defense_api_id"],
                 "home_on": event["home_forwards"] + event["home_defense"],
                 "home_on_positions": event["home_forwards_positions"]
-                + event["home_defense_positions"],
+                                     + event["home_defense_positions"],
                 "away_on_eh_id": event["away_forwards_eh_id"]
-                + event["away_defense_eh_id"],
+                                 + event["away_defense_eh_id"],
                 "away_on_api_id": event["away_forwards_api_id"]
-                + event["away_defense_api_id"],
+                                  + event["away_defense_api_id"],
                 "away_on": event["away_forwards"] + event["away_defense"],
                 "away_on_positions": event["away_forwards_positions"]
-                + event["away_defense_positions"],
+                                     + event["away_defense_positions"],
             }
 
             event.update(new_values)
@@ -2848,10 +2848,10 @@ class Game:
                 event["is_away"] = 0
 
             if (
-                event.get("coords_x") is not None
-                and event.get("coords_x") != ""
-                and event.get("coords_y") is not None
-                and event.get("coords_y") != ""
+                    event.get("coords_x") is not None
+                    and event.get("coords_x") != ""
+                    and event.get("coords_y") is not None
+                    and event.get("coords_y") != ""
             ):
                 # Fixing event angle and distance for errors
 
@@ -2869,28 +2869,28 @@ class Game:
                     "POKE",
                 ]
                 zone_cond = (
-                    event.get("pbp_distance", 0) > 89 and event.get("zone") == "OFF"
+                        event.get("pbp_distance", 0) > 89 and event.get("zone") == "OFF"
                 )
 
                 x_is_neg_conds = (
-                    is_fenwick
-                    & is_long_distance
-                    & x_is_neg
-                    & bad_shots
-                    & ~int(zone_cond)
+                        is_fenwick
+                        & is_long_distance
+                        & x_is_neg
+                        & bad_shots
+                        & ~int(zone_cond)
                 )
                 x_is_pos_conds = (
-                    is_fenwick
-                    & is_long_distance
-                    & x_is_pos
-                    & bad_shots
-                    & ~int(zone_cond)
+                        is_fenwick
+                        & is_long_distance
+                        & x_is_pos
+                        & bad_shots
+                        & ~int(zone_cond)
                 )
 
                 if x_is_neg_conds is True:
                     event["event_distance"] = (
-                        (abs(event["coords_x"]) + 89) ** 2 + event["coords_y"] ** 2
-                    ) ** (1 / 2)
+                                                      (abs(event["coords_x"]) + 89) ** 2 + event["coords_y"] ** 2
+                                              ) ** (1 / 2)
 
                     try:
                         event["event_angle"] = np.degrees(
@@ -2906,8 +2906,8 @@ class Game:
 
                 elif x_is_pos_conds is True:
                     event["event_distance"] = (
-                        (event["coords_x"] + 89) ** 2 + event["coords_y"] ** 2
-                    ) ** (1 / 2)
+                                                      (event["coords_x"] + 89) ** 2 + event["coords_y"] ** 2
+                                              ) ** (1 / 2)
 
                     try:
                         event["event_angle"] = np.degrees(
@@ -2919,8 +2919,8 @@ class Game:
 
                 else:
                     event["event_distance"] = (
-                        (89 - abs(event["coords_x"])) ** 2 + event["coords_y"] ** 2
-                    ) ** (1 / 2)
+                                                      (89 - abs(event["coords_x"])) ** 2 + event["coords_y"] ** 2
+                                              ) ** (1 / 2)
 
                     try:
                         event["event_angle"] = np.degrees(
@@ -2935,22 +2935,22 @@ class Game:
                         event["event_angle"] = np.degrees(abs(np.arctan(np.nan)))
 
             if (
-                event["event"] in ["GOAL", "SHOT", "MISS"]
-                and event.get("zone") == "DEF"
-                and event.get("event_distance", 0) <= 64
+                    event["event"] in ["GOAL", "SHOT", "MISS"]
+                    and event.get("zone") == "DEF"
+                    and event.get("event_distance", 0) <= 64
             ):
                 event["zone"] = "OFF"
 
             if event["event"] in ["GOAL", "SHOT", "MISS"]:
                 if event.get("zone") == "OFF":
                     if (
-                        event.get("coords_x") is not None
-                        and event.get("coords_y") is not None
+                            event.get("coords_x") is not None
+                            and event.get("coords_y") is not None
                     ):
                         shot_coords = Point(event["coords_x"], event["coords_y"])
 
                         if danger1.contains(shot_coords) or danger2.contains(
-                            shot_coords
+                                shot_coords
                         ):
                             event["danger"] = 1
 
@@ -2958,7 +2958,7 @@ class Game:
                             event["danger"] = 0
 
                         if high_danger1.contains(shot_coords) or high_danger2.contains(
-                            shot_coords
+                                shot_coords
                         ):
                             event["high_danger"] = 1
 
@@ -3078,7 +3078,7 @@ class Game:
                 event.update(new_values)
 
             if (event["home_skaters"] > 5 and event["home_goalie"] != []) or (
-                event["away_skaters"] > 5 and event["away_goalie"] != []
+                    event["away_skaters"] > 5 and event["away_goalie"] != []
             ):
                 event["strength_state"] = "ILLEGAL"
 
@@ -3092,9 +3092,9 @@ class Game:
                     x
                     for x in self._play_by_play
                     if (
-                        x["event"] == "FAC"
-                        and x["game_seconds"] == event["game_seconds"]
-                        and x["period"] == event["period"]
+                            x["event"] == "FAC"
+                            and x["game_seconds"] == event["game_seconds"]
+                            and x["period"] == event["period"]
                     )
                 ]
 
@@ -3792,7 +3792,7 @@ class Game:
                 # Reshaping the shift data into fields and values
 
                 for number, shift in enumerate(
-                    np.array(shifts["shifts"]).reshape(length, 5)
+                        np.array(shifts["shifts"]).reshape(length, 5)
                 ):
                     # Adding header values to the shift data
 
@@ -3974,7 +3974,7 @@ class Game:
                 # Calculating end time based on duration seconds
 
                 shift["end_time_seconds"] = (
-                    shift["start_time_seconds"] + shift["duration_seconds"]
+                        shift["start_time_seconds"] + shift["duration_seconds"]
                 )
 
                 # Creating end time based on time delta
@@ -4004,7 +4004,7 @@ class Game:
                     # Setting duration and duration in seconds
 
                     shift["duration_seconds"] = (
-                        shift["end_time_seconds"] - shift["start_time_seconds"]
+                            shift["end_time_seconds"] - shift["start_time_seconds"]
                     )
 
                     shift["duration"] = str(
@@ -4035,7 +4035,7 @@ class Game:
                             shift["end_time_seconds"]
                             for shift in self._shifts
                             if "end_time_seconds" in shift.keys()
-                            and shift["period"] == max_period
+                               and shift["period"] == max_period
                         ]
                     )
 
@@ -4109,8 +4109,8 @@ class Game:
                     x
                     for x in self._shifts
                     if x["goalie"] == 1
-                    and x["team_venue"] == team
-                    and x["period"] == period
+                       and x["team_venue"] == team
+                       and x["period"] == period
                 ]
 
                 # If there are no goalies changing during the period, we need to add them
@@ -4124,8 +4124,8 @@ class Game:
                                 x
                                 for x in actives.values()
                                 if x["position"] == "G"
-                                and x["team_venue"] == team
-                                and x["starter"] == 1
+                                   and x["team_venue"] == team
+                                   and x["starter"] == 1
                             ][0]
 
                             new_values = {
@@ -4254,9 +4254,9 @@ class Game:
                 # Fixing goalie errors
 
                 if (
-                    shift["goalie"] == 1
-                    and shift["period"] == period
-                    and shift["shift_end"] == "0:00 / 0:00"
+                        shift["goalie"] == 1
+                        and shift["period"] == period
+                        and shift["shift_end"] == "0:00 / 0:00"
                 ):
                     if period < 4:
                         shift["shift_end"] = "20:00 / 0:00"
@@ -4447,14 +4447,14 @@ class Scraper:
 
         with self._requests_session as s:
             with Progress(
-                TextColumn("[progress.description]{task.description}"),
-                SpinnerColumn(),
-                BarColumn(),
-                TaskProgressColumn(),
-                TextColumn("•"),
-                TimeElapsedColumn(),
-                TextColumn("•"),
-                TimeRemainingColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    SpinnerColumn(),
+                    BarColumn(),
+                    TaskProgressColumn(),
+                    TextColumn("•"),
+                    TimeElapsedColumn(),
+                    TextColumn("•"),
+                    TimeRemainingColumn(),
             ) as progress:
                 pbar_stub = pbar_stubs[scrape_type]
 
@@ -5335,701 +5335,775 @@ class Season:
 
         first_year = int(str(self.season)[0:4])
 
-        if first_year == 1917:
-            teams = ["MTL", "MWN", "SEN", "TAN"]
+        teams_1917 = ["MTL", "MWN", "SEN", "TAN"]
 
-        elif first_year == 1918:
-            teams = ["MTL", "SEN", "TAN"]
+        teams_1918 = ["MTL", "SEN", "TAN"]
 
-        elif first_year == 1919:
-            teams = ["MTL", "QBD", "SEN", "TSP"]
+        teams_1919 = ["MTL", "QBD", "SEN", "TSP"]
 
-        elif 1920 <= first_year <= 1923:
-            teams = ["HAM", "MTL", "SEN", "TSP"]
+        teams_1920 = ["HAM", "MTL", "SEN", "TSP"]
 
-        elif first_year == 1924:
-            teams = ["BOS", "HAM", "MMR", "MTL", "SEN", "TSP"]
+        teams_1924 = ["BOS", "HAM", "MMR", "MTL", "SEN", "TSP"]
 
-        elif first_year == 1925:
-            teams = ["BOS", "MMR", "MTL", "NYA", "PIR", "SEN", "TSP"]
+        teams_1925 = ["BOS", "MMR", "MTL", "NYA", "PIR", "SEN", "TSP"]
 
-        elif first_year == 1926:
-            teams = [
-                "BOS",
-                "CHI",
-                "DCG",
-                "MMR",
-                "MTL",
-                "NYA",
-                "NYR",
-                "PIR",
-                "SEN",
-                "TSP",
-            ]
+        teams_1926 = [
+            "BOS",
+            "CHI",
+            "DCG",
+            "MMR",
+            "MTL",
+            "NYA",
+            "NYR",
+            "PIR",
+            "SEN",
+            "TSP",
+        ]
 
-        elif 1927 <= first_year <= 1929:
-            teams = [
-                "BOS",
-                "CHI",
-                "DCG",
-                "MMR",
-                "MTL",
-                "NYA",
-                "NYR",
-                "PIR",
-                "SEN",
-                "TOR",
-            ]
+        teams_1927 = [
+            "BOS",
+            "CHI",
+            "DCG",
+            "MMR",
+            "MTL",
+            "NYA",
+            "NYR",
+            "PIR",
+            "SEN",
+            "TOR",
+        ]
 
-        elif first_year == 1930:
-            teams = [
-                "BOS",
-                "CHI",
-                "DFL",
-                "MMR",
-                "MTL",
-                "NYA",
-                "NYR",
-                "QUA",
-                "SEN",
-                "TOR",
-            ]
+        teams_1930 = [
+            "BOS",
+            "CHI",
+            "DFL",
+            "MMR",
+            "MTL",
+            "NYA",
+            "NYR",
+            "QUA",
+            "SEN",
+            "TOR",
+        ]
 
-        elif first_year == 1931:
-            teams = ["BOS", "CHI", "DFL", "MMR", "MTL", "NYA", "NYR", "TOR"]
+        teams_1931 = ["BOS", "CHI", "DFL", "MMR", "MTL", "NYA", "NYR", "TOR"]
 
-        elif 1932 <= first_year <= 1933:
-            teams = ["BOS", "CHI", "DET", "MMR", "MTL", "NYA", "NYR", "SEN", "TOR"]
+        teams_1932 = ["BOS", "CHI", "DET", "MMR", "MTL", "NYA", "NYR", "SEN", "TOR"]
 
-        elif first_year == 1934:
-            teams = ["BOS", "CHI", "DET", "MMR", "MTL", "NYA", "NYR", "SLE", "TOR"]
+        teams_1934 = ["BOS", "CHI", "DET", "MMR", "MTL", "NYA", "NYR", "SLE", "TOR"]
 
-        elif 1935 <= first_year <= 1937:
-            teams = ["BOS", "CHI", "DET", "MMR", "MTL", "NYA", "NYR", "TOR"]
+        teams_1935 = ["BOS", "CHI", "DET", "MMR", "MTL", "NYA", "NYR", "TOR"]
 
-        elif 1938 <= first_year <= 1940:
-            teams = ["BOS", "CHI", "DET", "MTL", "NYA", "NYR", "TOR"]
+        teams_1938 = ["BOS", "CHI", "DET", "MTL", "NYA", "NYR", "TOR"]
 
-        elif first_year == 1941:
-            teams = ["BOS", "BRK", "CHI", "DET", "MTL", "NYR", "TOR"]
+        teams_1941 = ["BOS", "BRK", "CHI", "DET", "MTL", "NYR", "TOR"]
 
-        elif 1942 <= first_year <= 1966:
-            teams = ["BOS", "CHI", "DET", "MTL", "NYR", "TOR"]
+        teams_1942 = ["BOS", "CHI", "DET", "MTL", "NYR", "TOR"]
 
-        elif 1967 <= first_year <= 1969:
-            teams = [
-                "BOS",
-                "CHI",
-                "DET",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NYR",
-                "OAK",
-                "PHI",
-                "PIT",
-                "STL",
-                "TOR",
-            ]
+        teams_1967 = [
+            "BOS",
+            "CHI",
+            "DET",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NYR",
+            "OAK",
+            "PHI",
+            "PIT",
+            "STL",
+            "TOR",
+        ]
 
-        elif 1970 <= first_year <= 1971:
-            teams = [
-                "BOS",
-                "BUF",
-                "CGS",
-                "CHI",
-                "DET",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NYR",
-                "PHI",
-                "PIT",
-                "STL",
-                "TOR",
-                "VAN",
-            ]
+        teams_1970 = [
+            "BOS",
+            "BUF",
+            "CGS",
+            "CHI",
+            "DET",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NYR",
+            "PHI",
+            "PIT",
+            "STL",
+            "TOR",
+            "VAN",
+        ]
 
-        elif 1972 <= first_year <= 1973:
-            teams = [
-                "AFM",
-                "BOS",
-                "BUF",
-                "CGS",
-                "CHI",
-                "DET",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NYI",
-                "NYR",
-                "PHI",
-                "PIT",
-                "STL",
-                "TOR",
-                "VAN",
-            ]
+        teams_1972 = [
+            "AFM",
+            "BOS",
+            "BUF",
+            "CGS",
+            "CHI",
+            "DET",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NYI",
+            "NYR",
+            "PHI",
+            "PIT",
+            "STL",
+            "TOR",
+            "VAN",
+        ]
 
-        elif 1974 <= first_year <= 1975:
-            teams = [
-                "AFM",
-                "BOS",
-                "BUF",
-                "CGS",
-                "CHI",
-                "DET",
-                "KCS",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NYI",
-                "NYR",
-                "PHI",
-                "PIT",
-                "STL",
-                "TOR",
-                "VAN",
-                "WSH",
-            ]
+        teams_1974 = [
+            "AFM",
+            "BOS",
+            "BUF",
+            "CGS",
+            "CHI",
+            "DET",
+            "KCS",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NYI",
+            "NYR",
+            "PHI",
+            "PIT",
+            "STL",
+            "TOR",
+            "VAN",
+            "WSH",
+        ]
 
-        elif 1976 <= first_year <= 1977:
-            teams = [
-                "AFM",
-                "BOS",
-                "BUF",
-                "CHI",
-                "CLE",
-                "CLR",
-                "DET",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NYI",
-                "NYR",
-                "PHI",
-                "PIT",
-                "STL",
-                "TOR",
-                "VAN",
-                "WSH",
-            ]
+        teams_1976 = [
+            "AFM",
+            "BOS",
+            "BUF",
+            "CHI",
+            "CLE",
+            "CLR",
+            "DET",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NYI",
+            "NYR",
+            "PHI",
+            "PIT",
+            "STL",
+            "TOR",
+            "VAN",
+            "WSH",
+        ]
 
-        elif first_year == 1978:
-            teams = [
-                "AFM",
-                "BOS",
-                "BUF",
-                "CHI",
-                "CLR",
-                "DET",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NYI",
-                "NYR",
-                "PHI",
-                "PIT",
-                "STL",
-                "TOR",
-                "VAN",
-                "WSH",
-            ]
+        teams_1978 = [
+            "AFM",
+            "BOS",
+            "BUF",
+            "CHI",
+            "CLR",
+            "DET",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NYI",
+            "NYR",
+            "PHI",
+            "PIT",
+            "STL",
+            "TOR",
+            "VAN",
+            "WSH",
+        ]
 
-        elif first_year == 1979:
-            teams = [
-                "AFM",
-                "BOS",
-                "BUF",
-                "CHI",
-                "CLR",
-                "DET",
-                "EDM",
-                "HFD",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NYI",
-                "NYR",
-                "PHI",
-                "PIT",
-                "QUE",
-                "STL",
-                "TOR",
-                "VAN",
-                "WIN",
-                "WSH",
-            ]
+        teams_1979 = [
+            "AFM",
+            "BOS",
+            "BUF",
+            "CHI",
+            "CLR",
+            "DET",
+            "EDM",
+            "HFD",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NYI",
+            "NYR",
+            "PHI",
+            "PIT",
+            "QUE",
+            "STL",
+            "TOR",
+            "VAN",
+            "WIN",
+            "WSH",
+        ]
 
-        elif 1980 <= first_year <= 1981:
-            teams = [
-                "BOS",
-                "BUF",
-                "CGY",
-                "CHI",
-                "CLR",
-                "DET",
-                "EDM",
-                "HFD",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NYI",
-                "NYR",
-                "PHI",
-                "PIT",
-                "QUE",
-                "STL",
-                "TOR",
-                "VAN",
-                "WIN",
-                "WSH",
-            ]
+        teams_1980 = [
+            "BOS",
+            "BUF",
+            "CGY",
+            "CHI",
+            "CLR",
+            "DET",
+            "EDM",
+            "HFD",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NYI",
+            "NYR",
+            "PHI",
+            "PIT",
+            "QUE",
+            "STL",
+            "TOR",
+            "VAN",
+            "WIN",
+            "WSH",
+        ]
 
-        elif 1982 <= first_year <= 1990:
-            teams = [
-                "BOS",
-                "BUF",
-                "CGY",
-                "CHI",
-                "DET",
-                "EDM",
-                "HFD",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NJD",
-                "NYI",
-                "NYR",
-                "PHI",
-                "PIT",
-                "QUE",
-                "STL",
-                "TOR",
-                "VAN",
-                "WIN",
-                "WSH",
-            ]
+        teams_1982 = [
+            "BOS",
+            "BUF",
+            "CGY",
+            "CHI",
+            "DET",
+            "EDM",
+            "HFD",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NJD",
+            "NYI",
+            "NYR",
+            "PHI",
+            "PIT",
+            "QUE",
+            "STL",
+            "TOR",
+            "VAN",
+            "WIN",
+            "WSH",
+        ]
 
-        elif first_year == 1991:
-            teams = [
-                "BOS",
-                "BUF",
-                "CGY",
-                "CHI",
-                "DET",
-                "EDM",
-                "HFD",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NJD",
-                "NYI",
-                "NYR",
-                "PHI",
-                "PIT",
-                "QUE",
-                "SJS",
-                "STL",
-                "TOR",
-                "VAN",
-                "WIN",
-                "WSH",
-            ]
+        teams_1991 = [
+            "BOS",
+            "BUF",
+            "CGY",
+            "CHI",
+            "DET",
+            "EDM",
+            "HFD",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NJD",
+            "NYI",
+            "NYR",
+            "PHI",
+            "PIT",
+            "QUE",
+            "SJS",
+            "STL",
+            "TOR",
+            "VAN",
+            "WIN",
+            "WSH",
+        ]
 
-        elif first_year == 1992:
-            teams = [
-                "BOS",
-                "BUF",
-                "CGY",
-                "CHI",
-                "DET",
-                "EDM",
-                "HFD",
-                "LAK",
-                "MNS",
-                "MTL",
-                "NJD",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PIT",
-                "QUE",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WIN",
-                "WSH",
-            ]
+        teams_1992 = [
+            "BOS",
+            "BUF",
+            "CGY",
+            "CHI",
+            "DET",
+            "EDM",
+            "HFD",
+            "LAK",
+            "MNS",
+            "MTL",
+            "NJD",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PIT",
+            "QUE",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WIN",
+            "WSH",
+        ]
 
-        elif 1993 <= first_year <= 1994:
-            teams = [
-                "ANA",
-                "BOS",
-                "BUF",
-                "CGY",
-                "CHI",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "HFD",
-                "LAK",
-                "MTL",
-                "NJD",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PIT",
-                "QUE",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WIN",
-                "WSH",
-            ]
+        teams_1993 = [
+            "ANA",
+            "BOS",
+            "BUF",
+            "CGY",
+            "CHI",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "HFD",
+            "LAK",
+            "MTL",
+            "NJD",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PIT",
+            "QUE",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WIN",
+            "WSH",
+        ]
 
-        elif first_year == 1995:
-            teams = [
-                "ANA",
-                "BOS",
-                "BUF",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "HFD",
-                "LAK",
-                "MTL",
-                "NJD",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WIN",
-                "WSH",
-            ]
+        teams_1995 = [
+            "ANA",
+            "BOS",
+            "BUF",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "HFD",
+            "LAK",
+            "MTL",
+            "NJD",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WIN",
+            "WSH",
+        ]
 
-        elif first_year == 1996:
-            teams = [
-                "ANA",
-                "BOS",
-                "BUF",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "HFD",
-                "LAK",
-                "MTL",
-                "NJD",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PHX",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WSH",
-            ]
+        teams_1996 = [
+            "ANA",
+            "BOS",
+            "BUF",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "HFD",
+            "LAK",
+            "MTL",
+            "NJD",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PHX",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WSH",
+        ]
 
-        elif first_year == 1997:
-            teams = [
-                "ANA",
-                "BOS",
-                "BUF",
-                "CAR",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "LAK",
-                "MTL",
-                "NJD",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PHX",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WSH",
-            ]
+        teams_1997 = [
+            "ANA",
+            "BOS",
+            "BUF",
+            "CAR",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "LAK",
+            "MTL",
+            "NJD",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PHX",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WSH",
+        ]
 
-        elif first_year == 1998:
-            teams = [
-                "ANA",
-                "BOS",
-                "BUF",
-                "CAR",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "LAK",
-                "MTL",
-                "NJD",
-                "NSH",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PHX",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WSH",
-            ]
+        teams_1998 = [
+            "ANA",
+            "BOS",
+            "BUF",
+            "CAR",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "LAK",
+            "MTL",
+            "NJD",
+            "NSH",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PHX",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WSH",
+        ]
 
-        elif first_year == 1999:
-            teams = [
-                "ANA",
-                "ATL",
-                "BOS",
-                "BUF",
-                "CAR",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "LAK",
-                "MTL",
-                "NJD",
-                "NSH",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PHX",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WSH",
-            ]
+        teams_1999 = [
+            "ANA",
+            "ATL",
+            "BOS",
+            "BUF",
+            "CAR",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "LAK",
+            "MTL",
+            "NJD",
+            "NSH",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PHX",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WSH",
+        ]
 
-        elif 2000 <= first_year <= 2010:
-            teams = [
-                "ANA",
-                "ATL",
-                "BOS",
-                "BUF",
-                "CAR",
-                "CBJ",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "LAK",
-                "MIN",
-                "MTL",
-                "NJD",
-                "NSH",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PHX",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WSH",
-            ]
+        teams_2000 = [
+            "ANA",
+            "ATL",
+            "BOS",
+            "BUF",
+            "CAR",
+            "CBJ",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "LAK",
+            "MIN",
+            "MTL",
+            "NJD",
+            "NSH",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PHX",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WSH",
+        ]
 
-        elif 2011 <= first_year <= 2013:
-            teams = [
-                "ANA",
-                "BOS",
-                "BUF",
-                "CAR",
-                "CBJ",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "LAK",
-                "MIN",
-                "MTL",
-                "NJD",
-                "NSH",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PHX",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WPG",
-                "WSH",
-            ]
+        teams_2011 = [
+            "ANA",
+            "BOS",
+            "BUF",
+            "CAR",
+            "CBJ",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "LAK",
+            "MIN",
+            "MTL",
+            "NJD",
+            "NSH",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PHX",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WPG",
+            "WSH",
+        ]
 
-        elif 2014 <= first_year <= 2016:
-            teams = [
-                "ANA",
-                "BOS",
-                "BUF",
-                "CAR",
-                "CBJ",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "LAK",
-                "MIN",
-                "MTL",
-                "NJD",
-                "NSH",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PHX",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "WPG",
-                "WSH",
-            ]
+        teams_2014 = [
+            "ANA",
+            "ARI",
+            "BOS",
+            "BUF",
+            "CAR",
+            "CBJ",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "LAK",
+            "MIN",
+            "MTL",
+            "NJD",
+            "NSH",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "WPG",
+            "WSH",
+        ]
 
-        elif 2017 <= first_year <= 2020:
-            teams = [
-                "ANA",
-                "ARI",
-                "BOS",
-                "BUF",
-                "CAR",
-                "CBJ",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "LAK",
-                "MIN",
-                "MTL",
-                "NJD",
-                "NSH",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PIT",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "VGK",
-                "WPG",
-                "WSH",
-            ]
+        teams_2017 = [
+            "ANA",
+            "ARI",
+            "BOS",
+            "BUF",
+            "CAR",
+            "CBJ",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "LAK",
+            "MIN",
+            "MTL",
+            "NJD",
+            "NSH",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PIT",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "VGK",
+            "WPG",
+            "WSH",
+        ]
 
-        elif first_year >= 2021:
-            teams = [
-                "ANA",
-                "ARI",
-                "BOS",
-                "BUF",
-                "CAR",
-                "CBJ",
-                "CGY",
-                "CHI",
-                "COL",
-                "DAL",
-                "DET",
-                "EDM",
-                "FLA",
-                "LAK",
-                "MIN",
-                "MTL",
-                "NJD",
-                "NSH",
-                "NYI",
-                "NYR",
-                "OTT",
-                "PHI",
-                "PIT",
-                "SEA",
-                "SJS",
-                "STL",
-                "TBL",
-                "TOR",
-                "VAN",
-                "VGK",
-                "WPG",
-                "WSH",
-            ]
+        teams_2021 = [
+            "ANA",
+            "ARI",
+            "BOS",
+            "BUF",
+            "CAR",
+            "CBJ",
+            "CGY",
+            "CHI",
+            "COL",
+            "DAL",
+            "DET",
+            "EDM",
+            "FLA",
+            "LAK",
+            "MIN",
+            "MTL",
+            "NJD",
+            "NSH",
+            "NYI",
+            "NYR",
+            "OTT",
+            "PHI",
+            "PIT",
+            "SEA",
+            "SJS",
+            "STL",
+            "TBL",
+            "TOR",
+            "VAN",
+            "VGK",
+            "WPG",
+            "WSH",
+        ]
 
-        self.teams = teams
+        self._teams_dict = {
+            1917: teams_1917,
+            1918: teams_1918,
+            1919: teams_1919,
+            1920: teams_1920,
+            1921: teams_1920,
+            1922: teams_1920,
+            1923: teams_1920,
+            1924: teams_1924,
+            1925: teams_1925,
+            1926: teams_1926,
+            1927: teams_1927,
+            1928: teams_1927,
+            1929: teams_1927,
+            1930: teams_1930,
+            1931: teams_1931,
+            1932: teams_1932,
+            1933: teams_1932,
+            1934: teams_1934,
+            1935: teams_1935,
+            1936: teams_1935,
+            1937: teams_1935,
+            1938: teams_1938,
+            1939: teams_1938,
+            1940: teams_1938,
+            1941: teams_1941,
+            1942: teams_1942,
+            1943: teams_1942,
+            1944: teams_1942,
+            1945: teams_1942,
+            1946: teams_1942,
+            1947: teams_1942,
+            1948: teams_1942,
+            1949: teams_1942,
+            1950: teams_1942,
+            1951: teams_1942,
+            1952: teams_1942,
+            1953: teams_1942,
+            1954: teams_1942,
+            1955: teams_1942,
+            1956: teams_1942,
+            1957: teams_1942,
+            1958: teams_1942,
+            1959: teams_1942,
+            1960: teams_1942,
+            1961: teams_1942,
+            1962: teams_1942,
+            1963: teams_1942,
+            1964: teams_1942,
+            1965: teams_1942,
+            1966: teams_1942,
+            1967: teams_1967,
+            1968: teams_1967,
+            1969: teams_1967,
+            1970: teams_1970,
+            1971: teams_1970,
+            1972: teams_1972,
+            1973: teams_1972,
+            1974: teams_1974,
+            1975: teams_1974,
+            1976: teams_1976,
+            1977: teams_1976,
+            1978: teams_1978,
+            1979: teams_1979,
+            1980: teams_1980,
+            1981: teams_1980,
+            1982: teams_1982,
+            1983: teams_1982,
+            1984: teams_1982,
+            1985: teams_1982,
+            1986: teams_1982,
+            1987: teams_1982,
+            1988: teams_1982,
+            1989: teams_1982,
+            1990: teams_1982,
+            1991: teams_1991,
+            1992: teams_1992,
+            1993: teams_1993,
+            1994: teams_1993,
+            1995: teams_1995,
+            1996: teams_1996,
+            1997: teams_1997,
+            1998: teams_1998,
+            1999: teams_1999,
+            2000: teams_2000,
+            2001: teams_2000,
+            2002: teams_2000,
+            2003: teams_2000,
+            2004: teams_2000,
+            2005: teams_2000,
+            2006: teams_2000,
+            2007: teams_2000,
+            2008: teams_2000,
+            2009: teams_2000,
+            2010: teams_2000,
+            2011: teams_2011,
+            2012: teams_2011,
+            2013: teams_2011,
+            2014: teams_2014,
+            2015: teams_2014,
+            2016: teams_2014,
+            2017: teams_2017,
+            2018: teams_2017,
+            2019: teams_2017,
+            2020: teams_2017,
+            2021: teams_2021,
+            2022: teams_2021,
+            2023: teams_2021,
+        }
 
-        self._season_str = str(self.season)[0:4] + "-" + str(self.season)[4:]
+        self.teams = self._teams_dict.get(first_year)
 
-        self._schedule = None
-        self._scraped_schedule = []
+        if self._teams_dict.get(first_year) is None:
+            raise Exception(f"{first_year} IS NOT SUPPORTED")
+
         self._scraped_schedule_teams = []
-        self._standings = None
+
+        self._scraped_schedule = []
 
         self._requests_session = s_session()
+
+        self._season_str = str(self.season)[:4] + '-' + str(self.season)[6:8]
 
     def _scrape_schedule(self, team_schedule: str = "all") -> None:
         schedule_list = []
@@ -6037,14 +6111,14 @@ class Season:
         if team_schedule not in self._scraped_schedule_teams:
             with self._requests_session as s:
                 with Progress(
-                    TextColumn("[progress.description]{task.description}"),
-                    SpinnerColumn(),
-                    BarColumn(),
-                    TaskProgressColumn(),
-                    TextColumn("•"),
-                    TimeElapsedColumn(),
-                    TextColumn("•"),
-                    TimeRemainingColumn(),
+                        TextColumn("[progress.description]{task.description}"),
+                        SpinnerColumn(),
+                        BarColumn(),
+                        TaskProgressColumn(),
+                        TextColumn("•"),
+                        TimeElapsedColumn(),
+                        TextColumn("•"),
+                        TimeRemainingColumn(),
                 ) as progress:
                     if team_schedule == "all":
                         teams = self.teams

@@ -358,9 +358,9 @@ def prep_pbp(
     ----------
 
     Play-by-play DataFrame
-    >>> shifts = pd.read_csv('./shifts.csv')
-    >>> raw_pbp = pd.read_csv('./pbp.csv')
-    >>> pbp = prep_pbp(raw_pbp, shifts)
+    >>> raw_shifts = pd.read_csv('./raw_shifts.csv')
+    >>> raw_pbp = pd.read_csv('./raw_pbp.csv')
+    >>> play_by_play = prep_pbp(raw_pbp, raw_shifts)
 
     """
 
@@ -532,8 +532,6 @@ def prep_pbp(
 
     if columns == "all":
         more_cols = [
-            "opp_goalie",
-            "own_goalie",
             "home_zone",
             "home_team",
             "away_team",
@@ -852,9 +850,9 @@ def prep_stats(
     ----------
 
     Basic play-by-play DataFrame
-    >>> shifts = pd.read_csv('./shifts.csv')
-    >>> raw_pbp = pd.read_csv('./pbp.csv')
-    >>> pbp = prep_pbp(raw_pbp, shifts)
+    >>> raw_shifts = pd.read_csv('./raw_shifts.csv')
+    >>> raw_pbp = pd.read_csv('./raw_pbp.csv')
+    >>> pbp = prep_pbp(raw_pbp, raw_shifts)
 
     Basic game-level stats, with no teammates or opposition
     >>> stats = prep_stats(pbp)
@@ -1356,9 +1354,9 @@ def prep_lines(
     ----------
 
     Basic play-by-play DataFrame
-    >>> shifts = pd.read_csv('./shifts.csv')
-    >>> raw_pbp = pd.read_csv('./pbp.csv')
-    >>> pbp = prep_pbp(raw_pbp, shifts)
+    >>> raw_shifts = pd.read_csv('./raw_shifts.csv')
+    >>> raw_pbp = pd.read_csv('./raw_pbp.csv')
+    >>> pbp = prep_pbp(raw_pbp, raw_shifts)
 
     Basic game-level stats for forwards, with no teammates or opposition
     >>> lines = prep_lines(pbp, position='f')
@@ -1375,7 +1373,7 @@ def prep_lines(
 
     # Accounting for desired level of aggregation
 
-    if level == "session":
+    if level == "session" or level == "season":
         group_base = ["season", "session", "event_team", "strength_state"]
 
     if level == "game":
@@ -1569,7 +1567,7 @@ def prep_lines(
 
     # Accounting for desired level of aggregation
 
-    if level == "session":
+    if level == "session" or level == "season":
         group_base = ["season", "session", "opp_team", "opp_strength_state"]
 
     if level == "game":
@@ -1760,7 +1758,7 @@ def prep_lines(
 
     # Merging the "for" and "against" dataframes
 
-    if level == "session":
+    if level == "session" or level == "season":
         if position.lower() in ["f", "for", "fwd", "fwds", "forward", "forwards"]:
             merge_list = [
                 "season",
@@ -2295,6 +2293,7 @@ def prep_team(
         "opp_team",
         "strength_state",
         "score_state",
+        "game_period",
     ]
 
     merge_list = [
@@ -2312,7 +2311,7 @@ def prep_team(
     for fo in fos:
         team_stats[fo] = team_stats[f"{fo}w"] + team_stats[f"{fo}w"]
 
-    team_stats = team_stats.dropna(subset="toi")
+    team_stats = team_stats.dropna(subset="toi").reset_index(drop=True)
 
     stats = [
         "toi",
@@ -2460,7 +2459,7 @@ def prep_team(
 
 
 # Function to prep the GAR dataframe
-def prep_gar(skater_data, goalie_data):
+def prep_gar(skater_data: pd.DataFrame, goalie_data: pd.DataFrame) -> pd.DataFrame:
     gar = pd.concat([skater_data, goalie_data], ignore_index=True)
 
     new_cols = {x: x.replace(" ", "_").lower() for x in gar.columns}
@@ -2487,7 +2486,7 @@ def prep_gar(skater_data, goalie_data):
 
 
 # Function to prep the xGAR dataframe
-def prep_xgar(data):
+def prep_xgar(data: pd.DataFrame) -> pd.DataFrame:
     xgar = data.copy()
 
     new_cols = {x: x.replace(" ", "_").lower() for x in xgar.columns}

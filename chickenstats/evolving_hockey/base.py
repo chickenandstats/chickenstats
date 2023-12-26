@@ -315,6 +315,7 @@ def munge_pbp(pbp: pd.DataFrame) -> pd.DataFrame:
     for col in player_cols:
         pbp[col] = (
             pbp[col]
+            .astype(str)
             .str.normalize("NFKD")
             .str.encode("ascii", errors="ignore")
             .str.decode("utf-8")
@@ -2049,6 +2050,7 @@ def add_positions(pbp: pd.DataFrame, rosters: pd.DataFrame) -> pd.DataFrame:
     for col in player_cols:
         pbp[col] = (
             pbp[col]
+            .astype(str)
             .str.normalize("NFKD")
             .str.encode("ascii", errors="ignore")
             .str.decode("utf-8")
@@ -2473,7 +2475,7 @@ def prep_ind(
 
         position = f"{player}_pos"
 
-        if level == "session":
+        if level == "session" or level == "season":
             group_base = [
                 "season",
                 "session",
@@ -3079,7 +3081,7 @@ def prep_oi(
         # Accounting for desired player
 
         if "event_on" in player:
-            if level == "session":
+            if level == "session" or level == "season":
                 group_list.append("event_team")
 
             strength_group = ["strength_state"]
@@ -3150,7 +3152,7 @@ def prep_oi(
             }
 
         if "opp_on" in player:
-            if level == "session":
+            if level == "session" or level == "season":
                 group_list.append("opp_team")
 
             strength_group = ["opp_strength_state"]
@@ -3522,7 +3524,7 @@ def prep_zones(
 
     players_on = players_on.merge(players_on_pos, left_index=True, right_index=True)
 
-    if level == "session":
+    if level == "session" or level == "season":
         group_list = ["season", "session", "event_team", "strength_state"]
 
     if level == "game":

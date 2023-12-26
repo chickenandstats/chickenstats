@@ -38,6 +38,7 @@ python-dotenv = "^1.0.0"
 black = "^23.12.1"
 ruff = "^0.1.9"
 jupyter = "^1.0.0"
+pytest-cov = "^4.1.0"
 
 
 [tool.poetry.group.test]
@@ -53,6 +54,9 @@ optional = true
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.3"
 mkdocs-material = "^9.5.3"
+
+[tool.pytest.ini_options]
+testpaths = ["tests",]
 
 [build-system]
 requires = ["poetry-core"]
