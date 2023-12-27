@@ -172,9 +172,9 @@ class Game:
     """
 
     def __init__(
-            self,
-            game_id: str | int | float,
-            requests_session: requests.Session | None = None,
+        self,
+        game_id: str | int | float,
+        requests_session: requests.Session | None = None,
     ):
         if str(game_id).isdigit() is False or len(str(game_id)) != 10:
             raise Exception(f"{game_id} IS NOT A VALID GAME ID")
@@ -495,8 +495,8 @@ class Game:
                     event_info["penalty_duration"] = event["details"].get("duration")
 
                     if (
-                            event_info["penalty_type"] == "BEN"
-                            and event["details"].get("committedByPlayerId") is None
+                        event_info["penalty_type"] == "BEN"
+                        and event["details"].get("committedByPlayerId") is None
                     ):
                         event_info["player_1"] = "BENCH"
                         event_info["player_1_api_id"] = "BENCH"
@@ -508,8 +508,8 @@ class Game:
                         event_info["player_2_type"] = "SERVED BY"
 
                     elif (
-                            "HEAD-COACH" in event_info["penalty_reason"]
-                            or "TEAM-STAFF" in event_info["penalty_reason"]
+                        "HEAD-COACH" in event_info["penalty_reason"]
+                        or "TEAM-STAFF" in event_info["penalty_reason"]
                     ) and event["details"].get("committedByPlayerId") is None:
                         event_info["player_1"] = "BENCH"
                         event_info["player_1_api_id"] = "BENCH"
@@ -606,11 +606,11 @@ class Game:
                 x
                 for x in event_list
                 if x != event
-                   and x["event"] == event["event"]
-                   and x["game_seconds"] == event["game_seconds"]
-                   and x.get("player_1") is not None
-                   and x["period"] == event["period"]
-                   and x.get("player_1_api_id") == event.get("player_1_api_id")
+                and x["event"] == event["event"]
+                and x["game_seconds"] == event["game_seconds"]
+                and x.get("player_1") is not None
+                and x["period"] == event["period"]
+                and x.get("player_1_api_id") == event.get("player_1_api_id")
             ]
 
             version = 1
@@ -747,7 +747,7 @@ class Game:
             player_name = correct_names_dict.get(player_name, player_name)
 
             eh_id = (
-                    player_name.split(" ", 1)[0] + "." + player_name.split(" ", 1)[1]
+                player_name.split(" ", 1)[0] + "." + player_name.split(" ", 1)[1]
             ).replace("..", ".")
 
             eh_id = correct_api_names_dict.get(player["playerId"], eh_id)
@@ -874,8 +874,8 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                           and x["start_time_seconds"] == change_on
-                           and x["team_venue"] == team
+                        and x["start_time_seconds"] == change_on
+                        and x["team_venue"] == team
                     ]
 
                     players_on = sorted(players_on, key=lambda k: (k["jersey"]))
@@ -886,9 +886,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                           and x["start_time_seconds"] == change_on
-                           and x["team_venue"] == team
-                           and x["position"] in f_positions
+                        and x["start_time_seconds"] == change_on
+                        and x["team_venue"] == team
+                        and x["position"] in f_positions
                     ]
 
                     forwards_on = sorted(forwards_on, key=lambda k: (k["jersey"]))
@@ -897,9 +897,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                           and x["start_time_seconds"] == change_on
-                           and x["team_venue"] == team
-                           and x["position"] == "D"
+                        and x["start_time_seconds"] == change_on
+                        and x["team_venue"] == team
+                        and x["position"] == "D"
                     ]
 
                     defense_on = sorted(defense_on, key=lambda k: (k["jersey"]))
@@ -908,9 +908,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                           and x["start_time_seconds"] == change_on
-                           and x["team_venue"] == team
-                           and x["position"] == "G"
+                        and x["start_time_seconds"] == change_on
+                        and x["team_venue"] == team
+                        and x["position"] == "G"
                     ]
 
                     goalies_on = sorted(goalies_on, key=lambda k: (k["jersey"]))
@@ -984,8 +984,8 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                           and x["end_time_seconds"] == change_off
-                           and x["team_venue"] == team
+                        and x["end_time_seconds"] == change_off
+                        and x["team_venue"] == team
                     ]
 
                     players_off = sorted(players_off, key=lambda k: (k["jersey"]))
@@ -996,9 +996,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                           and x["end_time_seconds"] == change_off
-                           and x["team_venue"] == team
-                           and x["position"] in f_positions
+                        and x["end_time_seconds"] == change_off
+                        and x["team_venue"] == team
+                        and x["position"] in f_positions
                     ]
 
                     forwards_off = sorted(forwards_off, key=lambda k: (k["jersey"]))
@@ -1007,9 +1007,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                           and x["end_time_seconds"] == change_off
-                           and x["team_venue"] == team
-                           and x["position"] == "D"
+                        and x["end_time_seconds"] == change_off
+                        and x["team_venue"] == team
+                        and x["position"] == "D"
                     ]
 
                     defense_off = sorted(defense_off, key=lambda k: (k["jersey"]))
@@ -1018,9 +1018,9 @@ class Game:
                         x
                         for x in shifts
                         if x["period"] == period
-                           and x["end_time_seconds"] == change_off
-                           and x["team_venue"] == team
-                           and x["position"] == "G"
+                        and x["end_time_seconds"] == change_off
+                        and x["team_venue"] == team
+                        and x["position"] == "G"
                     ]
 
                     goalies_off = sorted(goalies_off, key=lambda k: (k["jersey"]))
@@ -1459,8 +1459,8 @@ class Game:
             event["period_time"] = time_split[0] + ":" + time_split[1][:2]
 
             event["period_seconds"] = (
-                                              60 * int(event["period_time"].split(":")[0])
-                                      ) + int(event["period_time"].split(":")[1])
+                60 * int(event["period_time"].split(":")[0])
+            ) + int(event["period_time"].split(":")[1])
 
             event["game_seconds"] = (int(event["period"]) - 1) * 1200 + event[
                 "period_seconds"
@@ -1489,15 +1489,15 @@ class Game:
                 event_players.insert(0, "TEAMMATE")
 
             elif (
-                    event["event"] == "BLOCK" and "BLOCKED BY OTHER" in event["description"]
+                event["event"] == "BLOCK" and "BLOCKED BY OTHER" in event["description"]
             ):
                 event["event_team"] = "OTHER"
 
                 event_players.insert(0, "REFEREE")
 
             elif (
-                    event["event"] == "BLOCK"
-                    and event["event_team"] not in event_players[0]
+                event["event"] == "BLOCK"
+                and event["event_team"] not in event_players[0]
             ):
                 event_players[0], event_players[1] = event_players[1], event_players[0]
 
@@ -1548,8 +1548,8 @@ class Game:
 
             if event["event"] == "PENL":
                 if (
-                        "TEAM" in event["description"]
-                        and "SERVED BY" in event["description"]
+                    "TEAM" in event["description"]
+                    and "SERVED BY" in event["description"]
                 ) or ("HEAD COACH" in event["description"]):
                     event["player_1"] = "BENCH"
 
@@ -1578,8 +1578,8 @@ class Game:
                     event["player_2_position"] = actives[name]["position"]
 
                 if (
-                        "SERVED BY" in event["description"]
-                        and "DRAWN BY" in event["description"]
+                    "SERVED BY" in event["description"]
+                    and "DRAWN BY" in event["description"]
                 ):
                     try:
                         drawn_by = re.search(drawn_re, event["description"])
@@ -1608,8 +1608,8 @@ class Game:
                         event["player_3_position"] = actives[served_name]["position"]
 
                         if (
-                                "TEAM" in event["description"]
-                                or "HEAD COACH" in event["description"]
+                            "TEAM" in event["description"]
+                            or "HEAD COACH" in event["description"]
                         ):
                             event["player_2"], event["player_3"] = (
                                 event["player_3"],
@@ -1685,62 +1685,62 @@ class Game:
                     continue
 
                 if (
-                        "INTERFERENCE" in event["description"]
-                        and "GOALKEEPER" in event["description"]
+                    "INTERFERENCE" in event["description"]
+                    and "GOALKEEPER" in event["description"]
                 ):
                     event["penalty"] = "GOALKEEPER INTERFERENCE"
 
                 elif (
-                        "CROSS" in event["description"]
-                        and "CHECKING" in event["description"]
+                    "CROSS" in event["description"]
+                    and "CHECKING" in event["description"]
                 ):
                     event["penalty"] = "CROSS-CHECKING"
 
                 elif (
-                        "DELAY" in event["description"]
-                        and "GAME" in event["description"]
-                        and "PUCK OVER" in event["description"]
+                    "DELAY" in event["description"]
+                    and "GAME" in event["description"]
+                    and "PUCK OVER" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - PUCK OVER GLASS"
 
                 elif (
-                        "DELAY" in event["description"]
-                        and "GAME" in event["description"]
-                        and "FO VIOL" in event["description"]
+                    "DELAY" in event["description"]
+                    and "GAME" in event["description"]
+                    and "FO VIOL" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - FACEOFF VIOLATION"
 
                 elif (
-                        "DELAY" in event["description"]
-                        and "GAME" in event["description"]
-                        and "EQUIPMENT" in event["description"]
+                    "DELAY" in event["description"]
+                    and "GAME" in event["description"]
+                    and "EQUIPMENT" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - EQUIPMENT"
 
                 elif (
-                        "DELAY" in event["description"]
-                        and "GAME" in event["description"]
-                        and "UNSUCC" in event["description"]
+                    "DELAY" in event["description"]
+                    and "GAME" in event["description"]
+                    and "UNSUCC" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - UNSUCCESSFUL CHALLENGE"
 
                 elif (
-                        "DELAY" in event["description"]
-                        and "GAME" in event["description"]
-                        and "SMOTHERING" in event["description"]
+                    "DELAY" in event["description"]
+                    and "GAME" in event["description"]
+                    and "SMOTHERING" in event["description"]
                 ):
                     event["penalty"] = "DELAY OF GAME - SMOTHERING THE PUCK"
 
                 elif (
-                        "ILLEGAL" in event["description"]
-                        and "CHECK" in event["description"]
-                        and "HEAD" in event["description"]
+                    "ILLEGAL" in event["description"]
+                    and "CHECK" in event["description"]
+                    and "HEAD" in event["description"]
                 ):
                     event["penalty"] = "ILLEGAL CHECK TO HEAD"
 
                 elif (
-                        "HIGH-STICKING" in event["description"]
-                        and "- DOUBLE" in event["description"]
+                    "HIGH-STICKING" in event["description"]
+                    and "- DOUBLE" in event["description"]
                 ):
                     event["penalty"] = "HIGH-STICKING - DOUBLE MINOR"
 
@@ -1751,21 +1751,21 @@ class Game:
                     event["penalty"] = "MATCH PENALTY"
 
                 elif (
-                        "NET" in event["description"]
-                        and "DISPLACED" in event["description"]
+                    "NET" in event["description"]
+                    and "DISPLACED" in event["description"]
                 ):
                     event["penalty"] = "DISPLACED NET"
 
                 elif (
-                        "THROW" in event["description"]
-                        and "OBJECT" in event["description"]
-                        and "AT PUCK" in event["description"]
+                    "THROW" in event["description"]
+                    and "OBJECT" in event["description"]
+                    and "AT PUCK" in event["description"]
                 ):
                     event["penalty"] = "THROWING OBJECT AT PUCK"
 
                 elif (
-                        "INSTIGATOR" in event["description"]
-                        and "FACE SHIELD" in event["description"]
+                    "INSTIGATOR" in event["description"]
+                    and "FACE SHIELD" in event["description"]
                 ):
                     event["penalty"] = "INSTIGATOR - FACE SHIELD"
 
@@ -1773,37 +1773,37 @@ class Game:
                     event["penalty"] = "LEAVING THE CREASE"
 
                 elif (
-                        "REMOVING" in event["description"]
-                        and "HELMET" in event["description"]
+                    "REMOVING" in event["description"]
+                    and "HELMET" in event["description"]
                 ):
                     event["penalty"] = "REMOVING OPPONENT HELMET"
 
                 elif (
-                        "BROKEN" in event["description"] and "STICK" in event["description"]
+                    "BROKEN" in event["description"] and "STICK" in event["description"]
                 ):
                     event["penalty"] = "HOLDING BROKEN STICK"
 
                 elif (
-                        "HOOKING" in event["description"]
-                        and "BREAKAWAY" in event["description"]
+                    "HOOKING" in event["description"]
+                    and "BREAKAWAY" in event["description"]
                 ):
                     event["penalty"] = "HOOKING - BREAKAWAY"
 
                 elif (
-                        "HOLDING" in event["description"]
-                        and "BREAKAWAY" in event["description"]
+                    "HOLDING" in event["description"]
+                    and "BREAKAWAY" in event["description"]
                 ):
                     event["penalty"] = "HOLDING - BREAKAWAY"
 
                 elif (
-                        "TRIPPING" in event["description"]
-                        and "BREAKAWAY" in event["description"]
+                    "TRIPPING" in event["description"]
+                    and "BREAKAWAY" in event["description"]
                 ):
                     event["penalty"] = "TRIPPING - BREAKAWAY"
 
                 elif (
-                        "SLASH" in event["description"]
-                        and "BREAKAWAY" in event["description"]
+                    "SLASH" in event["description"]
+                    and "BREAKAWAY" in event["description"]
                 ):
                     event["penalty"] = "SLASHING - BREAKAWAY"
 
@@ -1811,25 +1811,25 @@ class Game:
                     event["penalty"] = "TOO MANY MEN ON THE ICE"
 
                 elif (
-                        "HOLDING" in event["description"]
-                        and "STICK" in event["description"]
+                    "HOLDING" in event["description"]
+                    and "STICK" in event["description"]
                 ):
                     event["penalty"] = "HOLDING THE STICK"
 
                 elif (
-                        "THROWING" in event["description"]
-                        and "STICK" in event["description"]
+                    "THROWING" in event["description"]
+                    and "STICK" in event["description"]
                 ):
                     event["penalty"] = "THROWING STICK"
 
                 elif (
-                        "CLOSING" in event["description"] and "HAND" in event["description"]
+                    "CLOSING" in event["description"] and "HAND" in event["description"]
                 ):
                     event["penalty"] = "CLOSING HAND ON PUCK"
 
                 elif (
-                        "ABUSE" in event["description"]
-                        and "OFFICIALS" in event["description"]
+                    "ABUSE" in event["description"]
+                    and "OFFICIALS" in event["description"]
                 ):
                     event["penalty"] = "ABUSE OF OFFICIALS"
 
@@ -1837,9 +1837,9 @@ class Game:
                     event["penalty"] = "UNSPORTSMANLIKE CONDUCT"
 
                 elif (
-                        "PUCK" in event["description"]
-                        and "THROWN" in event["description"]
-                        and "FWD" in event["description"]
+                    "PUCK" in event["description"]
+                    and "THROWN" in event["description"]
+                    and "FWD" in event["description"]
                 ):
                     event["penalty"] = "PUCK THROWN FORWARD - GOALKEEPER"
 
@@ -1888,8 +1888,8 @@ class Game:
                     event["period_time"] = time_split[0] + ":" + time_split[1][:2]
 
                     event["period_seconds"] = (
-                                                      60 * int(event["period_time"].split(":")[0])
-                                              ) + int(event["period_time"].split(":")[1])
+                        60 * int(event["period_time"].split(":")[0])
+                    ) + int(event["period_time"].split(":")[1])
 
             if "game_seconds" not in event.keys():
                 event["game_seconds"] = (int(event["period"]) - 1) * 1200 + event[
@@ -1904,12 +1904,12 @@ class Game:
                     x
                     for x in self._html_events
                     if x != event
-                       and x["event"] == event["event"]
-                       and x.get("game_seconds") == event["game_seconds"]
-                       and x["period"] == event["period"]
-                       and x.get("player_1_eh_id") is not None
-                       and event.get("player_1_eh_id") is not None
-                       and x["player_1_eh_id"] == event["player_1_eh_id"]
+                    and x["event"] == event["event"]
+                    and x.get("game_seconds") == event["game_seconds"]
+                    and x["period"] == event["period"]
+                    and x.get("player_1_eh_id") is not None
+                    and event.get("player_1_eh_id") is not None
+                    and x["player_1_eh_id"] == event["player_1_eh_id"]
                 ]
 
                 version = 1
@@ -2400,9 +2400,9 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                       and x["period"] == event["period"]
-                       and x["period_seconds"] == event["period_seconds"]
-                       and x["version"] == event["version"]
+                    and x["period"] == event["period"]
+                    and x["period_seconds"] == event["period_seconds"]
+                    and x["version"] == event["version"]
                 ]
 
             elif event["event"] == "CHL" and event.get("event_team") is None:
@@ -2410,9 +2410,9 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                       and x["period"] == event["period"]
-                       and x["period_seconds"] == event["period_seconds"]
-                       and x["version"] == event["version"]
+                    and x["period"] == event["period"]
+                    and x["period_seconds"] == event["period_seconds"]
+                    and x["version"] == event["version"]
                 ]
 
             elif event["event"] == "CHL" and event.get("event_team") is not None:
@@ -2420,12 +2420,12 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                       and x.get("event_team") is not None
-                       and event.get("event_team") is not None
-                       and x["event_team"] == event["event_team"]
-                       and x["period"] == event["period"]
-                       and x["period_seconds"] == event["period_seconds"]
-                       and x["version"] == event["version"]
+                    and x.get("event_team") is not None
+                    and event.get("event_team") is not None
+                    and x["event_team"] == event["event_team"]
+                    and x["period"] == event["period"]
+                    and x["period_seconds"] == event["period_seconds"]
+                    and x["version"] == event["version"]
                 ]
 
             elif event["event"] == "PENL":
@@ -2433,12 +2433,12 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                       and x["event_team"] == event["event_team"]
-                       and x["player_1_eh_id"] == event["player_1_eh_id"]
-                       and x.get("player_2_eh_id") == event.get("player_2_eh_id")
-                       and x.get("player_3_eh_id") == event.get("player_3_eh_id")
-                       and x["period"] == event["period"]
-                       and x["period_seconds"] == event["period_seconds"]
+                    and x["event_team"] == event["event_team"]
+                    and x["player_1_eh_id"] == event["player_1_eh_id"]
+                    and x.get("player_2_eh_id") == event.get("player_2_eh_id")
+                    and x.get("player_3_eh_id") == event.get("player_3_eh_id")
+                    and x["period"] == event["period"]
+                    and x["period_seconds"] == event["period_seconds"]
                 ]
 
             elif event["event"] == "BLOCK" and event["player_1"] == "TEAMMATE":
@@ -2446,12 +2446,12 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                       and x.get("event_team") is not None
-                       and event.get("event_team") is not None
-                       and x["event_team"] == event["event_team"]
-                       and x["period"] == event["period"]
-                       and x["period_seconds"] == event["period_seconds"]
-                       and x["version"] == event["version"]
+                    and x.get("event_team") is not None
+                    and event.get("event_team") is not None
+                    and x["event_team"] == event["event_team"]
+                    and x["period"] == event["period"]
+                    and x["period_seconds"] == event["period_seconds"]
+                    and x["version"] == event["version"]
                 ]
 
             else:
@@ -2459,15 +2459,15 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                       and x.get("event_team") is not None
-                       and event.get("event_team") is not None
-                       and x["event_team"] == event["event_team"]
-                       and x.get("player_1_eh_id") is not None
-                       and event.get("player_1_eh_id") is not None
-                       and x["player_1_eh_id"] == event["player_1_eh_id"]
-                       and x["period"] == event["period"]
-                       and x["period_seconds"] == event["period_seconds"]
-                       and x["version"] == event["version"]
+                    and x.get("event_team") is not None
+                    and event.get("event_team") is not None
+                    and x["event_team"] == event["event_team"]
+                    and x.get("player_1_eh_id") is not None
+                    and event.get("player_1_eh_id") is not None
+                    and x["player_1_eh_id"] == event["player_1_eh_id"]
+                    and x["period"] == event["period"]
+                    and x["period_seconds"] == event["period_seconds"]
+                    and x["version"] == event["version"]
                 ]
 
             if event["event"] == "FAC" and len(api_matches) == 0:
@@ -2475,9 +2475,9 @@ class Game:
                     x
                     for x in api_events
                     if x["event"] == event["event"]
-                       and x["period"] == event["period"]
-                       and x["period_seconds"] == event["period_seconds"]
-                       and x["version"] == event["version"]
+                    and x["period"] == event["period"]
+                    and x["period_seconds"] == event["period_seconds"]
+                    and x["version"] == event["version"]
                 ]
 
             if len(api_matches) == 0:
@@ -2634,16 +2634,16 @@ class Game:
                         x
                         for x in self._play_by_play
                         if x["event"] == "GOAL"
-                           and x["period"] == 5
-                           and x["event_team"] == event["home_team"]
+                        and x["period"] == 5
+                        and x["event_team"] == event["home_team"]
                     ]
 
                     away_goals = [
                         x
                         for x in self._play_by_play
                         if x["event"] == "GOAL"
-                           and x["period"] == 5
-                           and x["event_team"] == event["away_team"]
+                        and x["period"] == 5
+                        and x["event_team"] == event["away_team"]
                     ]
 
                     if event == ot_events[-1] and len(home_goals) > len(away_goals):
@@ -2667,16 +2667,16 @@ class Game:
                         x
                         for x in self._play_by_play
                         if x["event"] == "GOAL"
-                           and x["period"] == 5
-                           and x["event_team"] == event["home_team"]
+                        and x["period"] == 5
+                        and x["event_team"] == event["home_team"]
                     ]
 
                     away_goals = [
                         x
                         for x in self._play_by_play
                         if x["event"] == "GOAL"
-                           and x["period"] == 5
-                           and x["event_team"] == event["away_team"]
+                        and x["period"] == 5
+                        and x["event_team"] == event["away_team"]
                     ]
 
                     if event == ot_events[-1] and len(away_goals) > len(home_goals):
@@ -2703,9 +2703,9 @@ class Game:
 
             for event in self._play_by_play:
                 if (
-                        event.get("event_team", "NaN") in player["team_jersey"]
-                        and event["event"] == "CHANGE"
-                        and event.get("change_on") is not None
+                    event.get("event_team", "NaN") in player["team_jersey"]
+                    and event["event"] == "CHANGE"
+                    and event.get("change_on") is not None
                 ):
                     players_on = [
                         x
@@ -2717,9 +2717,9 @@ class Game:
                         counter += 1
 
                 if (
-                        event.get("event_team", "NaN") in player["team_jersey"]
-                        and event["event"] == "CHANGE"
-                        and event.get("change_off") is not None
+                    event.get("event_team", "NaN") in player["team_jersey"]
+                    and event["event"] == "CHANGE"
+                    and event.get("change_off") is not None
                 ):
                     players_off = [
                         x
@@ -2816,21 +2816,21 @@ class Game:
             new_values = {
                 "event_idx": idx + 1,
                 "event_length": event["game_seconds"]
-                                - self._play_by_play[event_length_idx]["game_seconds"],
+                - self._play_by_play[event_length_idx]["game_seconds"],
                 "home_on_eh_id": event["home_forwards_eh_id"]
-                                 + event["home_defense_eh_id"],
+                + event["home_defense_eh_id"],
                 "home_on_api_id": event["home_forwards_api_id"]
-                                  + event["home_defense_api_id"],
+                + event["home_defense_api_id"],
                 "home_on": event["home_forwards"] + event["home_defense"],
                 "home_on_positions": event["home_forwards_positions"]
-                                     + event["home_defense_positions"],
+                + event["home_defense_positions"],
                 "away_on_eh_id": event["away_forwards_eh_id"]
-                                 + event["away_defense_eh_id"],
+                + event["away_defense_eh_id"],
                 "away_on_api_id": event["away_forwards_api_id"]
-                                  + event["away_defense_api_id"],
+                + event["away_defense_api_id"],
                 "away_on": event["away_forwards"] + event["away_defense"],
                 "away_on_positions": event["away_forwards_positions"]
-                                     + event["away_defense_positions"],
+                + event["away_defense_positions"],
             }
 
             event.update(new_values)
@@ -2848,10 +2848,10 @@ class Game:
                 event["is_away"] = 0
 
             if (
-                    event.get("coords_x") is not None
-                    and event.get("coords_x") != ""
-                    and event.get("coords_y") is not None
-                    and event.get("coords_y") != ""
+                event.get("coords_x") is not None
+                and event.get("coords_x") != ""
+                and event.get("coords_y") is not None
+                and event.get("coords_y") != ""
             ):
                 # Fixing event angle and distance for errors
 
@@ -2869,28 +2869,28 @@ class Game:
                     "POKE",
                 ]
                 zone_cond = (
-                        event.get("pbp_distance", 0) > 89 and event.get("zone") == "OFF"
+                    event.get("pbp_distance", 0) > 89 and event.get("zone") == "OFF"
                 )
 
                 x_is_neg_conds = (
-                        is_fenwick
-                        & is_long_distance
-                        & x_is_neg
-                        & bad_shots
-                        & ~int(zone_cond)
+                    is_fenwick
+                    & is_long_distance
+                    & x_is_neg
+                    & bad_shots
+                    & ~int(zone_cond)
                 )
                 x_is_pos_conds = (
-                        is_fenwick
-                        & is_long_distance
-                        & x_is_pos
-                        & bad_shots
-                        & ~int(zone_cond)
+                    is_fenwick
+                    & is_long_distance
+                    & x_is_pos
+                    & bad_shots
+                    & ~int(zone_cond)
                 )
 
                 if x_is_neg_conds is True:
                     event["event_distance"] = (
-                                                      (abs(event["coords_x"]) + 89) ** 2 + event["coords_y"] ** 2
-                                              ) ** (1 / 2)
+                        (abs(event["coords_x"]) + 89) ** 2 + event["coords_y"] ** 2
+                    ) ** (1 / 2)
 
                     try:
                         event["event_angle"] = np.degrees(
@@ -2906,8 +2906,8 @@ class Game:
 
                 elif x_is_pos_conds is True:
                     event["event_distance"] = (
-                                                      (event["coords_x"] + 89) ** 2 + event["coords_y"] ** 2
-                                              ) ** (1 / 2)
+                        (event["coords_x"] + 89) ** 2 + event["coords_y"] ** 2
+                    ) ** (1 / 2)
 
                     try:
                         event["event_angle"] = np.degrees(
@@ -2919,8 +2919,8 @@ class Game:
 
                 else:
                     event["event_distance"] = (
-                                                      (89 - abs(event["coords_x"])) ** 2 + event["coords_y"] ** 2
-                                              ) ** (1 / 2)
+                        (89 - abs(event["coords_x"])) ** 2 + event["coords_y"] ** 2
+                    ) ** (1 / 2)
 
                     try:
                         event["event_angle"] = np.degrees(
@@ -2935,22 +2935,22 @@ class Game:
                         event["event_angle"] = np.degrees(abs(np.arctan(np.nan)))
 
             if (
-                    event["event"] in ["GOAL", "SHOT", "MISS"]
-                    and event.get("zone") == "DEF"
-                    and event.get("event_distance", 0) <= 64
+                event["event"] in ["GOAL", "SHOT", "MISS"]
+                and event.get("zone") == "DEF"
+                and event.get("event_distance", 0) <= 64
             ):
                 event["zone"] = "OFF"
 
             if event["event"] in ["GOAL", "SHOT", "MISS"]:
                 if event.get("zone") == "OFF":
                     if (
-                            event.get("coords_x") is not None
-                            and event.get("coords_y") is not None
+                        event.get("coords_x") is not None
+                        and event.get("coords_y") is not None
                     ):
                         shot_coords = Point(event["coords_x"], event["coords_y"])
 
                         if danger1.contains(shot_coords) or danger2.contains(
-                                shot_coords
+                            shot_coords
                         ):
                             event["danger"] = 1
 
@@ -2958,7 +2958,7 @@ class Game:
                             event["danger"] = 0
 
                         if high_danger1.contains(shot_coords) or high_danger2.contains(
-                                shot_coords
+                            shot_coords
                         ):
                             event["high_danger"] = 1
 
@@ -3078,7 +3078,7 @@ class Game:
                 event.update(new_values)
 
             if (event["home_skaters"] > 5 and event["home_goalie"] != []) or (
-                    event["away_skaters"] > 5 and event["away_goalie"] != []
+                event["away_skaters"] > 5 and event["away_goalie"] != []
             ):
                 event["strength_state"] = "ILLEGAL"
 
@@ -3092,9 +3092,9 @@ class Game:
                     x
                     for x in self._play_by_play
                     if (
-                            x["event"] == "FAC"
-                            and x["game_seconds"] == event["game_seconds"]
-                            and x["period"] == event["period"]
+                        x["event"] == "FAC"
+                        and x["game_seconds"] == event["game_seconds"]
+                        and x["period"] == event["period"]
                     )
                 ]
 
@@ -3792,7 +3792,7 @@ class Game:
                 # Reshaping the shift data into fields and values
 
                 for number, shift in enumerate(
-                        np.array(shifts["shifts"]).reshape(length, 5)
+                    np.array(shifts["shifts"]).reshape(length, 5)
                 ):
                     # Adding header values to the shift data
 
@@ -3974,7 +3974,7 @@ class Game:
                 # Calculating end time based on duration seconds
 
                 shift["end_time_seconds"] = (
-                        shift["start_time_seconds"] + shift["duration_seconds"]
+                    shift["start_time_seconds"] + shift["duration_seconds"]
                 )
 
                 # Creating end time based on time delta
@@ -4004,7 +4004,7 @@ class Game:
                     # Setting duration and duration in seconds
 
                     shift["duration_seconds"] = (
-                            shift["end_time_seconds"] - shift["start_time_seconds"]
+                        shift["end_time_seconds"] - shift["start_time_seconds"]
                     )
 
                     shift["duration"] = str(
@@ -4035,7 +4035,7 @@ class Game:
                             shift["end_time_seconds"]
                             for shift in self._shifts
                             if "end_time_seconds" in shift.keys()
-                               and shift["period"] == max_period
+                            and shift["period"] == max_period
                         ]
                     )
 
@@ -4109,8 +4109,8 @@ class Game:
                     x
                     for x in self._shifts
                     if x["goalie"] == 1
-                       and x["team_venue"] == team
-                       and x["period"] == period
+                    and x["team_venue"] == team
+                    and x["period"] == period
                 ]
 
                 # If there are no goalies changing during the period, we need to add them
@@ -4124,8 +4124,8 @@ class Game:
                                 x
                                 for x in actives.values()
                                 if x["position"] == "G"
-                                   and x["team_venue"] == team
-                                   and x["starter"] == 1
+                                and x["team_venue"] == team
+                                and x["starter"] == 1
                             ][0]
 
                             new_values = {
@@ -4254,9 +4254,9 @@ class Game:
                 # Fixing goalie errors
 
                 if (
-                        shift["goalie"] == 1
-                        and shift["period"] == period
-                        and shift["shift_end"] == "0:00 / 0:00"
+                    shift["goalie"] == 1
+                    and shift["period"] == period
+                    and shift["shift_end"] == "0:00 / 0:00"
                 ):
                     if period < 4:
                         shift["shift_end"] = "20:00 / 0:00"
@@ -4447,14 +4447,14 @@ class Scraper:
 
         with self._requests_session as s:
             with Progress(
-                    TextColumn("[progress.description]{task.description}"),
-                    SpinnerColumn(),
-                    BarColumn(),
-                    TaskProgressColumn(),
-                    TextColumn("•"),
-                    TimeElapsedColumn(),
-                    TextColumn("•"),
-                    TimeRemainingColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                SpinnerColumn(),
+                BarColumn(),
+                TaskProgressColumn(),
+                TextColumn("•"),
+                TimeElapsedColumn(),
+                TextColumn("•"),
+                TimeRemainingColumn(),
             ) as progress:
                 pbar_stub = pbar_stubs[scrape_type]
 
@@ -6103,7 +6103,7 @@ class Season:
 
         self._requests_session = s_session()
 
-        self._season_str = str(self.season)[:4] + '-' + str(self.season)[6:8]
+        self._season_str = str(self.season)[:4] + "-" + str(self.season)[6:8]
 
     def _scrape_schedule(self, team_schedule: str = "all") -> None:
         schedule_list = []
@@ -6111,14 +6111,14 @@ class Season:
         if team_schedule not in self._scraped_schedule_teams:
             with self._requests_session as s:
                 with Progress(
-                        TextColumn("[progress.description]{task.description}"),
-                        SpinnerColumn(),
-                        BarColumn(),
-                        TaskProgressColumn(),
-                        TextColumn("•"),
-                        TimeElapsedColumn(),
-                        TextColumn("•"),
-                        TimeRemainingColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    SpinnerColumn(),
+                    BarColumn(),
+                    TaskProgressColumn(),
+                    TextColumn("•"),
+                    TimeElapsedColumn(),
+                    TextColumn("•"),
+                    TimeRemainingColumn(),
                 ) as progress:
                     if team_schedule == "all":
                         teams = self.teams

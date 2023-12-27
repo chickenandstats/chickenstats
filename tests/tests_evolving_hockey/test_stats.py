@@ -9,6 +9,8 @@ from chickenstats.evolving_hockey.stats import (
     prep_stats,
     prep_lines,
     prep_team,
+    prep_gar,
+    prep_xgar,
 )
 
 
@@ -80,3 +82,42 @@ def test_prep_team(test_pbp, level, strengths, score):
     team = prep_team(test_pbp, level, strengths, score)
 
     assert isinstance(team, pd.DataFrame) is True
+
+
+@pytest.fixture(scope="package")
+def raw_gar_skater():
+    filepath = Path("./tests/tests_evolving_hockey/data/raw/raw_gar_skater.csv")
+
+    raw_gar_skater = pd.read_csv(filepath, low_memory=False)
+
+    return raw_gar_skater
+
+
+@pytest.fixture(scope="package")
+def raw_gar_goalie():
+    filepath = Path("./tests/tests_evolving_hockey/data/raw/raw_gar_goalie.csv")
+
+    raw_gar_goalie = pd.read_csv(filepath, low_memory=False)
+
+    return raw_gar_goalie
+
+
+@pytest.fixture(scope="package")
+def raw_xgar_skater():
+    filepath = Path("./tests/tests_evolving_hockey/data/raw/raw_xgar_skater.csv")
+
+    raw_xgar_skater = pd.read_csv(filepath, low_memory=False)
+
+    return raw_xgar_skater
+
+
+def test_prep_gar(raw_gar_skater, raw_gar_goalie):
+    gar = prep_gar(raw_gar_skater, raw_gar_goalie)
+
+    assert isinstance(gar, pd.DataFrame) is True
+
+
+def test_prep_xgar(raw_xgar_skater):
+    xgar = prep_xgar(raw_xgar_skater)
+
+    assert isinstance(xgar, pd.DataFrame)
