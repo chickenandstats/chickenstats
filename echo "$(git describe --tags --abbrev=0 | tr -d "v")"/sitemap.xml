@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/contribute/contribute/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/contribute/known_issues/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/contribute/roadmap/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/guide/guide/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/guide/capfriendly/capfriendly/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/guide/chicken_nhl/chicken_nhl/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/guide/examples/gallery/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/guide/examples/original_research/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/guide/tutorials/faceoff_wins/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/guide/tutorials/gsax/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/guide/tutorials/shot_maps/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/home/getting_started/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/home/help/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/reference/reference/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/reference/capfriendly/scrape/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/reference/chicken_nhl/scrape/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/xg_model/overview/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/echo &#34;$(git describe --tags --abbrev=0 | tr -d &#34;v&#34;)&#34;/xg_model/xg_model/</loc>
+         <lastmod>2023-12-30</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+</urlset>
