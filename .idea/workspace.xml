@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="03a42638-5897-435a-9ad6-e6b4083c1e2f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/docs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/docs.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/update-docs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/update-docs.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "git-widget-placeholder": "main",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <servers />
+  </component>
+</project>
