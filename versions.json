@@ -2,9 +2,7 @@
   {
     "version": "echo \"$(git describe --tags --abbrev=0 | tr -d \"v\")\"",
     "title": "echo \"$(git describe --tags --abbrev=0 | tr -d \"v\")\"",
-    "aliases": [
-      "latest"
-    ]
+    "aliases": []
   },
   {
     "version": "1.7.6",
