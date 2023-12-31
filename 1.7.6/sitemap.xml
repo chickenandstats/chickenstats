@@ -6,6 +6,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://chickenstats.com/1.7.6/blog/</loc>
+         <lastmod>2023-12-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://chickenstats.com/1.7.6/contribute/contribute/</loc>
          <lastmod>2023-12-31</lastmod>
          <changefreq>daily</changefreq>
