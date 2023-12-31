@@ -6,7 +6,7 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://chickenstats.com/1.7.6/blog/</loc>
+         <loc>https://chickenstats.com/1.7.6/blog/blog/</loc>
          <lastmod>2023-12-31</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -97,6 +97,11 @@
     </url>
     <url>
          <loc>https://chickenstats.com/1.7.6/xg_model/xg_model/</loc>
+         <lastmod>2023-12-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/1.7.6/blog/</loc>
          <lastmod>2023-12-31</lastmod>
          <changefreq>daily</changefreq>
     </url>
