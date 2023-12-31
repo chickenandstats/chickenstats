@@ -6,6 +6,26 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://chickenstats.com/1.7.5/blog/</loc>
+         <lastmod>2023-12-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/1.7.5/blog/author/chicken/</loc>
+         <lastmod>2023-12-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/1.7.5/blog/category/hockey/</loc>
+         <lastmod>2023-12-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/1.7.5/blog/2023/12/hello-world/</loc>
+         <lastmod>2023-12-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://chickenstats.com/1.7.5/contribute/contribute/</loc>
          <lastmod>2023-12-31</lastmod>
          <changefreq>daily</changefreq>
@@ -92,6 +112,11 @@
     </url>
     <url>
          <loc>https://chickenstats.com/1.7.5/xg_model/xg_model/</loc>
+         <lastmod>2023-12-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://chickenstats.com/1.7.5/blog/archive/2023/</loc>
          <lastmod>2023-12-31</lastmod>
          <changefreq>daily</changefreq>
     </url>
