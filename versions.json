@@ -3,7 +3,6 @@
     "version": "1.7.8",
     "title": "dev",
     "aliases": [
-      "development",
       "dev"
     ]
   },
