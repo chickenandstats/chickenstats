@@ -12,13 +12,13 @@
         <meta name="author" content="Chicken and Stats">
       
       
-        <link rel="canonical" href="https://chickenstats.com/1.7.8/guide/chicken_nhl/chicken_nhl/">
+        <link rel="canonical" href="https://chickenstats.com/latest/1.7.8/guide/chicken_nhl/chicken_nhl/">
       
       
         <link rel="prev" href="../../guide/">
       
       
-        <link rel="next" href="../../capfriendly/capfriendly/">
+        <link rel="next" href="../../evolving_hockey/evolving_hockey/">
       
       
         
@@ -754,28 +754,144 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#basic-usage" class="md-nav__link">
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M256 288a144 144 0 1 0 0-288 144 144 0 1 0 0 288zm-94.7 32C72.2 320 0 392.2 0 481.3c0 17 13.8 30.7 30.7 30.7h450.6c17 0 30.7-13.8 30.7-30.7 0-89.1-72.2-161.3-161.3-161.3H161.3z"/></svg></span> <strong>Usage</strong>
+          <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M256 288a144 144 0 1 0 0-288 144 144 0 1 0 0 288zm-94.7 32C72.2 320 0 392.2 0 481.3c0 17 13.8 30.7 30.7 30.7h450.6c17 0 30.7-13.8 30.7-30.7 0-89.1-72.2-161.3-161.3-161.3H161.3z"/></svg></span> <strong>Basic usage</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basic usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#import-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong>Import module</strong>
         </span>
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#architecture" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#season-and-game-ids" class="md-nav__link">
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <img alt="🏛" class="twemoji" src="../../../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f3db.svg" title=":classical_building:"> <strong>Architecture</strong>
+          <strong><code>Season</code> and Game IDs</strong>
         </span>
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scraper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong><code>Scraper</code></strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong>Other data</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong>Standings</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 22H10v-2h12v2M2 22v-2h7v2H2m16-4v-8h4v8h-4m0-15h4v6h-4V3M2 18V3h14v15H2m7-3.44a3 3 0 0 0 3-3c0-2-3-5.37-3-5.37s-3 3.37-3 5.37a3 3 0 0 0 3 3Z"/></svg></span> <strong>Advanced usage</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#game-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong><code>Game</code> object</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lists-not-dataframes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong>Lists, not DataFrames</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pre-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong>Pre-processing</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -795,15 +911,15 @@
   
   
     <li class="md-nav__item">
-      <a href="../../capfriendly/capfriendly/" class="md-nav__link">
+      <a href="../../evolving_hockey/evolving_hockey/" class="md-nav__link">
         
   
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.11 11.92c.02-.21.03-.42.03-.63 0-3.43-1.43-7.15-2.86-7.15S13.42 5.57 12 5.57c-1.43 0-2.86-1.43-4.29-1.43-1.43 0-2.85 3.65-2.85 7.15 0 .21 0 .42.02.63 2.34.53 4.72.8 7.12.79 2.45 0 4.83-.27 7.11-.79M3.45 18.18a29.69 29.69 0 0 0 17.09 0A2.142 2.142 0 0 0 22 16.17c0-.45-.14-.88-.39-1.25-.26-.36-.61-.63-1.05-.78-2.7.86-5.56 1.31-8.56 1.31-3 0-5.87-.45-8.57-1.31-.43.15-.78.43-1.04.79-.25.36-.39.79-.39 1.24 0 .94.61 1.73 1.45 2.01Z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5C6.5 5 2 6.57 2 8.5S6.5 12 12 12s10-1.57 10-3.5S17.5 5 12 5M2 11.76v4.74C2 18.43 6.5 20 12 20s10-1.57 10-3.5v-4.74c-.67.46-1.42.81-2.27 1.1C17.62 13.6 14.95 14 12 14s-5.62-.4-7.73-1.14c-.85-.29-1.6-.64-2.27-1.1Z"/></svg>
   
   <span class="md-ellipsis">
     
   
-    capfriendly
+    evolving_hockey
   
 
     
@@ -1325,93 +1441,6 @@
     
   
     stats
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-    
-      
-      
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
-            
-  
-  <span class="md-ellipsis">
-    
-  
-    capfriendly
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    capfriendly
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../reference/capfriendly/scrape/" class="md-nav__link">
-        
-  
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7 7-7Z"/></svg>
-  
-  <span class="md-ellipsis">
-    
-  
-    scrape
   
 
     
@@ -2095,6 +2124,35 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contribute/non_public/" class="md-nav__link">
+        
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m22.7 19-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4Z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Under the Hood
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2170,94 +2228,91 @@
 
 
 <h1 id="chicken_nhl"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.68 4H14.3l-1.74 4c-.03.04-.11.22-.25.5s-.25.54-.31.69L9.7 4H6.32l4.09 8.84c.09.22.32.75.7 1.59.39.85.67 1.48.89 1.92l1.41 3.09c.19.34.48.51.89.51L19 20v-4h-4l-1.4-3.16L17.68 4m2.35 12v4H22v-3c0-.27-.09-.5-.28-.72-.19-.2-.42-.28-.72-.28h-.97M5 16v4l4.7-.05c.41 0 .7-.17.89-.51l.85-1.94-1.6-3.44L9 16H5m-3 4h1.97v-4H3c-.3 0-.53.08-.72.28-.19.22-.28.45-.28.72v3Z"/></svg></span> <strong>chicken_nhl</strong></h1>
-<p>Information about the <code>chicken_nhl</code> module.</p>
+<p>Usage information about the <code>chicken_nhl</code> module.</p>
 <p>For in-depth materials, please consult the <strong><a href="../../../reference/reference/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 3v15h3V3H9m3 2 4 13 3-1-4-13-3 1M5 5v13h3V5H5M3 19v2h18v-2H3Z"/></svg></span> Reference</a></strong></p>
-<h2 id="usage"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M256 288a144 144 0 1 0 0-288 144 144 0 1 0 0 288zm-94.7 32C72.2 320 0 392.2 0 481.3c0 17 13.8 30.7 30.7 30.7h450.6c17 0 30.7-13.8 30.7-30.7 0-89.1-72.2-161.3-161.3-161.3H161.3z"/></svg></span> <strong>Usage</strong></h2>
-<p>The <code>chicken_nhl</code> module and relevant functions can be imported using the below snippet:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">scrape_schedule</span><span class="p">,</span> <span class="n">scrape_pbp</span>
+<h2 id="basic-usage"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M256 288a144 144 0 1 0 0-288 144 144 0 1 0 0 288zm-94.7 32C72.2 320 0 392.2 0 481.3c0 17 13.8 30.7 30.7 30.7h450.6c17 0 30.7-13.8 30.7-30.7 0-89.1-72.2-161.3-161.3-161.3H161.3z"/></svg></span> <strong>Basic usage</strong></h2>
+<h3 id="import-module"><strong>Import module</strong></h3>
+<p><code>chicken_nhl</code> scrapes data from various official NHL endpoints, combining them into a usable play-by-play
+dataframe. The module and the most relevant classes can be imported using the below snippet:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Scraper</span><span class="p">,</span> <span class="n">Season</span>
 </code></pre></div>
-<p>Almost all functions rely on game IDs, which can be found using the <code>scrape_schedule()</code> function:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">sched</span> <span class="o">=</span> <span class="n">scrape_schedule</span><span class="p">()</span> <span class="c1"># By default, returns the current season (2022)</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">sched</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># Returns the first ten game IDs</span>
+<h3 id="season-and-game-ids"><strong><code>Season</code> and Game IDs</strong></h3>
+<p>The module relies on game IDs, which can be found using the <code>schedule</code> method of <code>Season</code> class:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">nsh_schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="s1">&#39;NSH&#39;</span><span class="p">)</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">nsh_schedule</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:</span><span class="mi">10</span><span class="p">]</span>
 </code></pre></div>
-<p>Game IDs can be given as a list, or other generator-like object:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scrape_pbp</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span> <span class="c1"># Game IDs are given as a Pandas Series</span>
-</code></pre></div>
-<div class="admonition info">
-<p class="admonition-title">Functions available to users</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="main-functions" name="__tabbed_1" type="radio" /><input id="input-functions" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="main-functions">Main functions</label><label for="input-functions">Input functions</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<p>These should be your go-to functions and encompass the full functionality of the module.
-They primarily return pandas DataFrames.</p>
 <ol>
-<li><code>scrape_schedule()</code> returns the schedule for an entire season, a specific date, or a subset based on status (e.g., live or final)</li>
-<li><code>scrape_standings()</code> returns the latest NHL, conference, divison, and wild card standings for a given season</li>
-<li><code>scrape_pbp()</code> returns play-by-play data for a given game or games</li>
+<li>Provide three-letter code for subset of schedule</li>
 </ol>
-</div>
-<div class="tabbed-block">
-<p>These are typically used as inputs for the main functions. They can be used in various combinations for custom analyses.
-They return pandas DataFrames by default, but can return dictionaries using the nested keyword argument.</p>
+<h3 id="scraper"><strong><code>Scraper</code></strong></h3>
+<p>The <code>Scraper</code> object is used for scraping data from the API and HTML endpoints:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (2)!</span>
+</code></pre></div>
 <ol>
-<li><code>scrape_game_info()</code> returns the game information (e.g., date, venue, teams) for a given game or games</li>
-<li><code>scrape_api_events()</code> returns events from the NHL API endpoint for a given game or games</li>
-<li><code>scrape_html_events()</code> returns events from the NHL HTML endpoint for a given game or games</li>
-<li><code>scrape_api_rosters()</code> returns roster data from the NHL API endpoint for a given game or games</li>
-<li><code>scrape_html_rosters()</code> returns roster data from the NHL HTML endpoint for a given game or games</li>
-<li><code>scrape_rosters()</code> returns combined roster data after scraping and processing data from both the NHL HTML and API endpoints</li>
-<li><code>scrape_shifts()</code> returns shifts data from the NHL HTML endpoint</li>
-<li><code>scrape_changes()</code>returns changes data after scraping and processing shifts data from the NHL HTML endpoint</li>
+<li>The scraper object takes a list of game IDs</li>
+<li>Access play-by-play data as a Pandas DataFrame</li>
 </ol>
-</div>
-</div>
-</div>
-</div>
-<h2 id="architecture"><img alt="🏛" class="twemoji" src="../../../assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f3db.svg" title=":classical_building:"> <strong>Architecture</strong></h2>
-<p>Below is a visual representation of the <code>scrape_pbp()</code> function, depicting data sources &amp; 
-processing stages. </p>
-<div class="center">
-<pre class="mermaid"><code>graph LR
-    subgraph raw[Raw data]
-    api_events_raw(API events)
-    game_info_raw(Game info)
-    api_rosters_raw(API rosters)
-    html_rosters_raw(HTML rosters)
-    html_events_raw(HTML events)
-    shifts_raw(Shifts)
-    end
-
-    subgraph intermediate[Intermediate processing]
-    api_pbp(API play-by-play)
-    rosters(Combined rosters)
-    html_pbp(HTML play-by-play)
-    changes(Changes on / off)
-    end
-
-    subgraph final_scrape[Data returned]
-    final_pbp(Play-by-play dataframe)
-    end
-
-    raw --&gt; intermediate --&gt; final_scrape
-
-    api_events_raw &amp; game_info_raw &amp; api_rosters_raw --&gt; api_pbp --&gt; final_pbp
-
-    game_info_raw &amp; api_rosters_raw &amp; html_rosters_raw --&gt; rosters --&gt; final_pbp
-
-    html_rosters_raw &amp; html_events_raw --&gt; html_pbp --&gt; final_pbp
-
-    html_rosters_raw &amp; shifts_raw --&gt; changes --&gt; final_pbp
-</code></pre>
-</div>
-
-<details class="info">
-<summary>Info</summary>
-<p>With some exceptions for individual games, the <code>scrape_pbp()</code>
-function will return data for games occurring since the start of
-the 2010-2011 season. However, the <code>scrape_schedule()</code> &amp; <code>scrape_standings()</code>
-functions will return data extending to the NHL's founding in 1917.</p>
-</details>
+<p>The <code>Scraper</code> object can also be used with individual game IDs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
+</code></pre></div>
+<ol>
+<li>The scraper object takes a single game ID</li>
+</ol>
+<h3 id="other-data"><strong>Other data</strong></h3>
+<p>You can also access other data with the scraper object. The data will be scraped if it has not already been retrieved,
+which saves time and is friendlier to data sources:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">rosters</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">html_rosters</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">html_rosters</span> <span class="c1"># (2)! </span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">html_events</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">html_events</span> <span class="c1"># (3)! </span>
+</code></pre></div>
+<ol>
+<li>Access roster data from both API and html endpoints</li>
+<li>HTML rosters are retrieved quickly because they have already been scraped</li>
+<li>HTML events are scraped, then combined with rosters already stored locally</li>
+</ol>
+<h3 id="standings"><strong>Standings</strong></h3>
+<p>You can also use a <code>Season</code> object to return that season's standings:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">standings</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">standings</span>
+</code></pre></div>
+<h2 id="advanced-usage"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 22H10v-2h12v2M2 22v-2h7v2H2m16-4v-8h4v8h-4m0-15h4v6h-4V3M2 18V3h14v15H2m7-3.44a3 3 0 0 0 3-3c0-2-3-5.37-3-5.37s-3 3.37-3 5.37a3 3 0 0 0 3 3Z"/></svg></span> <strong>Advanced usage</strong></h2>
+<p>The <code>Scraper</code> object should be best for most of your scraping needs. However, there are additional 
+properties available with the <code>Game</code> object that can be helpful.</p>
+<h3 id="game-object"><strong><code>Game</code> object</strong></h3>
+<p>The <code>Game</code> object only works with a single game ID:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="lists-not-dataframes"><strong>Lists, not DataFrames</strong></h3>
+<p>The <code>Game</code> object's familiar functions return lists, instead of Pandas DataFrames:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play_df</span> <span class="c1"># (2)! </span>
+</code></pre></div>
+<ol>
+<li>Returns a list of play-by-play events</li>
+<li>Returns a Pandas DataFrame of play-by-play events</li>
+</ol>
+<h3 id="pre-processing"><strong>Pre-processing</strong></h3>
+<p>Data can be inspected at various processing stages through the <code>Game</code> object's non-public properties:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">game</span><span class="o">.</span><span class="n">_scrape_html_events</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">game</span><span class="o">.</span><span class="n">_munge_html_events</span> <span class="c1"># (2)!</span>
+</code></pre></div>
+<ol>
+<li>Get the raw HTML events and store the without processing</li>
+<li>Process the raw HTML events and store them</li>
+</ol>
+<p>A list of the non-public properties can be found in
+<strong><a href="../../../contribute/contribute/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M96 128a128 128 0 1 1 256 0 128 128 0 1 1-256 0zM0 482.3C0 383.8 79.8 304 178.3 304h91.4c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3zM609.3 512H471.4c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8 2.4-.1 4.7-.2 7.1-.2h61.4c89.1 0 161.3 72.2 161.3 161.3 0 17-13.8 30.7-30.7 30.7zM432 256c-31 0-59-12.6-79.3-32.9 19.7-26.6 31.3-59.5 31.3-95.1 0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112z"/></svg></span> Contribute</a></strong></p>
 
 
 
@@ -2348,7 +2403,7 @@ functions will return data extending to the NHL's founding in 1917.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "header.autohide", "navigation.instant", "navigation.path", "navigation.prune", "navigation.sections", "navigation.tabs", "navigation.top", "search.highlight", "search.suggest", "search.share", "toc.follow", "toc.integrate"], "search": "../../../assets/javascripts/workers/search.1e90e0fb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "header.autohide", "navigation.instant", "navigation.path", "navigation.prune", "navigation.sections", "navigation.tabs", "navigation.top", "search.highlight", "search.suggest", "search.share", "toc.follow", "toc.integrate"], "search": "../../../assets/javascripts/workers/search.1e90e0fb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
       <script src="../../../assets/javascripts/bundle.8e8db93a.min.js"></script>
