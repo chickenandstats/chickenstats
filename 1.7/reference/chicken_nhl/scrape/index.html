@@ -1350,7 +1350,7 @@ account for most of the functionality for <code>chickenstats.chicken_nhl</code>.
         <tr class="doc-section-item">
           <td><code>game_ids</code></td>
           <td>
-                <code>list | int | float | str</code>
+                <code>list[str | float | int] | <span title="pandas.Series">Series</span> | str | float | int</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -2682,7 +2682,7 @@ account for most of the functionality for <code>chickenstats.chicken_nhl</code>.
 <a id="__codelineno-0-5476" name="__codelineno-0-5476"></a><span class="sd">    Class instance for scraping play-by-play and other data for NHL games.</span>
 <a id="__codelineno-0-5477" name="__codelineno-0-5477"></a>
 <a id="__codelineno-0-5478" name="__codelineno-0-5478"></a><span class="sd">    Parameters:</span>
-<a id="__codelineno-0-5479" name="__codelineno-0-5479"></a><span class="sd">        game_ids (list | int | float | str):</span>
+<a id="__codelineno-0-5479" name="__codelineno-0-5479"></a><span class="sd">        game_ids (list[str | float | int] | pd.Series | str | float | int):</span>
 <a id="__codelineno-0-5480" name="__codelineno-0-5480"></a><span class="sd">            List of 10-digit game identifier, e.g., `[2023020001, 2023020002, 2023020003]`</span>
 <a id="__codelineno-0-5481" name="__codelineno-0-5481"></a>
 <a id="__codelineno-0-5482" name="__codelineno-0-5482"></a><span class="sd">    Attributes:</span>
@@ -2710,7 +2710,7 @@ account for most of the functionality for <code>chickenstats.chicken_nhl</code>.
 <a id="__codelineno-0-5504" name="__codelineno-0-5504"></a>
 <a id="__codelineno-0-5505" name="__codelineno-0-5505"></a><span class="sd">    &quot;&quot;&quot;</span>
 <a id="__codelineno-0-5506" name="__codelineno-0-5506"></a>
-<a id="__codelineno-0-5507" name="__codelineno-0-5507"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game_ids</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">):</span>
+<a id="__codelineno-0-5507" name="__codelineno-0-5507"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">):</span>
 <a id="__codelineno-0-5508" name="__codelineno-0-5508"></a>        <span class="n">game_ids</span> <span class="o">=</span> <span class="n">convert_to_list</span><span class="p">(</span><span class="n">game_ids</span><span class="p">,</span> <span class="s2">&quot;game ID&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-5509" name="__codelineno-0-5509"></a>
 <a id="__codelineno-0-5510" name="__codelineno-0-5510"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">game_ids</span> <span class="o">=</span> <span class="n">game_ids</span>
