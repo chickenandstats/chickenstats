@@ -1461,7 +1461,7 @@ account for most of the functionality for <code>chickenstats.chicken_nhl</code>.
 </code></pre></div>
 
               <details class="quote">
-                <summary>Source code in <code>chickenstats/chicken_nhl/scrape.py</code></summary>
+                <summary>Source code in <code>src/chickenstats/chicken_nhl/scrape.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-6743"> 6743</a></span>
 <span class="normal"><a href="#__codelineno-0-6744"> 6744</a></span>
 <span class="normal"><a href="#__codelineno-0-6745"> 6745</a></span>
@@ -13135,7 +13135,7 @@ FILIP.FORSBERG, VIKTOR.ARVIDSSON, RYAN.JOHANSEN</p>
 </code></pre></div>
 
             <details class="quote">
-              <summary>Source code in <code>chickenstats/chicken_nhl/scrape.py</code></summary>
+              <summary>Source code in <code>src/chickenstats/chicken_nhl/scrape.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-7214">7214</a></span>
 <span class="normal"><a href="#__codelineno-0-7215">7215</a></span>
 <span class="normal"><a href="#__codelineno-0-7216">7216</a></span>
@@ -13600,7 +13600,7 @@ FILIP.FORSBERG, VIKTOR.ARVIDSSON, RYAN.JOHANSEN</p>
 </code></pre></div>
 
               <details class="quote">
-                <summary>Source code in <code>chickenstats/chicken_nhl/scrape.py</code></summary>
+                <summary>Source code in <code>src/chickenstats/chicken_nhl/scrape.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-72">  72</a></span>
 <span class="normal"><a href="#__codelineno-0-73">  73</a></span>
 <span class="normal"><a href="#__codelineno-0-74">  74</a></span>
@@ -21620,9 +21620,9 @@ FILIP.FORSBERG, VIKTOR.ARVIDSSON, RYAN.JOHANSEN</p>
 <a id="__codelineno-0-1420" name="__codelineno-0-1420"></a>            <span class="n">off_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">change</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;change_off&quot;</span><span class="p">,</span> <span class="p">[]))</span>
 <a id="__codelineno-0-1421" name="__codelineno-0-1421"></a>
 <a id="__codelineno-0-1422" name="__codelineno-0-1422"></a>            <span class="k">if</span> <span class="n">on_num</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">off_num</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-0-1423" name="__codelineno-0-1423"></a>                <span class="n">change</span><span class="p">[</span>
-<a id="__codelineno-0-1424" name="__codelineno-0-1424"></a>                    <span class="s2">&quot;description&quot;</span>
-<a id="__codelineno-0-1425" name="__codelineno-0-1425"></a>                <span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;PLAYERS ON: </span><span class="si">{</span><span class="n">players_on</span><span class="si">}</span><span class="s2"> / PLAYERS OFF: </span><span class="si">{</span><span class="n">players_off</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-1423" name="__codelineno-0-1423"></a>                <span class="n">change</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-1424" name="__codelineno-0-1424"></a>                    <span class="sa">f</span><span class="s2">&quot;PLAYERS ON: </span><span class="si">{</span><span class="n">players_on</span><span class="si">}</span><span class="s2"> / PLAYERS OFF: </span><span class="si">{</span><span class="n">players_off</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-0-1425" name="__codelineno-0-1425"></a>                <span class="p">)</span>
 <a id="__codelineno-0-1426" name="__codelineno-0-1426"></a>
 <a id="__codelineno-0-1427" name="__codelineno-0-1427"></a>            <span class="k">if</span> <span class="n">on_num</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">off_num</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
 <a id="__codelineno-0-1428" name="__codelineno-0-1428"></a>                <span class="n">change</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;PLAYERS ON: </span><span class="si">{</span><span class="n">players_on</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -31001,7 +31001,7 @@ FILIP.FORSBERG, VIKTOR.ARVIDSSON, RYAN.JOHANSEN</p>
 </code></pre></div>
 
               <details class="quote">
-                <summary>Source code in <code>chickenstats/chicken_nhl/scrape.py</code></summary>
+                <summary>Source code in <code>src/chickenstats/chicken_nhl/scrape.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-10586">10586</a></span>
 <span class="normal"><a href="#__codelineno-0-10587">10587</a></span>
 <span class="normal"><a href="#__codelineno-0-10588">10588</a></span>
@@ -34678,7 +34678,7 @@ scrapes regular season and playoffs</p>
 </code></pre></div>
 
             <details class="quote">
-              <summary>Source code in <code>chickenstats/chicken_nhl/scrape.py</code></summary>
+              <summary>Source code in <code>src/chickenstats/chicken_nhl/scrape.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-11631">11631</a></span>
 <span class="normal"><a href="#__codelineno-0-11632">11632</a></span>
 <span class="normal"><a href="#__codelineno-0-11633">11633</a></span>
