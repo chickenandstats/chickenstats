@@ -1507,54 +1507,86 @@ in your preferred IDE. First, import the package and the relevant classes:</p>
 <p>Then, you're off. The <code>Season</code> object with the <code>schedule</code> property will return NHL game IDs,
 which can be used with the <code>Scraper</code> object to retrieve official NHL data and return a play-by-play dataframe. 
 <code>chicken_nhl</code> will return approximately one game every 3-4 seconds, 
-with no loss in performance when scraping hundreds (or thousands of games).</p>
-<p>The following snippet will scrape the first 100 games of the current season:</p>
+with no loss in performance when scraping hundreds (or thousands of games). After scraping, you can aggregate
+individual, line, or team stats, choosing whether to account for strength state, score state, or on-ice players.</p>
+<p>The following snippet will scrape the first 100 games of the 2023-24 season:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">()</span> 
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:</span><span class="mi">100</span><span class="p">]</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:</span><span class="mi">100</span><span class="p">]</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
 </code></pre></div>
-<p>If you wanted to only one team's schedule and game IDs:</p>
+<p>If you wanted scrape to only one team's schedule and game IDs:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">nsh_schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="s1">&#39;NSH&#39;</span><span class="p">)</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">nsh_schedule</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
+</code></pre></div>
+<p>Then, you can aggregate individual stats. Stats are aggregated to game level and account for strength state 
+by default:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span>
+</code></pre></div>
+<p>If you want to change the level of aggregation, or add teammats / opponents on-ice, use the <code>prep_stats</code> method:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_stats</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s2">&quot;season&quot;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span>
+</code></pre></div>
+<p>The same applies for line-level stats. For forward lines' game stats (default values):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
+</code></pre></div>
+<p>To change to defense and add opposition</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;game&quot;</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
+</code></pre></div>
+<p>It's possible to aggregate team stats, with the same logic. Default values are game-level, 
+accounting for strength_state:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">team_stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">team_stats</span>
+</code></pre></div>
+<p>To aggregate to season level, accounting for opposition team:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_team_stats</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s2">&quot;season&quot;</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">team_stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">team_stats</span>
 </code></pre></div>
 <p>The <code>standings</code> property for the <code>Season</code> object will return the latest NHL standings:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">standings</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">standings</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">standings</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">standings</span>
 </code></pre></div>
 <p>For a more detailed walkthrough and additional examples,
-please consult the <strong><a href="../../chicken_nhl/chicken_nhl/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"/></svg></span> User Guide</a></strong></p>
+please consult the detailed guide
+<strong><a href="../../chicken_nhl/chicken_nhl/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.68 4H14.3l-1.74 4c-.03.04-.11.22-.25.5s-.25.54-.31.69L9.7 4H6.32l4.09 8.84c.09.22.32.75.7 1.59.39.85.67 1.48.89 1.92l1.41 3.09c.19.34.48.51.89.51L19 20v-4h-4l-1.4-3.16zm2.35 12v4H22v-3c0-.27-.09-.5-.28-.72-.19-.2-.42-.28-.72-.28zM5 16v4l4.7-.05c.41 0 .7-.17.89-.51l.85-1.94-1.6-3.44L9 16zm-3 4h1.97v-4H3c-.3 0-.53.08-.72.28-.19.22-.28.45-.28.72z"/></svg></span> <code>chicken_nhl</code></a></strong></p>
 </div>
 <div class="tabbed-block">
 <p>Once installed in your preferred virtual environment, you can immediately begin using <code>chickenstats.evolving_hockey</code>
 in your preferred IDE. First, import the package and the relevant functions:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span> <span class="nn">chickenstats.evolving_hockey</span> <span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span><span class="p">,</span> <span class="n">prep_team</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span> <span class="nn">chickenstats.evolving_hockey</span> <span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span><span class="p">,</span> <span class="n">prep_team</span>
 </code></pre></div>
 <p>The <code>evolving_hockey</code> functions require you to have a valid Evolving-Hockey subscription and access to the data 
 from the query portion of their site. </p>
 <p>The first step is prepare a processed play-by-play dataframe:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
 </code></pre></div>
 <p>Once you have the processed play-by-play dataframe, you can begin aggregating. </p>
 <p>For game-level individual and on-ice statistics, grouped by teammates:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s1">&#39;game&#39;</span><span class="p">,</span> <span class="n">teammates</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s1">&#39;game&#39;</span><span class="p">,</span> <span class="n">teammates</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p>For period-level forward line stats, grouped by score state:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">positions</span> <span class="o">=</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="n">score_state</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">positions</span> <span class="o">=</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="n">score_state</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p>For game-level team stats:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">teams</span> <span class="o">=</span> <span class="n">prep_team</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s2">&quot;game&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">teams</span> <span class="o">=</span> <span class="n">prep_team</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s2">&quot;game&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>For a more detailed walkthrough and additional examples,
 please consult the <strong><a href="../../evolving_hockey/evolving_hockey/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"/></svg></span> User Guide</a></strong></p>
