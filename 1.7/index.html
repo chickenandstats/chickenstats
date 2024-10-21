@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="assets/site_images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40+insiders-4.53.14">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.42+insiders-4.53.14">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.fd1ad6e4.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.12320a83.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
@@ -106,7 +106,20 @@
 
     
     
-   <link href="assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="chickenstats" />
+<meta property="og:description" content="Technical documentation & reference materials for chickenstats, an open-source Python package for scraping & analyzing sports data" />
+<meta property="og:image" content="https://chickenstats.com/1.7/assets/images/social/index.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://chickenstats.com/1.7/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="chickenstats" />
+<meta property="twitter:description" content="Technical documentation & reference materials for chickenstats, an open-source Python package for scraping & analyzing sports data" />
+<meta property="twitter:image" content="https://chickenstats.com/1.7/assets/images/social/index.png" />
+ <link href="assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
     html.glightbox-open { overflow: initial; height: 100%; }
     .gslide-title { margin-top: 0px; user-select: text; }
     .gslide-desc { color: #666; user-select: text; }
@@ -557,6 +570,19 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <img alt="⌨" class="twemoji" src="assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/2328.svg" title=":keyboard:"> <strong>Usage</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#navigation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -893,7 +919,7 @@ an open-source Python package for scraping &amp; analyzing sports data.</p>
 <ul>
 <li><strong>Scrape &amp; manipulate</strong> data from various NHL endpoints, leveraging
 <a href="reference/chicken_nhl/scrape/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.68 4H14.3l-1.74 4c-.03.04-.11.22-.25.5s-.25.54-.31.69L9.7 4H6.32l4.09 8.84c.09.22.32.75.7 1.59.39.85.67 1.48.89 1.92l1.41 3.09c.19.34.48.51.89.51L19 20v-4h-4l-1.4-3.16zm2.35 12v4H22v-3c0-.27-.09-.5-.28-.72-.19-.2-.42-.28-.72-.28zM5 16v4l4.7-.05c.41 0 .7-.17.89-.51l.85-1.94-1.6-3.44L9 16zm-3 4h1.97v-4H3c-.3 0-.53.08-.72.28-.19.22-.28.45-.28.72z"/></svg></span> chicken_nhl</a>, which includes
-a <strong>proprietary xG model</strong> for shot quality metrics</li>
+an <strong>open-source xG model</strong> for shot quality metrics</li>
 <li><strong>Augment play-by-play data</strong> &amp; <strong>generate custom aggregations</strong> from raw csv files downloaded from
 <a href="https://evolving-hockey.com">Evolving-Hockey</a> <em>(subscription required)</em> with
 <a href="reference/evolving_hockey/stats/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5C6.5 5 2 6.57 2 8.5S6.5 12 12 12s10-1.57 10-3.5S17.5 5 12 5M2 11.76v4.74C2 18.43 6.5 20 12 20s10-1.57 10-3.5v-4.74c-.67.46-1.42.81-2.27 1.1C17.62 13.6 14.95 14 12 14s-5.62-.4-7.73-1.14c-.85-.29-1.6-.64-2.27-1.1"/></svg></span> evolving_hockey</a></li>
@@ -902,15 +928,126 @@ a <strong>proprietary xG model</strong> for shot quality metrics</li>
 the latest version (1.8.0) for the most up-to-date features &amp; be sure to consult the correct documentation
 <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M256 512a256 256 0 1 0 0-512 256 256 0 1 0 0 512m-91.9-186.5C182 346.2 212.6 368 256 368s74-21.8 91.9-42.5c5.8-6.7 15.9-7.4 22.6-1.6s7.4 15.9 1.6 22.6c-22.3 25.6-61 53.5-116.1 53.5s-93.8-27.9-116.1-53.5c-5.8-6.7-5.1-16.8 1.6-22.6s16.8-5.1 22.6 1.6m53.5-96.7-.2-.2c-.2-.2-.4-.5-.7-.9-.6-.8-1.6-2-2.8-3.4-2.5-2.8-6-6.6-10.2-10.3-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3-1.2 1.4-2.2 2.6-2.8 3.4-.3.4-.6.7-.7.9l-.2.2c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8 9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8 0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8m160 0-.2-.2c-.2-.2-.4-.5-.7-.9-.6-.8-1.6-2-2.8-3.4-2.5-2.8-6-6.6-10.2-10.3-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3-1.2 1.4-2.2 2.6-2.8 3.4-.3.4-.6.7-.7.9l-.2.2c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8 9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8 0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8"/></svg></span>.</p>
 <h2 id="installation"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7z"/></svg></span> <strong>Installation</strong></h2>
-<p><code>chickenstats</code> can be installed via PyPi:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">pip</span> <span class="n">install</span> <span class="n">chickenstats</span>
+<p class="annotate"><code>chickenstats</code> requires Python 3.10 or greater &amp; runs on the latest stable versions of Linux, macOS, &amp; Windows
+operating systems. You can install it through PyPi:(1)</p>
+<ol>
+<li>Best practice is to develop in an isolated virtual environment (conda or otherwise), but who's a chicken to judge?</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>chickenstats
 </code></pre></div>
-<p>You can ensure the installation was successful by checking that you have the latest version (1.8.0):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">pip</span> <span class="n">show</span> <span class="n">chickenstats</span>
+<h2 id="usage"><img alt="⌨" class="twemoji" src="assets/external/cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/2328.svg" title=":keyboard:"> <strong>Usage</strong></h2>
+<p class="annotate"><code>chickenstats</code> is structured as two underlying modules, each used with different data sources: <code>chickenstats.chicken_nhl</code>
+and <code>chickenstats.evolving_hockey</code>.(1)</p>
+<ol>
+<li>The package is under active development - features will be added or modified over time, but this structure will be
+consistent </li>
+</ol>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="chicken_nhl" name="__tabbed_1" type="radio" /><input id="evolving_hockey" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="chicken_nhl"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.68 4H14.3l-1.74 4c-.03.04-.11.22-.25.5s-.25.54-.31.69L9.7 4H6.32l4.09 8.84c.09.22.32.75.7 1.59.39.85.67 1.48.89 1.92l1.41 3.09c.19.34.48.51.89.51L19 20v-4h-4l-1.4-3.16zm2.35 12v4H22v-3c0-.27-.09-.5-.28-.72-.19-.2-.42-.28-.72-.28zM5 16v4l4.7-.05c.41 0 .7-.17.89-.51l.85-1.94-1.6-3.44L9 16zm-3 4h1.97v-4H3c-.3 0-.53.08-.72.28-.19.22-.28.45-.28.72z"/></svg></span> <strong>chicken_nhl</strong></label><label for="evolving_hockey"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5C6.5 5 2 6.57 2 8.5S6.5 12 12 12s10-1.57 10-3.5S17.5 5 12 5M2 11.76v4.74C2 18.43 6.5 20 12 20s10-1.57 10-3.5v-4.74c-.67.46-1.42.81-2.27 1.1C17.62 13.6 14.95 14 12 14s-5.62-.4-7.73-1.14c-.85-.29-1.6-.64-2.27-1.1"/></svg></span> <strong>evolving_hockey</strong></label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.68 4H14.3l-1.74 4c-.03.04-.11.22-.25.5s-.25.54-.31.69L9.7 4H6.32l4.09 8.84c.09.22.32.75.7 1.59.39.85.67 1.48.89 1.92l1.41 3.09c.19.34.48.51.89.51L19 20v-4h-4l-1.4-3.16zm2.35 12v4H22v-3c0-.27-.09-.5-.28-.72-.19-.2-.42-.28-.72-.28zM5 16v4l4.7-.05c.41 0 .7-.17.89-.51l.85-1.94-1.6-3.44L9 16zm-3 4h1.97v-4H3c-.3 0-.53.08-.72.28-.19.22-.28.45-.28.72z"/></svg></span> <strong>chicken_nhl</strong></p>
+<p><code>chickenstats.chicken_nhl</code> allows you to scrape play-by-play data and aggregate individual, line, and team statistics,
+with an open-source xG model included out-of-the-box.</p>
+<p>After importing the module, scrape the schedule for game IDs, then play-by-play data for your team of choice:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2024</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="s2">&quot;NSH&quot;</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">schedule</span><span class="o">.</span><span class="n">game_state</span> <span class="o">==</span> <span class="s2">&quot;OFF&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">play_by_play</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (3)!</span>
 </code></pre></div>
+<ol>
+<li>Replace Nashville with the three-letter code of the team of your choice. Leaving it blank will scrape everyone's
+schedule for that year</li>
+<li>Other game states include LIVE and FUT</li>
+<li>Scrapes one game every three seconds</li>
+</ol>
+<details class="info">
+<summary>Info</summary>
+<p>If you have already scraped or aggregated data, you'll notice slightly different behaviors than the simple
+guide below. <code>chickenstats.chicken_nhl</code> stores all data already scraped or aggregated, so it can be quickly provided
+when the relevant attribute is called (e.g., if you have already called <code>Scraper.play_by_play</code> and you have
+not added any new game IDs to the Scraper object,
+calling <code>Scraper.play_by_play</code> will return the dataframe, without having to re-scrape the data). </p>
+<p>You can reset attributes with a matching <code>prep_</code> method (e.g., <code>Scraper.stats</code> can be reset
+with <code>Scraper.prep_stats()</code>). See <a href="contribute/backend/design/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 5v16h6v-1.5H7V18h2v-1.5H5V15h4v-1.5H7V12h2v-1.5H5V9h4V5h1.5v4H12V7h1.5v2H15V5h1.5v4H18V7h1.5v2H21V3H5a2 2 0 0 0-2 2m3 2a1 1 0 0 1-1-1 1 1 0 0 1 1-1 1 1 0 0 1 1 1 1 1 0 0 1-1 1"/></svg></span> Design</a>
+for more on this dynamic</p>
+</details>
+<p>You can then aggregate the play-by-play data for individual and on-ice statistics with one line of code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span> <span class="c1"># (1)!</span>
+</code></pre></div>
+<ol>
+<li>This runs <code>scraper.prep_stats()</code> behind the scenes, if you have not already done so.
+By default aggregates to stats game level, but
+does not include teammates, opposition, or score state in the aggregation fields.</li>
+</ol>
+<p>It's very easy to introduce additional detail to the aggregations, including for teammates on-ice:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_stats</span><span class="p">(</span><span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span>
+</code></pre></div>
+<ol>
+<li>The Scraper object saves the prior aggregation to the <code>scraper.stats</code> attribute, so it needs to be reset.
+Then the attribute can be re-called</li>
+</ol>
+<p>There is similar functionality for line and team stats:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;f&quot;</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">forward_lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">team_stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">team_stats</span> <span class="c1"># (2)!</span>
+</code></pre></div>
+<ol>
+<li>This step isn't strictly necessary for forwards - they're the default line aggregation. Provide "d" instead of "f"
+for defensive line stats</li>
+<li>Similar to <code>scraper.stats</code>, runs <code>scraper.prep_team_stats()</code> in the background</li>
+</ol>
+<p>For additional information on usage and functionality, consult the relevant
+<a href="guide/chicken_nhl/chicken_nhl/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"/></svg></span> User guide</a></p>
+</div>
+<div class="tabbed-block">
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5C6.5 5 2 6.57 2 8.5S6.5 12 12 12s10-1.57 10-3.5S17.5 5 12 5M2 11.76v4.74C2 18.43 6.5 20 12 20s10-1.57 10-3.5v-4.74c-.67.46-1.42.81-2.27 1.1C17.62 13.6 14.95 14 12 14s-5.62-.4-7.73-1.14c-.85-.29-1.6-.64-2.27-1.1"/></svg></span> <strong>evolving_hockey</strong></p>
+<p class="annotate">The <code>chickenstats.evolving_hockey</code> module manipulates raw csv files downloaded from
+<a href="https://evolving-hockey.com">Evolving-Hockey</a>.(1) Using their original shifts &amp; play-by-play
+data, users can add additional
+information &amp; aggregate for individual &amp; on-ice statistics,
+including high-danger shooting events, xG &amp; adjusted xG, faceoffs, &amp; changes.</p>
+<ol>
+<li>An Evolving-Hockey subscription is required to make full use of the <code>chickenstats.evolving_hockey</code> module.
+    If you don't have a subscription, you can sign up for one <a href="https://evolving-hockey.com/login/">here</a></li>
+</ol>
+<p>First, prep a play-by-play dataframe using the raw play-by-play and shifts CSV files:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span> <span class="nn">chickenstats.evolving_hockey</span> <span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">raw_shifts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./raw_shifts.csv&#39;</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">raw_pbp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./raw_pbp.csv&#39;</span><span class="p">)</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">play_by_play</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">raw_pbp</span><span class="p">,</span> <span class="n">raw_shifts</span><span class="p">)</span> <span class="c1"># (3)!</span>
+</code></pre></div>
+<ol>
+<li>Download raw shifts data from <a href="https://evolving-hockey.com/stats/shift_query/">here</a></li>
+<li>Download raw play-by-play data from <a href="https://evolving-hockey.com/stats/pbp_query/">here</a></li>
+<li>This returns a dataframe with a bunch more columns, essentially</li>
+</ol>
+<p>You can use the play_by_play dataframe in various aggregations. This will return individual game statistics,
+including on-ice (e.g., GF, xGF) &amp; usage (i.e., zone starts), accounting for teammates &amp; opposition on-ice:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">individual_game</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">play_by_play</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;game&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>This will return game statistics for forward-line combinations, accounting for opponents on-ice:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">forward_lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">play_by_play</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;game&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>For additional information on usage and functionality, consult the relevant
+<a href="guide/evolving_hockey/evolving_hockey/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"/></svg></span> User guide</a></p>
+</div>
+</div>
+</div>
 <details class="info">
 <summary>Help</summary>
-<p>If you need help with any aspect of <code>chickenstats</code>, from installation to usage, please don't hesitate to reach out.
+<p>If you need help with any aspect of <code>chickenstats</code>, from installation to usage,
+please don't hesitate to reach out.
 You can find me on <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.2 4.2 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.52 8.52 0 0 1-5.33 1.84q-.51 0-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23"/></svg></span> Twitter at <strong><a href="https://twitter.com/chickenandstats">@chickenandstats</a></strong>
 or <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/></svg></span> email me at <strong><a href="mailto:chicken@chickenandstats.com">chicken@chickenandstats.com</a></strong>.</p>
 <p>For more information on known issues or the longer-term development roadmap, see
@@ -927,17 +1064,10 @@ or <strong><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox
 <div class="grid cards">
 <ul>
 <li>
-<p><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 3h14a2 2 0 0 1 2 2v14c0 1.11-.89 2-2 2H5a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2m3 14h8v-2H8zm8-7h-2.5V7h-3v3H8l4 4z"/></svg></span> <strong>Usage &amp; installation</strong></p>
+<p><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"/></svg></span> <strong>User guide &amp; tutorials</strong></p>
 <hr />
-<p>Download &amp; install <code>chickenstats</code> with <code>pip</code> to get up
-&amp; running in just a few minutes.</p>
-<p><a href="guide/usage/getting_started/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Getting Started</a></p>
-</li>
-<li>
-<p><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"/></svg></span> <strong>Tutorials &amp; examples</strong></p>
-<hr />
-<p>Discover the package using hands-on tutorials
-&amp; examples from the User Guide.</p>
+<p>Learn more from module-specific user guides, as well as hands-on tutorials
+&amp; examples.</p>
 <p><a href="guide/guide/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> User Guide</a></p>
 </li>
 <li>
@@ -956,8 +1086,14 @@ or <strong><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox
 <li>
 <p><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 13h-4c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2H4l-2 5v2c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-2M6 20c-.89 0-1.34-1.08-.71-1.71S7 18.11 7 19c0 .55-.45 1-1 1m4 0c-.89 0-1.34-1.08-.71-1.71S11 18.11 11 19c0 .55-.45 1-1 1m4 0c-.89 0-1.34-1.08-.71-1.71S15 18.11 15 19c0 .55-.45 1-1 1m4 0c-.89 0-1.34-1.08-.71-1.71S19 18.11 19 19c0 .55-.45 1-1 1m0-10V3H6v7H3v2h18v-2M8 5h8v1H8m0 1h6v1H8"/></svg></span> <strong>Blog</strong></p>
 <hr />
-<p>Read the latest analyses leveraging the library, as well as about the newest features &amp; releases</p>
+<p>Read the latest analyses leveraging the library, as well as about the newest features &amp; releases.</p>
 <p><a href="blog/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Blog</a></p>
+</li>
+<li>
+<p><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 5v16h6v-1.5H7V18h2v-1.5H5V15h4v-1.5H7V12h2v-1.5H5V9h4V5h1.5v4H12V7h1.5v2H15V5h1.5v4H18V7h1.5v2H21V3H5a2 2 0 0 0-2 2m3 2a1 1 0 0 1-1-1 1 1 0 0 1 1-1 1 1 0 0 1 1 1 1 1 0 0 1-1 1"/></svg></span> <strong>Design</strong></p>
+<hr />
+<p>Read more about <code>chickenstats</code> module design and [un]expected behaviors.</p>
+<p><a href="contribute/backend/design/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.22 19.03a.75.75 0 0 1 0-1.06L18.19 13H3.75a.75.75 0 0 1 0-1.5h14.44l-4.97-4.97a.749.749 0 0 1 .326-1.275.75.75 0 0 1 .734.215l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0"/></svg></span> Design</a></p>
 </li>
 <li>
 <p><span class="twemoji lg middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M96 128a128 128 0 1 1 256 0 128 128 0 1 1-256 0M0 482.3C0 383.8 79.8 304 178.3 304h91.4c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3M609.3 512H471.5c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8 2.4-.1 4.7-.2 7.1-.2h61.4c89 0 161.2 72.2 161.2 161.3 0 17-13.8 30.7-30.7 30.7M432 256c-31 0-59-12.6-79.3-32.9 19.7-26.6 31.3-59.5 31.3-95.1 0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112"/></svg></span> <strong>Contribute</strong></p>
@@ -1330,7 +1466,7 @@ By clicking "Accept all," you consent to the use of cookies
     <script id="__config" type="application/json">{"base": ".", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "header.autohide", "navigation.instant", "navigation.path", "navigation.prune", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.footer", "search.highlight", "search.suggest", "search.share", "toc.follow", "toc.integrate"], "search": "assets/javascripts/workers/search.c7c1ca2c.min.js", "tags": {"chicken-nhl": "chicken-nhl", "chickenstats": "chickenstats", "evolving-hockey": "evolving-hockey", "hockey": "hockey", "xG model": "xg-model"}, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.9c5b6415.min.js"></script>
+      <script src="assets/javascripts/bundle.203fd0bc.min.js"></script>
       
         <script src="assets/external/unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
