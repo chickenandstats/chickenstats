@@ -1339,7 +1339,7 @@ will return data for games occurring since the start of
 the 2010-2011 season. However, the <code>Season</code> object (including the <code>schedule()</code>
 &amp; <code>standings()</code> methods) will return data extending to the NHL's founding in 1917.</p>
 </details>
-<p>The module includes three classes for accessing data. First, import the relevant classes</p>
+<p>The module includes three classes for accessing data. First, import the relevant classes:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Scraper</span><span class="p">,</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Game</span>
 </code></pre></div>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="scraper" name="__tabbed_1" type="radio" /><input id="game" name="__tabbed_1" type="radio" /><input id="season" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="scraper"><code>Scraper</code></label><label for="game"><code>Game</code></label><label for="season"><code>Season</code></label></div>
@@ -1355,50 +1355,114 @@ official NHL endpoints and returns a Pandas DataFrame.</p>
 from the NHL's API endpoints.</p>
 <details class="example" open="open">
 <summary>Example</summary>
-<p>Scrape play-by-play data for the first ten games of the current (2023-24) regular season</p>
+<p>Scrape play-by-play data for the first ten games of the 2023-24 regular season</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">,</span> <span class="mi">2023020011</span><span class="p">))</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
 </code></pre></div>
-<p>Scrape roster data for the first ten games of the current (2023-24) regular season</p>
+<p>Scrape roster data for the first ten games of the 2023-24 regular season</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">,</span> <span class="mi">2023020011</span><span class="p">))</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">rosters</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">rosters</span>
 </code></pre></div>
 </details>
+<p>The module is designed to minimize repeatedly scraping or aggregating data that has already been scraped
+or aggregated. If you've already called the <code>scraper.play_by_play</code> attribute, the <code>Scraper</code> object won't 
+re-scrape the data, unless you've added new game IDs.</p>
+<details class="example" open="open">
+<summary>Example</summary>
+<p>This will scrape data the first time called</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">,</span> <span class="mi">2023020011</span><span class="p">))</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
+</code></pre></div>
+<p>Subsequent calls allow you to re-access the data without re-scraping</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
+</code></pre></div>
+<p>If you add new game IDs to the <code>Scraper</code> object, then the new data are re-scraped</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">new_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2023020012</span><span class="p">,</span> <span class="mi">2023020015</span><span class="p">))</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">scraper</span><span class="o">.</span><span class="n">add_games</span><span class="p">(</span><span class="n">new_ids</span><span class="p">)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
+</code></pre></div>
+</details>
+<p>The same dynamic is true for aggregating individual, line and team statistics. Once an aggregation has been
+completed, subsequent calls to the attribute will return the data without having to re-run calculations. The saved
+data can be reset with relevant <code>prep_</code> method.</p>
+<details class="example" open="open">
+<summary>Example</summary>
+<p>First scrape some play-by-play data</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">,</span> <span class="mi">2023020011</span><span class="p">))</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
+</code></pre></div>
+<p>You can access individual stats with the default aggregations with the <code>scraper.stats</code> property</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span>
+</code></pre></div>
+<p>If you don't want to change the aggregation, you can re-call the stats using the <code>scraper.stats</code> property. 
+If you want to change the aggregation, you can reset the data</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_stats</span><span class="p">(</span><span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span>
+</code></pre></div>
+<p>Functionality is similar for line and team statistics. If you want to access a different level of aggregation,
+you can reset the saved data</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;f&quot;</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">forwards</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">)</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">defense</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="n">team_stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">team_stats</span> <span class="c1"># (3)!</span>
+</code></pre></div>
+<ol>
+<li>This is isn't technically necessary, as the forwards are the defaults for line aggregations</li>
+<li>Specificy "d" for the position parameter to reset the data to defensive lines</li>
+<li>No need to prep team stats data, you can access the defaults through the property</li>
+</ol>
+</details>
 </div>
 <div class="tabbed-block">
 <p>Scrapes data for a single game. A series of <code>Game</code> objects functions as the backbone of any <code>Scraper</code> object
 - the data &amp; fields returned are identical. Because of this, I'd recommend sticking with the <code>Scraper</code>,
-unless you're planning to contribute to the library. </p>
-<details class="info">
-<summary>Contribute</summary>
-<p>If you'd like to contribute, most bugs are addressed &amp; most new features added will be at the
-<code>Game</code>, rather than the <code>Scraper</code> level.</p>
-<p>Prototypical usage for the <code>Game</code> object is debugging. There are various non-public methods to access data
-at intermediate processing stages. The below returns a list of raw HTML events, prior to any processing.
-For more information &amp; direction, see <a href="../../contribute/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M96 128a128 128 0 1 1 256 0 128 128 0 1 1-256 0M0 482.3C0 383.8 79.8 304 178.3 304h91.4c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3M609.3 512H471.5c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8 2.4-.1 4.7-.2 7.1-.2h61.4c89 0 161.2 72.2 161.2 161.3 0 17-13.8 30.7-30.7 30.7M432 256c-31 0-59-12.6-79.3-32.9 19.7-26.6 31.3-59.5 31.3-95.1 0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112"/></svg></span> Contribute</a></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Game</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">game_id</span> <span class="o">=</span> <span class="mi">2023020001</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">html_events</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">_scrape_html_events</span><span class="p">()</span>
-</code></pre></div>
-</details>
+unless you're planning to contribute to the library.</p>
 <details class="example" open="open">
 <summary>Example</summary>
 <p>The <code>Game</code> object functions similarly to the <code>Scraper</code> object, with the major exception that
 data are returned as a list by default.</p>
 <p>To return a list of play-by-play events</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">game_id</span> <span class="o">=</span> <span class="mi">2023020001</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">play_by_play</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">game_id</span> <span class="o">=</span> <span class="mi">2023020001</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">play_by_play</span>
 </code></pre></div>
 <p>To return the equivalent Pandas DataFrame, simply append "_df" to the property</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">game_id</span> <span class="o">=</span> <span class="mi">2023020001</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">play_by_play_df</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">game_id</span> <span class="o">=</span> <span class="mi">2023020001</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">play_by_play_df</span>
 </code></pre></div>
+</details>
+<p>If you'd like to contribute, most bugs are addressed &amp; most new features added will be at the
+<code>Game</code>, rather than the <code>Scraper</code> level.</p>
+<p>Prototypical usage for the <code>Game</code> object is debugging. There are various non-public methods to access data
+at intermediate processing stages. The below returns a list of raw HTML events, prior to any processing.
+For more information &amp; direction, see <a href="../../contribute/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M96 128a128 128 0 1 1 256 0 128 128 0 1 1-256 0M0 482.3C0 383.8 79.8 304 178.3 304h91.4c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3M609.3 512H471.5c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8 2.4-.1 4.7-.2 7.1-.2h61.4c89 0 161.2 72.2 161.2 161.3 0 17-13.8 30.7-30.7 30.7M432 256c-31 0-59-12.6-79.3-32.9 19.7-26.6 31.3-59.5 31.3-95.1 0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112"/></svg></span> Contribute</a></p>
+<details class="example" open="open">
+<summary>Example</summary>
+<p>Data are stored and processed with non-public methods with <code>Game</code> object. They generally follow the same few
+steps, illustrated with the html events flow below</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Game</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">game_id</span> <span class="o">=</span> <span class="mi">2023020001</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">game</span><span class="o">.</span><span class="n">_scrape_html_events</span><span class="p">()</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">game</span><span class="o">.</span><span class="n">_munge_html_events</span><span class="p">()</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="n">html_events</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">_html_events</span> <span class="c1"># (3)!</span>
+</code></pre></div>
+<ol>
+<li>Scrapes the data initially. Stores raw data using <code>game._html_events</code> attribute</li>
+<li>Cleans the data after scraping. Can access the now cleaned data from <code>game._html_events</code> attribute</li>
+<li>This is functionally the same as game.html_events</li>
+</ol>
 </details>
 </div>
 <div class="tabbed-block">
@@ -1407,16 +1471,16 @@ in time - I don't know of a way to access historical information.</p>
 <details class="example" open="open">
 <summary>Example</summary>
 <p>Scrape schedule data for every team for the current (2023-24) season</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">()</span>
 </code></pre></div>
 <p>For a specific team, just provide the three-letter abbreviation</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="s1">&#39;NSH&#39;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="s1">&#39;NSH&#39;</span><span class="p">)</span>
 </code></pre></div>
 <p>To get the latest standings for that season</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">standings</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">standings</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">standings</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">standings</span>
 </code></pre></div>
 </details>
 </div>
@@ -1434,7 +1498,7 @@ aggregate the data.(2) The resulting aggregations have additional fields(3) that
 <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 15v-1.5a1.5 1.5 0 0 0-1.5-1.5 1.5 1.5 0 0 0 1.5-1.5V9a2 2 0 0 0-2-2H9v2h4v2h-2v2h2v2H9v2h4a2 2 0 0 0 2-2M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2"/></svg></span> forwards and defensemen on-ice.</li>
 </ol>
 <p>The module includes four functions for accessing data. First, import the relevant functions</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span> <span class="nn">chickenstats.evolving_hockey</span> <span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span><span class="p">,</span> <span class="n">prep_team</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span> <span class="nn">chickenstats.evolving_hockey</span> <span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span><span class="p">,</span> <span class="n">prep_team</span>
 </code></pre></div>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:4"><input checked="checked" id="prep_pbp" name="__tabbed_2" type="radio" /><input id="prep_stats" name="__tabbed_2" type="radio" /><input id="prep_lines" name="__tabbed_2" type="radio" /><input id="prep_team" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="prep_pbp"><code>prep_pbp()</code></label><label for="prep_stats"><code>prep_stats()</code></label><label for="prep_lines"><code>prep_lines()</code></label><label for="prep_team"><code>prep_team()</code></label></div>
 <div class="tabbed-content">
@@ -1444,10 +1508,10 @@ analysis and aggregation.</p>
 <details class="example" open="open">
 <summary>Example</summary>
 <p>Combine CSV files into Pandas DataFrame</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
 </code></pre></div>
 </details>
 </div>
@@ -1457,19 +1521,19 @@ and opposition.</p>
 <details class="example" open="open">
 <summary>Example</summary>
 <p>First, have a cleaned play-by-play DataFrame handy</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
 </code></pre></div>
 <p>Basic game-level stats, with no teammates or opposition</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">pbp</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">pbp</span><span class="p">)</span>
 </code></pre></div>
 <p>Period-level stats, grouped by teammates</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p>Session-level (e.g., regular seasion) stats, grouped by teammates and opposition</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 </details>
 </div>
@@ -1478,19 +1542,19 @@ and opposition.</p>
 <details class="example" open="open">
 <summary>Example</summary>
 <p>First, have a cleaned play-by-play DataFrame handy</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
-<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
 </code></pre></div>
 <p>Basic game-level stats for forwards, with no teammates or opposition</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
 </code></pre></div>
 <p>Period-level stats for defense, grouped by teammates</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p>Session-level (e.g., regular seasion) stats, grouped by teammates and opposition</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">pbp</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;session&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 </details>
 </div>
@@ -1499,13 +1563,13 @@ and opposition.</p>
 <details class="example" open="open">
 <summary>Example</summary>
 <p>First, have a cleaned play-by-play DataFrame handy</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">shifts_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;shifts_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="n">pbp_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;pbp_raw.csv&#39;</span><span class="p">)</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">pbp_raw</span><span class="p">,</span> <span class="n">shifts_raw</span><span class="p">)</span>
 </code></pre></div>
 <p>Basic game-level stats for teams</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">team</span> <span class="o">=</span> <span class="n">prep_team</span><span class="p">(</span><span class="n">pbp</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">team</span> <span class="o">=</span> <span class="n">prep_team</span><span class="p">(</span><span class="n">pbp</span><span class="p">)</span>
 </code></pre></div>
 <p>Period-level team stats, grouped by score state</p>
 <p><code>python
