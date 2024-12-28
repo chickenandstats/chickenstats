@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block outdated %}
+  You're not viewing the latest version.
+  <a href="{{ '../' ~ base_url }}">
+    <strong>Click here to go to latest.</strong>
+  </a>
+{% endblock %}
+
+{% block announce %}
+  For updates follow <a href="https://bsky.app/profile/chickenandstats.com">
+    <strong>@chickenandstats.com</strong>
+  </a> on
+  <a href="https://bsky.app/profile/chickenandstats.com">
+    <span class="twemoji bluesky">
+      {% include ".icons/fontawesome/brands/bluesky.svg" %}
+    </span>
+    <strong>Bluesky</strong>
+  </a>
+{% endblock %}
