@@ -1343,7 +1343,7 @@ the 2010-2011 season. However, the <code>Season</code> object (including the <co
 &amp; <code>standings()</code> methods) will return data extending to the NHL's founding in 1917.</p>
 </details>
 <p>The module includes three classes for accessing data. First, import the relevant classes:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Scraper</span><span class="p">,</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Game</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scraper</span><span class="p">,</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Game</span>
 </code></pre></div>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="scraper" name="__tabbed_1" type="radio" /><input id="game" name="__tabbed_1" type="radio" /><input id="season" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="scraper"><code>Scraper</code></label><label for="game"><code>Game</code></label><label for="season"><code>Season</code></label></div>
 <div class="tabbed-content">
@@ -1452,7 +1452,7 @@ For more information &amp; direction, see <a href="../../contribute/"><span clas
 <summary>Example</summary>
 <p>Data are stored and processed with non-public methods with <code>Game</code> object. They generally follow the same few
 steps, illustrated with the html events flow below</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Game</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Game</span>
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
 <a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">game_id</span> <span class="o">=</span> <span class="mi">2023020001</span>
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
@@ -1502,7 +1502,7 @@ aggregate the data.(2) The resulting aggregations have additional fields(3) that
 <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 15v-1.5a1.5 1.5 0 0 0-1.5-1.5 1.5 1.5 0 0 0 1.5-1.5V9a2 2 0 0 0-2-2H9v2h4v2h-2v2h2v2H9v2h4a2 2 0 0 0 2-2M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2"/></svg></span> forwards and defensemen on-ice.</li>
 </ol>
 <p>The module includes four functions for accessing data. First, import the relevant functions</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span> <span class="nn">chickenstats.evolving_hockey</span> <span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span><span class="p">,</span> <span class="n">prep_team</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.evolving_hockey</span><span class="w"> </span><span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span><span class="p">,</span> <span class="n">prep_team</span>
 </code></pre></div>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:4"><input checked="checked" id="prep_pbp" name="__tabbed_2" type="radio" /><input id="prep_stats" name="__tabbed_2" type="radio" /><input id="prep_lines" name="__tabbed_2" type="radio" /><input id="prep_team" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="prep_pbp"><code>prep_pbp()</code></label><label for="prep_stats"><code>prep_stats()</code></label><label for="prep_lines"><code>prep_lines()</code></label><label for="prep_team"><code>prep_team()</code></label></div>
 <div class="tabbed-content">

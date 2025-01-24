@@ -1587,7 +1587,7 @@
 <h3 id="import-module"><strong>Import module</strong></h3>
 <p><code>chicken_nhl</code> scrapes data from various official NHL endpoints, combining them into a usable play-by-play
 dataframe. The module and the most relevant classes can be imported using the below snippet:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Scraper</span><span class="p">,</span> <span class="n">Season</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scraper</span><span class="p">,</span> <span class="n">Season</span>
 </code></pre></div>
 <h3 id="season-and-game-ids"><strong><code>Season</code> and Game IDs</strong></h3>
 <p>The module relies on game IDs, which can be found using the <code>schedule</code> method of <code>Season</code> class:</p>
@@ -2821,7 +2821,7 @@ you can reset the data with the <code>prep_stats()</code> method:</p>
 </ol>
 <h3 id="standings"><strong>Standings</strong></h3>
 <p>You can also use a <code>Season</code> object to return that season's standings:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Season</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">standings</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">standings</span>
@@ -2832,7 +2832,7 @@ properties available with the <code>Game</code> object that can be helpful.</p>
 <h3 id="other-scraper-data"><strong>Other <code>Scraper</code> data</strong></h3>
 <p>You can also access other data with the scraper object. The data will be scraped if it has not already been retrieved,
 which saves time and is friendlier to data sources:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
 <a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2024</span><span class="p">)</span>
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="s2">&quot;NSH&quot;</span><span class="p">)</span>

@@ -951,7 +951,7 @@ consistent </li>
 <p><code>chickenstats.chicken_nhl</code> allows you to scrape play-by-play data and aggregate individual, line, and team statistics,
 with an open-source xG model included out-of-the-box.</p>
 <p>After importing the module, scrape the schedule for game IDs, then play-by-play data for your team of choice:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">chickenstats.chicken_nhl</span> <span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2024</span><span class="p">)</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
@@ -1021,8 +1021,8 @@ including high-danger shooting events, xG &amp; adjusted xG, faceoffs, &amp; cha
     If you don't have a subscription, you can sign up for one <a href="https://evolving-hockey.com/login/">here</a></li>
 </ol>
 <p>First, prep a play-by-play dataframe using the raw play-by-play and shifts CSV files:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span> <span class="nn">chickenstats.evolving_hockey</span> <span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.evolving_hockey</span><span class="w"> </span><span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">raw_shifts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./raw_shifts.csv&#39;</span><span class="p">)</span> <span class="c1"># (1)!</span>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">raw_pbp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./raw_pbp.csv&#39;</span><span class="p">)</span> <span class="c1"># (2)!</span>
