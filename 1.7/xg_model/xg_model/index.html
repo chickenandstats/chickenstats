@@ -748,11 +748,50 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#model-metrics" class="md-nav__link">
+  <a href="#usage" class="md-nav__link">
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 21H2V3h2v16h2v-9h4v9h2V6h4v13h2v-5h4z"/></svg></span> <strong>Model metrics</strong>
+          <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m21.71 20.29-1.42 1.42a1 1 0 0 1-1.41 0L7 9.85A3.8 3.8 0 0 1 6 10a4 4 0 0 1-3.78-5.3l2.54 2.54.53-.53 1.42-1.42.53-.53L4.7 2.22A4 4 0 0 1 10 6a3.8 3.8 0 0 1-.15 1l11.86 11.88a1 1 0 0 1 0 1.41M2.29 18.88a1 1 0 0 0 0 1.41l1.42 1.42a1 1 0 0 0 1.41 0l5.47-5.46-2.83-2.83M20 2l-4 2v2l-2.17 2.17 2 2L18 8h2l2-4Z"/></svg></span> <strong>Usage</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 21H2V3h2v16h2v-9h4v9h2V6h4v13h2v-5h4z"/></svg></span> <strong>Model performance</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features-and-feature-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 11a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m4-8a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.6 11.6c1.65 0 3 1.34 3 3a3 3 0 0 1-3 3c-1.66 0-3-1.35-3-3a3 3 0 0 1 3-3"/></svg></span> <strong>Features and feature performance</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-and-data-preparation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 14v3c0 2 3.05 3.72 7 4v-2.89l.13-.11C7.12 17.76 4 16.06 4 14m8-1c-4.42 0-8-1.79-8-4v3c0 2.21 3.58 4 8 4h1.16L17 12.12c-1.6.6-3.29.88-5 .88m0-10C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4m9 8.13c-.15 0-.29.06-.39.17l-1 1 2.05 2 1-1a.54.54 0 0 0 0-.77l-1.24-1.23a.52.52 0 0 0-.38-.17m-2 1.75L13 18.94V21h2.06l6.06-6.07z"/></svg></span> <strong>Data and data preparation</strong>
         </span>
       
     </span>
@@ -1039,29 +1078,32 @@
 
 
 <h1 id="xg-model"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.86 4.39v15c0 1.67 1.14 2.61 2.39 2.61 1.14 0 2.39-.79 2.39-2.61V4.5c0-1.54-1.14-2.5-2.39-2.5s-2.39 1.06-2.39 2.39M9.61 12v7.39C9.61 21.07 10.77 22 12 22c1.14 0 2.39-.79 2.39-2.61v-7.28c0-1.54-1.14-2.5-2.39-2.5S9.61 10.67 9.61 12m-3.86 5.23c1.32 0 2.39 1.07 2.39 2.38a2.39 2.39 0 1 1-4.78 0c0-1.31 1.07-2.38 2.39-2.38"/></svg></span> <strong>xG Model</strong></h1>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img align="right" alt="xG scatterplot" class="on-glb" src="../../assets/site_images/forsberg_5v5.png" width="600" /></a></p>
 <p><code>chickenstats.chicken_nhl</code> includes an Expected Goals (xG) model, which is
 based off of the <a href="https://evolving-hockey.com/blog/a-new-expected-goals-model-for-predicting-goals-in-the-nhl/">prior work</a>
 of Josh &amp; Luke Younggren of <a href="http://www.evolving-hockey.com">Evolving-Hockey</a>.</p>
 <p>The model is an XGBoost classifier, with 38 fields, including distance from net, time since last event, shot angle,
 number of players on ice, and whether the shot event comes from a high danger scoring area.</p>
-<p>It's available out-of-the-box with <code>chickenstats.chicken_nhl.Scraper</code> and <code>chickenstats.chicken_nhl.Game</code>. xG values
-are accessed with the pred_goal column in the play-by-play data, or the ixg, xgf, and xga columns
+<h2 id="usage"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m21.71 20.29-1.42 1.42a1 1 0 0 1-1.41 0L7 9.85A3.8 3.8 0 0 1 6 10a4 4 0 0 1-3.78-5.3l2.54 2.54.53-.53 1.42-1.42.53-.53L4.7 2.22A4 4 0 0 1 10 6a3.8 3.8 0 0 1-.15 1l11.86 11.88a1 1 0 0 1 0 1.41M2.29 18.88a1 1 0 0 0 0 1.41l1.42 1.42a1 1 0 0 0 1.41 0l5.47-5.46-2.83-2.83M20 2l-4 2v2l-2.17 2.17 2 2L18 8h2l2-4Z"/></svg></span> <strong>Usage</strong></h2>
+<p>The xg model is available out-of-the-box with <code>chickenstats.chicken_nhl.Scraper</code> and <code>chickenstats.chicken_nhl.Game</code>.
+xG values are accessed with the pred_goal column in the play-by-play data, or the ixg, xgf, and xga columns
 in the individual, on-ice, line, and team stats data.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scraper</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">game_id</span> <span class="o">=</span> <span class="mi">2023020001</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_id</span><span class="p">)</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">play_by_play</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">play_by_play</span><span class="o">.</span><span class="n">pred_goal</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">scraper</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">ixg</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">play_by_play</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="n">pbp_xg_values</span> <span class="o">=</span> <span class="n">play_by_play</span><span class="o">.</span><span class="n">pred_goal</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">individual_xg</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">ixg</span>
 </code></pre></div>
-<h2 id="model-metrics"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 21H2V3h2v16h2v-9h4v9h2V6h4v13h2v-5h4z"/></svg></span> <strong>Model metrics</strong></h2>
-<p>Stuff</p>
+<h2 id="model-performance"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 21H2V3h2v16h2v-9h4v9h2V6h4v13h2v-5h4z"/></svg></span> <strong>Model performance</strong></h2>
+<p>Information on performance metrics, including AUC-ROC, log-loss, precision, recall, etc</p>
+<h2 id="features-and-feature-performance"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 11a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m4-8a3 3 0 0 1 3 3 3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3m5.6 11.6c1.65 0 3 1.34 3 3a3 3 0 0 1-3 3c-1.66 0-3-1.35-3-3a3 3 0 0 1 3-3"/></svg></span> <strong>Features and feature performance</strong></h2>
+<p>Information on model features (e.g., high-danger, distance from net, angle) and contribution to 
+model / model performance</p>
+<h2 id="data-and-data-preparation"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 14v3c0 2 3.05 3.72 7 4v-2.89l.13-.11C7.12 17.76 4 16.06 4 14m8-1c-4.42 0-8-1.79-8-4v3c0 2.21 3.58 4 8 4h1.16L17 12.12c-1.6.6-3.29.88-5 .88m0-10C7.58 3 4 4.79 4 7s3.58 4 8 4 8-1.79 8-4-3.58-4-8-4m9 8.13c-.15 0-.29.06-.39.17l-1 1 2.05 2 1-1a.54.54 0 0 0 0-.77l-1.24-1.23a.52.52 0 0 0-.38-.17m-2 1.75L13 18.94V21h2.06l6.06-6.07z"/></svg></span> <strong>Data and data preparation</strong></h2>
+<p>Information on how the model was constructed, including code snippets</p>
 
 
 
