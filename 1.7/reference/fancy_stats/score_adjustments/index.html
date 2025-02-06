@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/site_images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.50+insiders-4.53.15">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.2+insiders-4.53.15">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.6f50c755.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.957d08c0.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -189,7 +189,7 @@
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),outdated=__md_get("__outdated",sessionStorage);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -913,6 +913,25 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8m3-8a3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+    Score and venue
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -930,6 +949,64 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#score-and-venue-impacts-offense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong>Score and venue impacts offense</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methodology-for-adjustments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong>Methodology for adjustments</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adjustment-coefficients" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          <strong>Adjustment coefficients</strong>
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1214,6 +1291,39 @@
 
 
 <h1 id="score-and-venue-adjustments"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8m3-8a3 3 0 0 1-3 3 3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3"/></svg></span> <strong>Score and venue adjustments</strong></h1>
+<p>One of the more interesting parts about hockey is that the losing team gets the puck more frequently - a
+team with a lead plays more defensively, while teams who are trailing will press more offensively, generating
+an outsize number of changes.<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> The dynamic differs whether the team is at home or on the road, with the home team
+generating chances at a higher rate whether leading or trailing.<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup> <sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup> The methodology for the
+score and venue adjustments included with <code>chickenstats</code> is employed by both 
+<a href="https://evolving-hockey.com/glossary/score-adjustments/"><em>Evolving-Hockey</em></a>
+and <a href="https://www.hockeyviz.com/txt/senstats"><em>HockeyViz</em></a>, which is itself an improvement on an earlier methodology 
+proposed by Eric Tulsky, who is now the GM of the Carolina Hurricanes.</p>
+<h2 id="score-and-venue-impacts-offense"><strong>Score and venue impacts offense</strong></h2>
+<h2 id="methodology-for-adjustments"><strong>Methodology for adjustments</strong></h2>
+<h2 id="adjustment-coefficients"><strong>Adjustment coefficients</strong></h2>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>See, e.g., <a href="https://evolving-hockey.com/glossary/general-terms/"><em>Evolving-Hockey</em></a> (glossary on score / venue effects
+/ adjustments), <a href="https://www.hockeyviz.com/txt/senstats"><em>Hockey Viz</em></a> (more on Micah's methodology below),
+<a href="https://sports.yahoo.com/blogs/nhl-puck-daddy/fancy-stats-164244781.html"><em>Yahoo Sports</em></a>. It's possible
+that the chances generated by the losing team, although higher volume, are of generally lower quality,
+but that requires further research&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>Again, see, e.g., <a href="https://evolving-hockey.com/glossary/general-terms/"><em>Evolving-Hockey</em></a> (glossary on score / venue effects
+/ adjustments), <a href="https://www.hockeyviz.com/txt/senstats"><em>HockeyViz</em></a> (more on Micah's methodology below),
+<a href="https://sports.yahoo.com/blogs/nhl-puck-daddy/fancy-stats-164244781.html"><em>Yahoo Sports</em></a>.&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3">
+<p>I vividly remember the twins at EH writing that teams' scorekeepers generally overstate scoring chance 
+quality when at home (i.e., chart the puck closer to the net, on average), however I can't find this on the site
+anywhere. It would be very tempting to recreate the research...&#160;<a class="footnote-backref" href="#fnref:3" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 
@@ -1436,10 +1546,10 @@ By clicking "Accept all," you consent to the use of cookies
       </div>
       <script>var consent=__md_get("__consent");if(consent)for(var input of document.forms.consent.elements)input.name&&(input.checked=consent[input.name]||!1);else"file:"!==location.protocol&&setTimeout((function(){document.querySelector("[data-md-component=consent]").hidden=!1}),250);var form=document.forms.consent;for(var action of["submit","reset"])form.addEventListener(action,(function(e){if(e.preventDefault(),"reset"===e.type)for(var n of document.forms.consent.elements)n.name&&(n.checked=!1);__md_set("__consent",Object.fromEntries(Array.from(new FormData(form).keys()).map((function(e){return[e,!0]})))),location.hash="",location.reload()}))</script>
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.tabs.link", "header.autohide", "navigation.instant", "navigation.path", "navigation.prune", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.footer", "search.highlight", "search.suggest", "search.share", "toc.follow", "toc.integrate"], "search": "../../../assets/javascripts/workers/search.c7c1ca2c.min.js", "tags": {"chicken-nhl": "chicken-nhl", "chickenstats": "chickenstats", "evolving-hockey": "evolving-hockey", "hockey": "hockey", "xG model": "xg-model"}, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.footnote.tooltips", "content.tabs.link", "header.autohide", "navigation.instant", "navigation.path", "navigation.prune", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.footer", "search.highlight", "search.suggest", "search.share", "toc.follow", "toc.integrate"], "search": "../../../assets/javascripts/workers/search.c7c1ca2c.min.js", "tags": {"chicken-nhl": "chicken-nhl", "chickenstats": "chickenstats", "evolving-hockey": "evolving-hockey", "hockey": "hockey", "xG model": "xg-model"}, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.b71cdcd1.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.aa9eae41.min.js"></script>
       
         <script src="../../../assets/external/unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
