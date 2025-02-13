@@ -1768,6 +1768,7 @@ please don't hesitate to reach out to <a href="mailto:chicken@chickenandstats.co
 <a href="https://bsky.app/profile/chickenandstats.com">@chickenandstats.com</a> on Blue Sky.</p>
 <hr />
 <p><img alt="png" src="../../../assets/external/raw.githubusercontent.com/chickenandstats/chickenstats/refs/heads/main/docs/guide/examples/images/saros_gsax_hours_since.png"></p>
+<hr />
 <h2 id="housekeeping"><strong>Housekeeping</strong></h2>
 <h3 id="import-dependencies">Import dependencies</h3>
 <p>Import the dependencies we'll need for the guide</p>
@@ -2056,7 +2057,7 @@ please don't hesitate to reach out to <a href="mailto:chicken@chickenandstats.co
 <a id="__codelineno-20-25" name="__codelineno-20-25" href="#__codelineno-20-25"></a>
 <a id="__codelineno-20-26" name="__codelineno-20-26" href="#__codelineno-20-26"></a><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./charts/saros_gsax.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="png" src="../gsax_files/gsax_42_0.png" /></p>
+<p><img alt="png" src="../gsax_files/gsax_43_0.png" /></p>
 <h3 id="top-6-goalies">Top-6 goalies</h3>
 <p>Create the top goalies dataframe to iterate through for plotting</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">top_goalies</span> <span class="o">=</span> <span class="n">goalies_season_all_sit</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;gsax&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -2099,7 +2100,7 @@ please don't hesitate to reach out to <a href="mailto:chicken@chickenandstats.co
 <a id="__codelineno-22-34" name="__codelineno-22-34" href="#__codelineno-22-34"></a>
 <a id="__codelineno-22-35" name="__codelineno-22-35" href="#__codelineno-22-35"></a><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./charts/top_6_gsax.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="png" src="../gsax_files/gsax_46_0.png" /></p>
+<p><img alt="png" src="../gsax_files/gsax_47_0.png" /></p>
 <h2 id="gsax-and-time-between-games"><strong>GSaX and time between games</strong></h2>
 <h3 id="prepping-data_1">Prepping data</h3>
 <p>Getting game winners and calculating time between games with the schedule object</p>
@@ -2324,7 +2325,7 @@ please don't hesitate to reach out to <a href="mailto:chicken@chickenandstats.co
 <a id="__codelineno-26-26" name="__codelineno-26-26" href="#__codelineno-26-26"></a>
 <a id="__codelineno-26-27" name="__codelineno-26-27" href="#__codelineno-26-27"></a><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./charts/saros_gsax_hours_since.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="png" src="../gsax_files/gsax_55_0.png" /></p>
+<p><img alt="png" src="../gsax_files/gsax_56_0.png" /></p>
 <h3 id="elite-goalies">Elite goalies</h3>
 <p>Plotting performance and hours since last game for top-6 goalies</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1">## setting figure size</span>
@@ -2361,7 +2362,7 @@ please don't hesitate to reach out to <a href="mailto:chicken@chickenandstats.co
 <a id="__codelineno-27-32" name="__codelineno-27-32" href="#__codelineno-27-32"></a>
 <a id="__codelineno-27-33" name="__codelineno-27-33" href="#__codelineno-27-33"></a><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./charts/top_6_gsax_hours_since.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">650</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="png" src="../gsax_files/gsax_57_0.png" /></p>
+<p><img alt="png" src="../gsax_files/gsax_58_0.png" /></p>
 
 
 
