@@ -924,11 +924,20 @@ an <strong>open-source xG model</strong> for shot quality metrics</li>
 <a href="https://evolving-hockey.com">Evolving-Hockey</a> <em>(subscription required)</em> with
 <a href="reference/evolving_hockey/stats/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5C6.5 5 2 6.57 2 8.5S6.5 12 12 12s10-1.57 10-3.5S17.5 5 12 5M2 11.76v4.74C2 18.43 6.5 20 12 20s10-1.57 10-3.5v-4.74c-.67.46-1.42.81-2.27 1.1C17.62 13.6 14.95 14 12 14s-5.62-.4-7.73-1.14c-.85-.29-1.6-.64-2.27-1.1"/></svg></span> evolving_hockey</a></li>
 </ul>
+<details class="info">
+<summary>Info</summary>
+<p>The packages and resulting outputs are largely interchangeable, with similar fields across <code>chicken_nhl</code> 
+and <code>evolving_hockey</code> packages, including high-danger scoring chances, score- and venue-adjusted fenwick, 
+corsi, and xG.</p>
+<p>Feel free to use whichever package and data source that you prefer. If you have questions about differences between
+packages, you can find me on <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364q.204-.03.415-.056-.207.033-.415.056c-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a9 9 0 0 1-.415-.056q.21.026.415.056c2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8"/></svg></span> Bluesky at <strong><a href="https://bsky.app/profile/chickenandstats.com">@chickenandstats.com</a></strong>
+or <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/></svg></span> email me at <strong><a href="mailto:chicken@chickenandstats.com">chicken@chickenandstats.com</a></strong>.</p>
+</details>
 <p>Here you can find detailed guides &amp; explanations for most features. The package is under active development - download
 the latest version (1.8.0) for the most up-to-date features &amp; be sure to consult the correct documentation
 <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M256 512a256 256 0 1 0 0-512 256 256 0 1 0 0 512m-91.9-186.5C182 346.2 212.6 368 256 368s74-21.8 91.9-42.5c5.8-6.7 15.9-7.4 22.6-1.6s7.4 15.9 1.6 22.6c-22.3 25.6-61 53.5-116.1 53.5s-93.8-27.9-116.1-53.5c-5.8-6.7-5.1-16.8 1.6-22.6s16.8-5.1 22.6 1.6m53.5-96.7-.2-.2c-.2-.2-.4-.5-.7-.9-.6-.8-1.6-2-2.8-3.4-2.5-2.8-6-6.6-10.2-10.3-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3-1.2 1.4-2.2 2.6-2.8 3.4-.3.4-.6.7-.7.9l-.2.2c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8 9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8 0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8m160 0-.2-.2c-.2-.2-.4-.5-.7-.9-.6-.8-1.6-2-2.8-3.4-2.5-2.8-6-6.6-10.2-10.3-8.8-7.8-18.8-14-27.7-14s-18.9 6.2-27.7 14c-4.2 3.7-7.7 7.5-10.2 10.3-1.2 1.4-2.2 2.6-2.8 3.4-.3.4-.6.7-.7.9l-.2.2c-2.1 2.8-5.7 3.9-8.9 2.8s-5.5-4.1-5.5-7.6c0-17.9 6.7-35.6 16.6-48.8 9.8-13 23.9-23.2 39.4-23.2s29.6 10.2 39.4 23.2c9.9 13.2 16.6 30.9 16.6 48.8 0 3.4-2.2 6.5-5.5 7.6s-6.9 0-8.9-2.8"/></svg></span>.</p>
 <h2 id="installation"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 20h14v-2H5m14-9h-4V3H9v6H5l7 7z"/></svg></span> <strong>Installation</strong></h2>
-<p class="annotate"><code>chickenstats</code> requires Python 3.10 or greater &amp; runs on the latest stable versions of Linux, macOS, &amp; Windows
+<p class="annotate"><code>chickenstats</code> requires Python 3.10 - 3.12 &amp; runs on the latest stable versions of Linux, macOS, &amp; Windows
 operating systems.(1) You can install it through PyPi:</p>
 <ol>
 <li>Best practice is to develop in an isolated virtual environment (conda or otherwise), but who's a chicken to judge?</li>
@@ -963,16 +972,16 @@ with an open-source xG model included out-of-the-box.</p>
 <ol>
 <li>Replace Nashville with the three-letter code of the team of your choice. Leaving it blank will scrape everyone's
 schedule for that year</li>
-<li>Other game states include LIVE and FUT</li>
-<li>Scrapes one game every three seconds</li>
+<li>Other game states include LIVE, FINAL, and FUT</li>
+<li>Scrapes one game every ~2 seconds</li>
 </ol>
 <details class="info">
 <summary>Info</summary>
 <p>If you have already scraped or aggregated data, you'll notice slightly different behaviors than the simple
 guide below. <code>chickenstats.chicken_nhl</code> stores all data already scraped or aggregated, so it can be quickly provided
 when the relevant attribute is called (e.g., if you have already called <code>Scraper.play_by_play</code> and you have
-not added any new game IDs to the Scraper object,
-calling <code>Scraper.play_by_play</code> will return the dataframe, without having to re-scrape the data). </p>
+not added any new game IDs to the Scraper object, calling <code>Scraper.play_by_play</code> will return the dataframe, 
+without having to re-scrape the data). </p>
 <p>You can reset attributes with a matching <code>prep_</code> method (e.g., <code>Scraper.stats</code> can be reset
 with <code>Scraper.prep_stats()</code>). See <a href="contribute/backend/design/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 5v16h6v-1.5H7V18h2v-1.5H5V15h4v-1.5H7V12h2v-1.5H5V9h4V5h1.5v4H12V7h1.5v2H15V5h1.5v4H18V7h1.5v2H21V3H5a2 2 0 0 0-2 2m3 2a1 1 0 0 1-1-1 1 1 0 0 1 1-1 1 1 0 0 1 1 1 1 1 0 0 1-1 1"/></svg></span> Design</a>
 for more on this dynamic</p>
@@ -982,7 +991,7 @@ for more on this dynamic</p>
 </code></pre></div>
 <ol>
 <li>This runs <code>scraper.prep_stats()</code> behind the scenes, if you have not already done so.
-By default aggregates to stats game level, but
+By default aggregates to game level statistics, but
 does not include teammates, opposition, or score state in the aggregation fields.</li>
 </ol>
 <p>It's very easy to introduce additional detail to the aggregations, including for teammates on-ice:</p>
@@ -1048,7 +1057,7 @@ including on-ice (e.g., GF, xGF) &amp; usage (i.e., zone starts), accounting for
 <summary>Help</summary>
 <p>If you need help with any aspect of <code>chickenstats</code>, from installation to usage,
 please don't hesitate to reach out.
-You can find me on :material-bluesky: Bluesky at <strong><a href="https://bsky.app/profile/chickenandstats.com">@chickenandstats.com</a></strong>
+You can find me on <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364q.204-.03.415-.056-.207.033-.415.056c-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a9 9 0 0 1-.415-.056q.21.026.415.056c2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8"/></svg></span> Bluesky at <strong><a href="https://bsky.app/profile/chickenandstats.com">@chickenandstats.com</a></strong>
 or <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/></svg></span> email me at <strong><a href="mailto:chicken@chickenandstats.com">chicken@chickenandstats.com</a></strong>.</p>
 <p>For more information on known issues or the longer-term development roadmap, see
 <a href="contribute/contribute/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M96 128a128 128 0 1 1 256 0 128 128 0 1 1-256 0M0 482.3C0 383.8 79.8 304 178.3 304h91.4c98.5 0 178.3 79.8 178.3 178.3 0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3M609.3 512H471.5c5.4-9.4 8.6-20.3 8.6-32v-8c0-60.7-27.1-115.2-69.8-151.8 2.4-.1 4.7-.2 7.1-.2h61.4c89 0 161.2 72.2 161.2 161.3 0 17-13.8 30.7-30.7 30.7M432 256c-31 0-59-12.6-79.3-32.9 19.7-26.6 31.3-59.5 31.3-95.1 0-26.8-6.6-52.1-18.3-74.3C384.3 40.1 407.2 32 432 32c61.9 0 112 50.1 112 112s-50.1 112-112 112"/></svg></span> Contribute</a></p>
