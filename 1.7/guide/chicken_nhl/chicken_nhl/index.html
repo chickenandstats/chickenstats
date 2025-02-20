@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4+insiders-4.53.15">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5+insiders-4.53.15">
     
     
       
@@ -85,7 +85,7 @@
         
         
         
-        <link rel="stylesheet" href="../../../assets/external/fonts.googleapis.com/css.49ea35f2.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
@@ -748,7 +748,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong>Import module</strong>
+          Import module
         </span>
       
     </span>
@@ -761,7 +761,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong><code>Season</code> and Game IDs</strong>
+          <code>Season</code> and Game IDs
         </span>
       
     </span>
@@ -774,7 +774,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong><code>Scraper</code></strong>
+          <code>Scraper</code>
         </span>
       
     </span>
@@ -787,7 +787,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong>Stats and aggregations</strong>
+          Stats and aggregations
         </span>
       
     </span>
@@ -800,7 +800,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong>Standings</strong>
+          Standings
         </span>
       
     </span>
@@ -832,7 +832,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong>Other <code>Scraper</code> data</strong>
+          Other <code>Scraper</code> data
         </span>
       
     </span>
@@ -845,7 +845,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong><code>Game</code> object</strong>
+          <code>Game</code> object
         </span>
       
     </span>
@@ -858,7 +858,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong>Lists, not DataFrames</strong>
+          Lists, not DataFrames
         </span>
       
     </span>
@@ -871,7 +871,7 @@
     <span class="md-ellipsis">
       
         <span class="md-typeset">
-          <strong>Pre-processing</strong>
+          Pre-processing
         </span>
       
     </span>
@@ -1666,43 +1666,61 @@
 
 
 <h1 id="chicken_nhl"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.68 4H14.3l-1.74 4c-.03.04-.11.22-.25.5s-.25.54-.31.69L9.7 4H6.32l4.09 8.84c.09.22.32.75.7 1.59.39.85.67 1.48.89 1.92l1.41 3.09c.19.34.48.51.89.51L19 20v-4h-4l-1.4-3.16zm2.35 12v4H22v-3c0-.27-.09-.5-.28-.72-.19-.2-.42-.28-.72-.28zM5 16v4l4.7-.05c.41 0 .7-.17.89-.51l.85-1.94-1.6-3.44L9 16zm-3 4h1.97v-4H3c-.3 0-.53.08-.72.28-.19.22-.28.45-.28.72z"/></svg></span> <strong>chicken_nhl</strong></h1>
-<p>Usage information about the <code>chicken_nhl</code> module.</p>
-<p>For in-depth materials, please consult the <strong><a href="../../../reference/reference/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 3v15h3V3zm3 2 4 13 3-1-4-13zM5 5v13h3V5zM3 19v2h18v-2z"/></svg></span> Reference</a></strong></p>
+<p>Here is where you can find basic information about using the <code>chicken_nhl</code> module.</p>
+<p>For more in-depth materials, including source code, please consult the <strong><a href="../../../reference/reference/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 3v15h3V3zm3 2 4 13 3-1-4-13zM5 5v13h3V5zM3 19v2h18v-2z"/></svg></span> Reference</a></strong></p>
 <h2 id="basic-usage"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M256 288a144 144 0 1 0 0-288 144 144 0 1 0 0 288m-94.7 32C72.2 320 0 392.2 0 481.3c0 17 13.8 30.7 30.7 30.7h450.6c17 0 30.7-13.8 30.7-30.7 0-89.1-72.2-161.3-161.3-161.3z"/></svg></span> <strong>Basic usage</strong></h2>
-<h3 id="import-module"><strong>Import module</strong></h3>
+<h3 id="import-module">Import module</h3>
 <p><code>chicken_nhl</code> scrapes data from various official NHL endpoints, combining them into a usable play-by-play
 dataframe. The module and the most relevant classes can be imported using the below snippet:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scraper</span><span class="p">,</span> <span class="n">Season</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
 </code></pre></div>
-<h3 id="season-and-game-ids"><strong><code>Season</code> and Game IDs</strong></h3>
-<p>The module relies on game IDs, which can be found using the <code>schedule</code> method of <code>Season</code> class:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">nsh_schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">sessions</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">)</span> <span class="c1"># (1)! </span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">nsh_schedule</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:</span><span class="mi">10</span><span class="p">]</span>
-</code></pre></div>
+<h3 id="season-and-game-ids"><code>Season</code> and Game IDs</h3>
+<p class="annotate">Each NHL game has a 10-digit game ID, with the first four digits indicating the season (e.g., 2024 for 2024-25 season),
+the next four digits indicating the "session," or stage during which the game was played (e.g., 02 for the regular season,
+03 for the post-season), and the last four digits indicating the game number (e.g., 0001 for the first game of the season).(1)</p>
 <ol>
-<li>You could provide three-letter code for subset of schedule, as well as scrape from regular season</li>
+<li>This convention changes slightly in the playoffs. Game IDs are 10-digits, but the last four digits indicate the round,
+series, and game number (e.g., 0127 is the seventh game in the second series of the first round of the playoffs)</li>
 </ol>
-<h3 id="scraper"><strong><code>Scraper</code></strong></h3>
+<p>These game IDs can be readily accessed via the <code>schedule</code> method of <code>Season</code> class. The below snippet scrapes the
+schedule for the 2023 playoffs, then stores the first ten game IDs in a list:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">playoff_schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">sessions</span><span class="o">=</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">playoff_schedule</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:</span><span class="mi">10</span><span class="p">]</span>
+</code></pre></div>
+<details class="info">
+<summary>Info</summary>
+<p>It's obviously possible to scrape the regular season, or even a subset of the schedule based on a single team, or
+list of teams, using the below snippets. The example throughout this guide is meant to be lightweight to avoid
+time spent waiting on data to download. </p>
+<p>To scrape a single team, provide the standard three-letter team code to the team_schedule parameter:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">nsh_schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">team_schedule</span><span class="o">=</span><span class="s2">&quot;NSH&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>To scrape more than one team, provide the preferred team codes as a list to the same parameter:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">teams</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;NSH&quot;</span><span class="p">,</span> <span class="s2">&quot;TBL&quot;</span><span class="p">,</span> <span class="s2">&quot;DET&quot;</span><span class="p">,</span> <span class="s2">&quot;TOR&quot;</span><span class="p">]</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">team_schedule</span><span class="o">=</span><span class="n">teams</span><span class="p">)</span>
+</code></pre></div>
+</details>
+<h3 id="scraper"><code>Scraper</code></h3>
 <p>The <code>Scraper</code> object is used for scraping data from the API and HTML endpoints:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span> <span class="c1"># (1)! </span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (2)!</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (2)!</span>
 </code></pre></div>
 <ol>
 <li>The scraper object takes a list of game IDs</li>
 <li>Access play-by-play data as a Pandas DataFrame</li>
 </ol>
 <p>The <code>Scraper</code> object can also be used with individual game IDs:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># (1)!</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span>
 </code></pre></div>
 <ol>
 <li>The scraper object takes a single game ID</li>
 </ol>
 <p>To see the first 5 goals of the 2023-24 playoffs</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">pbp</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pbp</span><span class="o">.</span><span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;GOAL&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">pbp</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pbp</span><span class="o">.</span><span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;GOAL&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </code></pre></div>
 <table>
 <thead>
@@ -2868,35 +2886,35 @@ dataframe. The module and the most relevant classes can be imported using the be
 </tr>
 </tbody>
 </table>
-<h3 id="stats-and-aggregations"><strong>Stats and aggregations</strong></h3>
+<h3 id="stats-and-aggregations">Stats and aggregations</h3>
 <p>Start fresh with a new scraper:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">play_by_play</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (1)!</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">play_by_play</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (1)!</span>
 </code></pre></div>
 <ol>
 <li>We won't strictly use the play-by-play data here, but it will get the scraping started</li>
 </ol>
 <p>If you just want game-level individual stats, without accounting for teammates or opposition, just call the
 <code>stats</code> attributes:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span>
 </code></pre></div>
 <p>If you want anything besides the default options, or if you change your desired aggregation / level of detail,
 you can reset the data with the <code>prep_stats()</code> method:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_stats</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s2">&quot;game&quot;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># (1)!</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span> <span class="c1"># (2)!</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_stats</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s2">&quot;game&quot;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span> <span class="c1"># (2)!</span>
 </code></pre></div>
 <ol>
 <li>Now the individual and on-ice stats are aggregated and account for the teammates and opponents on the ice</li>
 <li>You can access the data with the <code>stats</code> attribute</li>
 </ol>
 <p>Functionality is very similar for lines and team stats:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;f&quot;</span><span class="p">)</span> <span class="c1"># (1)!</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">forward_lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">)</span> <span class="c1"># (2)!</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">defense_lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span> <span class="c1"># (3)!</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">team_stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">team_stats</span> <span class="c1"># (4)!</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;f&quot;</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">forward_lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">)</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">defense_lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span> <span class="c1"># (3)!</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">team_stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">team_stats</span> <span class="c1"># (4)!</span>
 </code></pre></div>
 <ol>
 <li>Not strictly necessary, the forwards are the default for line aggregations</li>
@@ -2904,57 +2922,57 @@ you can reset the data with the <code>prep_stats()</code> method:</p>
 <li>You can access the new line stats with the <code>lines</code> attribute</li>
 <li>None of the above is necessary with the <code>team_stats</code>, if you're fine with the default parameters</li>
 </ol>
-<h3 id="standings"><strong>Standings</strong></h3>
+<h3 id="standings">Standings</h3>
 <p>You can also use a <code>Season</code> object to return that season's standings:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">standings</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">standings</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2023</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">standings</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">standings</span>
 </code></pre></div>
 <h2 id="advanced-usage"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 22H10v-2h12zM2 22v-2h7v2zm16-4v-8h4v8zm0-15h4v6h-4zM2 18V3h14v15zm7-3.44a3 3 0 0 0 3-3c0-2-3-5.37-3-5.37s-3 3.37-3 5.37a3 3 0 0 0 3 3"/></svg></span> <strong>Advanced usage</strong></h2>
 <p>The <code>Scraper</code> object should be best for most of your scraping needs. However, there are additional 
 properties available with the <code>Game</code> object that can be helpful.</p>
-<h3 id="other-scraper-data"><strong>Other <code>Scraper</code> data</strong></h3>
+<h3 id="other-scraper-data">Other <code>Scraper</code> data</h3>
 <p>You can also access other data with the scraper object. The data will be scraped if it has not already been retrieved,
 which saves time and is friendlier to data sources:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2024</span><span class="p">)</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="s2">&quot;NSH&quot;</span><span class="p">)</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:</span><span class="mi">5</span><span class="p">]</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">rosters</span> <span class="c1"># (1)! </span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">html_rosters</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">html_rosters</span> <span class="c1"># (2)! </span>
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="n">html_events</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">html_events</span> <span class="c1"># (3)! </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">season</span> <span class="o">=</span> <span class="n">Season</span><span class="p">(</span><span class="mi">2024</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">schedule</span> <span class="o">=</span> <span class="n">season</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="s2">&quot;NSH&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">game_ids</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">game_id</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:</span><span class="mi">5</span><span class="p">]</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">scraper</span> <span class="o">=</span> <span class="n">Scraper</span><span class="p">(</span><span class="n">game_ids</span><span class="p">)</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="n">pbp</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">rosters</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="n">html_rosters</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">html_rosters</span> <span class="c1"># (2)! </span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="n">html_events</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">html_events</span> <span class="c1"># (3)! </span>
 </code></pre></div>
 <ol>
 <li>Access roster data from both API and html endpoints</li>
 <li>HTML rosters are retrieved quickly because they have already been scraped</li>
 <li>HTML events are scraped, then combined with rosters already stored locally</li>
 </ol>
-<h3 id="game-object"><strong><code>Game</code> object</strong></h3>
+<h3 id="game-object"><code>Game</code> object</h3>
 <p>The <code>Game</code> object only works with a single game ID:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="lists-not-dataframes"><strong>Lists, not DataFrames</strong></h3>
+<h3 id="lists-not-dataframes">Lists, not DataFrames</h3>
 <p>The <code>Game</code> object's familiar functions return lists, instead of Pandas DataFrames:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (1)! </span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play_df</span> <span class="c1"># (2)! </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play_df</span> <span class="c1"># (2)! </span>
 </code></pre></div>
 <ol>
 <li>Returns a list of play-by-play events</li>
 <li>Returns a Pandas DataFrame of play-by-play events</li>
 </ol>
-<h3 id="pre-processing"><strong>Pre-processing</strong></h3>
+<h3 id="pre-processing">Pre-processing</h3>
 <p>Data can be inspected at various processing stages through the <code>Game</code> object's non-public properties:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">game</span><span class="o">.</span><span class="n">_scrape_html_events</span> <span class="c1"># (1)! </span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">game</span><span class="o">.</span><span class="n">_munge_html_events</span> <span class="c1"># (2)!</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">game</span><span class="o">.</span><span class="n">_scrape_html_events</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">game</span><span class="o">.</span><span class="n">_munge_html_events</span> <span class="c1"># (2)!</span>
 </code></pre></div>
 <ol>
 <li>Get the raw HTML events and store the without processing</li>
