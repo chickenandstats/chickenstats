@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5+insiders-4.53.15">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.6+insiders-4.53.15">
     
     
       
@@ -83,7 +83,7 @@
         
         
         
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <link rel="stylesheet" href="assets/external/fonts.googleapis.com/css.49ea35f2.css">
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
@@ -1048,23 +1048,32 @@ for more on this dynamic</p>
 By default aggregates to game level statistics, but
 does not include teammates, opposition, or score state in the aggregation fields.</li>
 </ol>
-<p>It's very easy to introduce additional detail to the aggregations, including for teammates on-ice:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_stats</span><span class="p">(</span><span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<p>It's very easy to introduce additional detail to, as well as change the level of, aggregations, 
+including for season-level statistics accounting for teammates on-ice:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_stats</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s2">&quot;season&quot;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># (1)!</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">stats</span>
 </code></pre></div>
 <ol>
 <li>The Scraper object saves the prior aggregation to the <code>scraper.stats</code> attribute, so it needs to be reset.
-Then the attribute can be re-called</li>
+Then the attribute can be re-called, with a different level of aggregation, i.e., season and including 
+teammates on-ice</li>
 </ol>
-<p>There is similar functionality for line and team stats:</p>
+<p>There is similar functionality for forward line / defensive pairing stats:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;f&quot;</span><span class="p">)</span> <span class="c1"># (1)!</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">forward_lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">team_stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">team_stats</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">scraper</span><span class="o">.</span><span class="n">prep_lines</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s2">&quot;season&quot;</span><span class="p">)</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">defense_lines</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">lines</span>
 </code></pre></div>
 <ol>
 <li>This step isn't strictly necessary for forwards - they're the default line aggregation. Provide "d" instead of "f"
 for defensive line stats</li>
+<li>Reset the aggregation settings to get season-level defensive pairing stats</li>
+</ol>
+<p>As well as for team stats:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">team_stats</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">team_stats</span> <span class="c1"># (1)!</span>
+</code></pre></div>
+<ol>
 <li>Similar to <code>scraper.stats</code>, runs <code>scraper.prep_team_stats()</code> in the background</li>
 </ol>
 <p>For additional information on usage and functionality, consult the relevant
@@ -1082,13 +1091,13 @@ including high-danger shooting events, xG &amp; adjusted xG, faceoffs, &amp; cha
     If you don't have a subscription, you can sign up for one <a href="https://evolving-hockey.com/login/">here</a></li>
 </ol>
 <p>First, prep a play-by-play dataframe using the raw play-by-play and shifts CSV files:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.evolving_hockey</span><span class="w"> </span><span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">raw_shifts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./raw_shifts.csv&#39;</span><span class="p">)</span> <span class="c1"># (1)!</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">raw_pbp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./raw_pbp.csv&#39;</span><span class="p">)</span> <span class="c1"># (2)!</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">play_by_play</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">raw_pbp</span><span class="p">,</span> <span class="n">raw_shifts</span><span class="p">)</span> <span class="c1"># (3)!</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.evolving_hockey</span><span class="w"> </span><span class="kn">import</span> <span class="n">prep_pbp</span><span class="p">,</span> <span class="n">prep_stats</span><span class="p">,</span> <span class="n">prep_lines</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">raw_shifts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./raw_shifts.csv&#39;</span><span class="p">)</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">raw_pbp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;./raw_pbp.csv&#39;</span><span class="p">)</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">play_by_play</span> <span class="o">=</span> <span class="n">prep_pbp</span><span class="p">(</span><span class="n">raw_pbp</span><span class="p">,</span> <span class="n">raw_shifts</span><span class="p">)</span> <span class="c1"># (3)!</span>
 </code></pre></div>
 <ol>
 <li>Download raw shifts data from <a href="https://evolving-hockey.com/stats/shift_query/">here</a></li>
@@ -1097,10 +1106,10 @@ including high-danger shooting events, xG &amp; adjusted xG, faceoffs, &amp; cha
 </ol>
 <p>You can use the play_by_play dataframe in various aggregations. This will return individual game statistics,
 including on-ice (e.g., GF, xGF) &amp; usage (i.e., zone starts), accounting for teammates &amp; opposition on-ice:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">individual_game</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">play_by_play</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;game&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">individual_game</span> <span class="o">=</span> <span class="n">prep_stats</span><span class="p">(</span><span class="n">play_by_play</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;game&#39;</span><span class="p">,</span> <span class="n">teammates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p>This will return game statistics for forward-line combinations, accounting for opponents on-ice:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">forward_lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">play_by_play</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;game&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">forward_lines</span> <span class="o">=</span> <span class="n">prep_lines</span><span class="p">(</span><span class="n">play_by_play</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;game&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">opposition</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p>For additional information on usage and functionality, consult the relevant
 <a href="guide/evolving_hockey/evolving_hockey/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17z"/></svg></span> User guide</a></p>
@@ -1168,7 +1177,7 @@ or <strong><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox
 </div>
 <h2 id="help"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 19h3v3h-3zm2-17c5.35.22 7.68 5.62 4.5 9.67-.83 1-2.17 1.66-2.83 2.5C13 15 13 16 13 17h-3c0-1.67 0-3.08.67-4.08.66-1 2-1.59 2.83-2.25C15.92 8.43 15.32 5.26 12 5a3 3 0 0 0-3 3H6a6 6 0 0 1 6-6"/></svg></span> <strong>Help</strong></h2>
 <p>If you need help with any aspect of <code>chickenstats</code>, from installation to usage, please don't hesitate to reach out!
-You can find me on :material-bluesky: Bluesky at <strong><a href="https://bsky.app/profile/chickenandstats.com">@chickenandstats.com</a></strong> or <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/></svg></span> 
+You can find me on <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364q.204-.03.415-.056-.207.033-.415.056c-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a9 9 0 0 1-.415-.056q.21.026.415.056c2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8"/></svg></span> Bluesky at <strong><a href="https://bsky.app/profile/chickenandstats.com">@chickenandstats.com</a></strong> or <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2"/></svg></span> 
 email me at <strong><a href="mailto:chicken@chickenandstats.com">chicken@chickenandstats.com</a></strong>.</p>
 <p>Please report any bugs or issues via the <code>chickenstats</code> <strong><a href="https://github.com/chickenandstats/chickenstats/issues">issues</a></strong> page, where you can also post feature requests.
 Before doing so, please check the <a href="contribute/roadmap/">roadmap</a>, there might already be plans to include your request.</p>
@@ -1531,7 +1540,7 @@ By clicking "Accept all," you consent to the use of cookies
     <script id="__config" type="application/json">{"base": ".", "features": ["content.code.annotate", "content.code.copy", "content.code.select", "content.footnote.tooltips", "content.tabs.link", "header.autohide", "navigation.instant", "navigation.path", "navigation.prune", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.footer", "search.highlight", "search.suggest", "search.share", "toc.follow", "toc.integrate"], "search": "assets/javascripts/workers/search.c7c1ca2c.min.js", "tags": {"chicken-nhl": "chicken-nhl", "chickenstats": "chickenstats", "evolving-hockey": "evolving-hockey", "hockey": "hockey", "xG model": "xg-model"}, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="assets/javascripts/bundle.5a789024.min.js"></script>
+      <script src="assets/javascripts/bundle.10a6bb14.min.js"></script>
       
         <script src="assets/external/unpkg.com/tablesort@5.3.0/dist/tablesort.min.js"></script>
       
