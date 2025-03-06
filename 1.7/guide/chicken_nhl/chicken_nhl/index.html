@@ -933,6 +933,19 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#data-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <span class="md-typeset">
+          Data persistence
+        </span>
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -9176,9 +9189,9 @@ aggregated to the game level and account for strength state</li>
 <li>Play-by-play events from API and HTML endpoints</li>
 <li>Rosters from API and HTML endpoints</li>
 <li>Shifts from the HTML endpoint</li>
-<li>Change events, built from shifts data</li>
+<li>Change events, built from the (HTML) shifts and (combined) rosters data</li>
 </ul>
-<details class="note">
+<details class="note" open="open">
 <summary>Note</summary>
 <p>Each of the below code snippets assume you'll have initialized a <code>Scraper</code> object with a game ID, or list of game IDs:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">chickenstats.chicken_nhl</span><span class="w"> </span><span class="kn">import</span> <span class="n">Season</span><span class="p">,</span> <span class="n">Scraper</span>
@@ -10032,28 +10045,12 @@ aggregated to the game level and account for strength state</li>
 </tr>
 </tbody>
 </table>
-<details class="info">
-<summary>Info</summary>
-<p>The <code>Scraper</code> object will scrape any data that has not already been retrieved from the source - any data that has
-been scraped since initilization is stored in the object. This saves time and is friendler to the sources. </p>
-<p>The combined roster data is a good example:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">rosters</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">rosters</span> <span class="c1"># (1)!</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">api_rosters</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">api_rosters</span> <span class="c1"># (2)!</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">html_rosters</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">html_rosters</span>
-</code></pre></div>
-<ol>
-<li>Calling the rosters attribute scrapes data from both the HTML and API endpoints</li>
-<li>Later calls to the api_rosters or html_rosters attributes returns data stored in the <code>Scraper</code> object, instead
-of being re-scraped from the sources</li>
-</ol>
-</details>
 <h3 id="shifts">Shifts</h3>
 <p>Shifts data from the HTML endpoint:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">shifts</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">shifts</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="n">condition</span> <span class="o">=</span> <span class="n">shifts</span><span class="o">.</span><span class="n">team</span> <span class="o">==</span> <span class="s2">&quot;NSH&quot;</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="n">shifts</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">condition</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">shifts</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">shifts</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">condition</span> <span class="o">=</span> <span class="n">shifts</span><span class="o">.</span><span class="n">team</span> <span class="o">==</span> <span class="s2">&quot;NSH&quot;</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="n">shifts</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">condition</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </code></pre></div>
 <table>
 <thead>
@@ -10225,10 +10222,10 @@ of being re-scraped from the sources</li>
 </table>
 <h3 id="changes">Changes</h3>
 <p>Changes data built from the HTML shifts:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">changes</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">changes</span>
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="n">condition</span> <span class="o">=</span> <span class="n">changes</span><span class="o">.</span><span class="n">event_team</span> <span class="o">==</span> <span class="s2">&quot;NSH&quot;</span>
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="n">changes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">condition</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">changes</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">changes</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="n">condition</span> <span class="o">=</span> <span class="n">changes</span><span class="o">.</span><span class="n">event_team</span> <span class="o">==</span> <span class="s2">&quot;NSH&quot;</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="n">changes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">condition</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 </code></pre></div>
 <table>
 <thead>
@@ -11952,16 +11949,52 @@ of being re-scraped from the sources</li>
 </tr>
 </tbody>
 </table>
+<h3 id="data-persistence">Data persistence</h3>
+<p>The <code>Scraper</code> object will scrape any data that has not already been retrieved from the source - any data that has
+been scraped since initialization is stored in the object. This saves time and is friendlier to the sources. </p>
+<p class="annotate">The below snippet is a simple illustration. The changes dataframe is built using data from the shifts endpoint, (1) 
+as well as the HTML and API rosters endpoints. After calling the changes property, the underlying data are available,
+more or less instantaneously.</p>
+<ol>
+<li>Really the shifts <em>endpoints</em> - the home and visiting teams are scraped from separate URLs</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">changes</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">changes</span> <span class="c1"># (1)!</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="n">rosters</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">rosters</span> <span class="c1"># (2)!</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="n">shifts</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">shifts</span> 
+</code></pre></div>
+<ol>
+<li>This property scrapes shifts and rosters data, then stores the data for later retrieval</li>
+<li>Later calls to the <code>rosters</code> or <code>shifts</code> properties returns the previously-scraped data stored 
+by the <code>Scraper</code> object, instead of being re-scraped from the sources</li>
+</ol>
+<p>The reverse is also true - previously-scraped data stored by the <code>Scraper</code> object is 
+later used if required by other properties. Continuing the above example, the <code>HTML_events</code> 
+property will leverage the rosters data previously scraped by the <code>changes</code> property:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">changes</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">changes</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="n">html_events</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">html_events</span> <span class="c1"># (1)!</span>
+</code></pre></div>
+<ol>
+<li>Calling the <code>html_events</code> property after scraping rosters data will improve the processing speed because
+the user has already scraped and processed a portion of the data</li>
+</ol>
+<p>Users aren't expected to know which properties scrape which data sources. Optimized scraping and storage
+is the default behavior.</p>
+<p>The design provides significant user benefits, in addition to reducing unnecessary hits to data sources 
+and improving processing and scraping speed. The cons of the increased memory usage are more than outweighed.</p>
 <h2 id="debugging-and-raw-data"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 12h-4v-2h4m0 6h-4v-2h4m6-6h-2.81a6 6 0 0 0-1.82-1.96L17 4.41 15.59 3l-2.17 2.17a6 6 0 0 0-2.83 0L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20z"/></svg></span> <strong>Debugging and raw data</strong></h2>
+<p>It's possible to access raw, pre-processed data from each data source, which can be helpful for debugging
+or contributing to <code>chickenstats</code> design and development.</p>
 <h3 id="game-object"><code>Game</code> object</h3>
 <p>The <code>Game</code> object only works with a single game ID:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">game</span> <span class="o">=</span> <span class="n">Game</span><span class="p">(</span><span class="mi">2023020001</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="lists-not-dataframes">Lists, not DataFrames</h3>
 <p>The <code>Game</code> object's familiar functions return lists, instead of Pandas DataFrames:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (1)! </span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play_df</span> <span class="c1"># (2)! </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="n">game</span><span class="o">.</span><span class="n">play_by_play_df</span> <span class="c1"># (2)! </span>
 </code></pre></div>
 <ol>
 <li>Returns a list of play-by-play events</li>
@@ -11969,9 +12002,9 @@ of being re-scraped from the sources</li>
 </ol>
 <h3 id="pre-processing">Pre-processing</h3>
 <p>Data can be inspected at various processing stages through the <code>Game</code> object's non-public properties:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">game</span><span class="o">.</span><span class="n">_scrape_html_events</span> <span class="c1"># (1)! </span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="n">game</span><span class="o">.</span><span class="n">_munge_html_events</span> <span class="c1"># (2)!</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">game</span><span class="o">.</span><span class="n">_scrape_html_events</span> <span class="c1"># (1)! </span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="n">game</span><span class="o">.</span><span class="n">_munge_html_events</span> <span class="c1"># (2)!</span>
 </code></pre></div>
 <ol>
 <li>Get the raw HTML events and store the without processing</li>
