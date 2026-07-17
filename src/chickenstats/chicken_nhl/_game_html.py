@@ -984,17 +984,6 @@ class _GameHTMLMixin(_GameBase):
                 shift["end_time_seconds"] = shift.get("start_time_seconds", 0) + shift.get("duration_seconds", 0)
                 shift["end_time"] = str(timedelta(seconds=shift.get("end_time_seconds"))).split(":", 1)[1]
 
-            # if shift["start_time_seconds"] > shift["end_time_seconds"] and shift["period"] < 4:
-            #     shift.update(
-            #         {
-            #             "end_time": "20:00",
-            #             "end_time_seconds": 1200,
-            #             "shift_end": "20:00 / 0:00",
-            #             "duration_seconds": 1200 - shift["start_time_seconds"],
-            #         }
-            #     )
-            #     shift["duration"] = str(timedelta(seconds=shift["duration_seconds"])).split(":", 1)[1]
-
             if shift["shift_end"] == "0:00 / 0:00":
                 if shift["period"] < 4 or self.session == "P":
                     fixed_end_time = "20:00"
