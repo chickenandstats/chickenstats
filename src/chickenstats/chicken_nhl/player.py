@@ -250,7 +250,10 @@ class Player:
                 try:
                     future.result()
                 except Exception:  # noqa: BLE001  # pyright: ignore[reportBroadExceptionCaught]
-                    logger.debug("Failed to fetch player data endpoint", exc_info=True)
+                    # Best-effort prefetch: the synchronous property access that follows will
+                    # retry and surface a real error if the fetch genuinely fails. Still log at
+                    # WARNING (not DEBUG) so a persistently failing prefetch is visible by default.
+                    logger.warning("Failed to fetch player data endpoint", exc_info=True)
 
     # ------------------------------------------------------------------
     # Stats processing
