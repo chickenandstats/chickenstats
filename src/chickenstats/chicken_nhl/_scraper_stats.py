@@ -238,7 +238,7 @@ class _ScraperStatsMixin(_ScraperBase):
 
         return _to_backend(self._stats, self._backend)
 
-    def _clear_stats(self):
+    def _clear_stats(self) -> None:
         """Method to clear stats dataframes. Nested within `prep_stats` method."""
         self._stats = pl.DataFrame()
         self._oi_stats = pl.DataFrame()
