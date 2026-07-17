@@ -4,6 +4,266 @@
 
 ### Bug Fixes
 
+- Updating CI tests
+Updating CI tests to pull the correct tox environments from the pyproject.toml file
+- Updating for tox changes
+Updating pyproject.toml to account for changes to tox
+- API keyword arguments
+Fixing an issue where API keyword arguments had drifted from the underlying chickenstats-api library
+- Update utilities.py
+Updating matplotlib imports due to deprecation
+- Error with type checking and pre-commit
+Fixing a bug where type checking did not run on pre-commit, failing on CI
+- Update zensical url
+- **styles**: Prevent crash during matplotlib style registration on modern v3.9+ versions
+- Apply score-adjustment is_home flip once per play, not per column
+calculate_score_adjustment re-toggled is_home inside the per-column loop
+for shorthanded strength states (4v5/3v5/3v4), so every other adjusted
+column (shot/block/fenwick) kept the unflipped weight while the rest
+(goal/miss/teammate_block/corsi) got the correct flipped one. Move the
+flip decision outside the loop so it's made once per play.
+
+Strengthens the existing disadvantage-state test to assert the actual
+flipped weight is applied consistently across all seven adjusted
+columns, verified to fail against the prior implementation.
+- Guard 0-for-0 division in _prep_oi_percent to avoid NaN
+stat_for / (stat_for + stat_against) produced NaN whenever both were
+zero, which is the common case for most shifts (no goals/shots either
+way). NaN silently passed schema validation since NaN != null. Fill
+with 0.0 to match the existing missing-numerator convention.
+- Handle period >= 5 shift-clock repair to prevent UnboundLocalError
+The broken-clock fix in _munge_shifts only assigned fix values for
+period < 4 (or playoffs) and for period == 4 in regular season/preseason,
+so a shift with an unresolved "0:00 / 0:00" end time in period >= 5 (e.g.
+a regular-season shootout) fell through both branches and raised
+UnboundLocalError. Treat any non-playoff period >= 4 as a 5-minute
+period, mirroring the same period < 4 or session == "P" split already
+used a few lines later for expected_total_seconds.
+- Handle float year input in Season.__init__
+str(2023.0) == "2023.0" (len 6) matched neither the 8-digit nor
+4-digit branch, so self.season was never assigned and the next line
+raised AttributeError. Normalize float input to int first, and raise
+InvalidSeasonError for any other unrecognized format instead of
+silently falling through.
+- Raise for any unsupported season year, not just non-adjacent ones
+The guard only raised InvalidSeasonError when first_year != max(_TEAMS_BY_YEAR) + 1,
+so the very next NHL season after the table was last updated passed
+silently with self.teams = None. schedule() would then return an empty
+DataFrame with no error, since `schedule_teams or []` treats None as
+empty. Raise whenever the year isn't in the table, with no exception
+for the "next" year.
+- Raise on unrecognized player slot column in prep_oi
+stats_list, col_names, and group_list were each assigned via separate
+plain if-blocks keyed on substrings of the player slot name
+(event_on/opp_on/change_on), with no final else. If a future edit to
+the hardcoded players list ever introduced a value matching none of
+these, the loop would silently reuse the previous iteration's
+col_names/group_list instead of failing. Convert to if/elif/else
+chains that raise ValueError on an unrecognized slot.
+- Handle missing hyphen in _return_name_html without crashing
+.index("-") raised uncaught ValueError for HTML title text with no
+hyphen, which the caller's except KeyError in hs_strip_html didn't
+catch, aborting parsing of the entire game's roster instead of just
+that one player's name. Return the input unchanged when no hyphen is
+present.
+- Distinguish expected failures from bugs in _scrape_single_game
+The bare except Exception treated known/expected per-game failures
+(network errors, malformed data) identically to real programming bugs
+(AttributeError, KeyError, TypeError), both logged at WARNING and
+silently added to failed_games. Split into two handlers: known
+ChickenstatsError/RequestException/ValidationError classes stay at
+WARNING, anything else logs at ERROR so it's distinguishable when
+scanning logs across a large batch scrape. Still returns None either
+way rather than crashing the batch.
+- Log prefetch task failures at WARNING instead of DEBUG
+prefetch_concurrent and Player.prefetch swallowed all task exceptions
+at DEBUG level, invisible unless a caller explicitly enables debug
+logging. Both are best-effort cache-warming helpers (the synchronous
+property access that follows will retry and surface a real error if
+the fetch genuinely fails), so keep swallowing rather than raising,
+but bump to WARNING so a persistently failing prefetch is visible by
+default.
+- Restore give/take columns to the on-ice stats schema
+give/take were summed in prep_oi's aggregation and referenced in
+_agg_constants.py's stat lists, but commented out of the actual
+oi_stats_columns schema dict, so validate_dataframe's column
+restriction silently dropped them from every output that includes
+on-ice stats (oi_stats, stats, lines, team_stats).
+- Add schema validation to evolving_hockey prep_gar/prep_xgar
+These were the only two public functions in the module with no schema
+validation at all, unlike prep_ind/prep_oi/prep_stats/prep_lines/
+prep_team_stats which all validate their output. Add gar_fields/
+xgar_fields schemas (dtypes verified against the real GAR/skater/
+goalie/xGAR CSV fixtures, since draft_rd/draft_ov are strings and
+fa_ev/fa_sh are ints in the actual EH export format) and wire
+validate_dataframe into both functions.
+- Raise on malformed EH season format in prep_gar/prep_xgar
+The season-string reconstruction ("20" + split[0] + "20" + split[1])
+had no format guard. A season string with a different shape than EH's
+usual two-digit-dash-two-digit format (e.g. a 4-digit-dash-4-digit
+variant) would silently produce a garbled-but-non-null season value
+rather than erroring. Check the format up front and raise
+DataMismatchError with the offending value(s) instead.
+- Make _right join-suffix reliance explicit in _aggregation.py
+Four joins (prep_ind, prep_oi, prep_lines, prep_team_stats) produced
+column-name collisions consumed a few lines later via the "_right"
+suffix (isb/icf, toi/bsf/cf_adj, lines toi, team_stats toi), relying
+on Polars' default suffix rather than an explicit one. A refactor or
+version change could silently break these without erroring. Pass
+suffix="_right" explicitly at each call site — same behavior, but the
+contract is now stated rather than implicit.
+- Stop closing shared ChickenSession between scrape phases
+_scrape() wrapped each call in `with self._requests_session:`, but
+it's invoked separately per scrape_type by the cached properties in
+_scraper_raw.py (api_events, html_events, shifts, etc. each trigger
+their own _scrape() call). Session.__exit__ calls close(), so
+sequential property access on the same Scraper tore down and rebuilt
+the connection pool between every phase instead of once for the
+Scraper's lifetime, defeating ChickenSession's pooling.
+- Stop using session as a per-call context manager in Player/Season
+`with self._requests_session as s:` calls Session.__exit__ -> close()
+after every single request. In Player this is actively dangerous:
+prefetch() runs _get_landing/_get_logs concurrently via
+ThreadPoolExecutor, so one thread finishing and closing the shared
+session could pull the connection pool out from under the other
+thread's in-flight request. Season didn't have the concurrency risk
+but had the same pool-churn issue. Call session.get() directly instead.
+- Reuse a session and cache Team.logo instead of refetching
+Team.logo constructed a brand-new throwaway ChickenSession() on every
+property access, with no connection reuse across accesses or across
+different Team instances' typical usage pattern, and re-downloaded
+the image every time despite it never changing. Store one session on
+the instance (same pattern as Player/Season) and make logo a
+cached_property.
+- Add raise_for_status() to HTTP calls in player/team/season
+None of these three classes checked the HTTP response status before
+parsing it as JSON/image content, so a 404 or other error response
+surfaced as an opaque KeyError/JSONDecodeError deep inside a _munge_*
+function or PIL's image decoder instead of a clear error at the call
+site.
+- Wire up _api_constants.py, fixing download_pbp's oversized default limit
+_api_constants.py existed only as a target for test_api_limits.py's
+drift check; api.py's 10 paginated download_* methods each hardcoded
+their own default limit inline instead of referencing it. One of those
+hardcoded values was wrong: download_pbp() defaulted to 100_000, but
+the SDK's read_pbp caps limit at 50_000 (PBP_MAX_LIMIT) — calling it
+with no explicit limit would fail SDK-side validation. Replaced all
+ten literals with PBP_MAX_LIMIT/STATS_MAX_LIMIT/PRED_GOAL_MAX_LIMIT.
+- Route ChickenStats._finalize_dataframe through shared _to_backend
+_finalize_dataframe hand-rolled a separate pandas-only conversion path
+instead of using the utilities._to_backend helper the rest of the
+package relies on. Widened ChickenStats(backend=...) to accept
+pyarrow/narwhals like Scraper/Game already do, and swapped the bare
+ValueError for UnsupportedBackendError to match _validation_utils.py's
+existing convention for the same failure mode.
+
+### Build
+
+- Update uv.lock
+Updating dependencies
+- Update dependencies
+
+### CI/CD
+
+- **docs**: Explicitly install docs dependency group for mkdocs/zensical builds
+- Run a fast test check on push/PR, not just schedule/release
+tests.yml previously only triggered on a monthly schedule, manual
+dispatch, or as new_release.yaml's pre-publish gate — never on push
+or pull_request. A broken PR could merge to main without the test
+suite running against it at all. Added push/pull_request triggers
+that run just the ubuntu-latest + 3.13 combo for fast PR signal; the
+full 12-way OS x Python matrix still runs on schedule/dispatch/release.
+
+### Documentation
+
+- Update guides, tutorials, and roadmap for v1.8.0 release
+- Clarify ChickenSession thread-safety invariant
+Audited the shared-session-across-ThreadPoolExecutor pattern used by
+Scraper/Game prefetch. requests.Session isn't documented thread-safe
+in general, but the underlying urllib3 connection pool is, and
+grepping the codebase confirms update_headers() is never called mid-
+scrape (only in its own docstring example and test) — so the current
+usage is safe in practice. Document the actual invariant (don't mutate
+session-level state while requests are in flight) rather than adding a
+lock that would serialize concurrent requests for no real benefit.
+
+### Features
+
+- **core**: Align scraper, api, and evolving_hockey modules for v1.8.0
+- **core**: Add automated data lineage tracking and gzip score adjustments
+
+### Miscellaneous
+
+- Bumping version
+- Configure test workflow and bump version to 1.8.0
+- **docs**: Completely remove mkdocs packages from docs group, retaining zensical for documentation
+- **docs**: Add mkdocstrings-python for zensical python reference API parsing
+- **deps**: Normalize chickenstats_api dependency name and map to workspace sources
+- Remove uv workspace, fix matplotlib style, and add offline tests
+
+### Performance
+
+- Cache Game instances per game_id on Scraper
+_scrape_single_game constructed a fresh Game(...) on every call, so
+sequential partial-property access (e.g. scraper.api_events then
+scraper.rosters for the same games) redundantly re-fetched data
+already cached on a previous Game instance's cached_properties.
+Cache by game_id and reuse across scrape_type calls.
+- Vectorize null-column check in _finalize_dataframe
+df.select(col for col in df if col.is_not_null().any()) issued one
+is_not_null().any() reduction per column. Compute all columns' not-null
+status in a single vectorized pass instead.
+- Make evolving_hockey score-adjustment weights load lazy
+adj_weights_lf was built at module import time, unpickling and
+gzip-decompressing chicken_nhl's score-adjustment file before any
+data was actually processed. Defer via lru_cache so importing
+chickenstats.evolving_hockey doesn't pay this cost upfront.
+- Defer per-slot aggregation in prep_oi to a single group_by per category
+prep_oi ran a separate df.group_by(group_list).agg(agg_stats) for each
+of the 21 lineup-slot columns (event_on_1-7, opp_on_1-7, change_on_1-7),
+even though the per-category concat immediately afterward
+(event_stats/opp_stats/zones_stats) already re-aggregates across all
+slots in one group_by. Replace the per-slot group_by with a plain
+select+rename, so aggregation happens once per category (~3 group_by
+calls) instead of once per slot (~21) plus category-level (~3).
+
+Verified via a standalone diff harness comparing old vs. new output
+across 4 real games spanning different NHL eras (modern, playoff,
+pre-lockout, OT) and all 64 level/strength_state/score/teammates/
+opposition parameter combinations per game (256 total) - zero
+mismatches beyond float64 summation-order noise (~1e-15, well under
+the 1e-6 tolerance used). Also ran the full test_aggregation.py,
+test_scraper.py, test_game.py suites (368 tests) and all
+regression-marked tests (190 tests) with zero failures.
+
+### Refactor
+
+- **deps**: Remove docs from dev dependency group to avoid build issues
+- Extract season.py's hardcoded data tables to _season_constants.py
+regular_season_end_dates and _TEAMS_BY_YEAR made up ~75% of season.py's
+line count as pure data with no logic, mirroring the pattern already
+used for _agg_constants.py elsewhere in the package. Extract them to a
+dedicated module and import into season.py; no behavior change.
+- Centralize opponent-swap rename dict in _agg_constants.py
+prep_ind, prep_oi, prep_lines, and prep_team_stats each duplicated the
+same team/lineup/goalie/score-state swap mapping inline. Extracted to
+OPPONENT_SWAP_COLS so the four call sites stay in sync.
+- Centralize evolving_hockey team-abbreviation map
+pbp.py's replacement_teams and _aggregation.py's _TEAM_REPLACE were
+identical dicts maintained separately. Moved to _agg_constants.py as
+TEAM_REPLACE and updated the stale "no rename dicts are needed" comment.
+- Delete unused validation_pandas.py
+pbp_pandera_pandas and stats_pandera_pandas had no callers anywhere in
+src/ or tests/ — api.py's pandas backend path doesn't validate through
+pandera. Removed the module and its CLAUDE.md reference; the underlying
+pandas_dtype_map/pandas_pandera_options in _validation_schema.py stay,
+since they're still exercised by _validation_utils tests and back
+polars_pandera_options.
+
+## [1.7.9.29] - 2026-06-02
+
+### Bug Fixes
+
 - Update new_release
 Updating to latest git-cliff action, threw an error last time
 - Bug with API ID fallback
@@ -55,6 +315,14 @@ Sorting data before saving to preserver order
 - Updating leakage of uv environments
 - Removing xG features
 Removes ixg from aggregations / stats unless column presenting
+- Updating pre-commit
+Updating pre-commit for repo changes
+- Cleaning up dependencies
+Cleaning up dependencies
+- Updating logo url
+Updating url for logos so the Team class can properly pull them in
+- Addressing type checking errors
+Addressing type checking errors
 
 ### Build
 
@@ -72,6 +340,10 @@ Upating dependencies
 - Updating dependencies
 - Adding dependencies and updating ruff sources
 Adding dependencies and updating ruff sources
+- Updating dependencies
+updating dependencies
+- Updating chickenstats-api dependency
+Updating chickenstats-api dependency now that it has been released
 
 ### CI/CD
 
@@ -127,6 +399,10 @@ Final commit of the xG model before moving behind the paywall
 Initial commit to prep for the cascade xG model
 - Adding chickenstats-xg
 Adjusting aggregation to account for base_xg, context_xg, and pred_goal, which are part of chickenstats-xg
+- Adding chickenstats xG fields
+Adding fields for scraper to natively populate fields used in xG model
+- New chickenstats API sdk
+Updating for the latest features in the chickenstats API sdk
 
 ### Refactor
 
@@ -142,6 +418,10 @@ Moving xG experiments to another repo and prep scraper for public release withou
 Moving xG files to another repo
 - Removing xG
 Removing xG features and functionality from the public scraper
+- Moving logos to assets
+Moving logos from project root to assets folder for cleaner file structure
+- Updating project root
+Updating project root to consolidate files and improve developer experience. Added files like changelog
 
 ### Testing
 
