@@ -84,11 +84,14 @@ def _annotation_has_list(annotation) -> bool:
 
 # Pydantic models
 try:
-    from importlib.metadata import version
+    from importlib.metadata import version, PackageNotFoundError
 
     _VERSION = version("chickenstats")
-except Exception:
-    _VERSION = "1.8.0"
+except PackageNotFoundError:
+    # Package isn't installed (e.g. running from a source checkout with no
+    # editable install registered) — avoid hardcoding a version string that
+    # would silently go stale on every release.
+    _VERSION = "unknown"
 
 
 class ChickenBaseModel(BaseModel):

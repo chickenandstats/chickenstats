@@ -594,7 +594,12 @@ def add_cs_mplstyles() -> None:
         if hasattr(plt.style, "available"):
             try:
                 plt.style.available[:] = sorted(plt.style.library.keys())
-            except Exception:
+            except TypeError:
+                # Some matplotlib versions expose `available` as an immutable
+                # sequence that doesn't support slice assignment. Non-fatal:
+                # plt.style.library was already updated above, so
+                # plt.style.use("chickenstats") still works — only tab-completion
+                # / `plt.style.available` discovery of the new style is affected.
                 pass
 
     _STYLES_REGISTERED = True
