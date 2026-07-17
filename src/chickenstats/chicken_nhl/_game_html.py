@@ -218,8 +218,6 @@ class _GameHTMLMixin(_GameBase):
     @shared_doc(_GAME_CHANGES_DF_DOC)
     def changes_df(self) -> pd.DataFrame | pl.DataFrame:
         """changes_df — docstring lives in _docstrings._GAME_CHANGES_DF_DOC."""
-        # TODO: Add API ID columns to documentation
-
         return self._finalize_dataframe(data=self.changes, schema=changes_polars_schema)
 
     def _fetch_html_events(self) -> list:
@@ -1192,6 +1190,4 @@ class _GameHTMLMixin(_GameBase):
     @shared_doc(_GAME_SHIFTS_DF_DOC)
     def shifts_df(self) -> pd.DataFrame | pl.DataFrame:
         """shifts_df — docstring lives in _docstrings._GAME_SHIFTS_DF_DOC."""
-        # TODO: Add API ID to documentation
-
         return self._finalize_dataframe(data=self.shifts, schema=shifts_polars_schema)

@@ -313,8 +313,6 @@ class _ScraperRawMixin(_ScraperBase):
             Then you can access the property as a Pandas DataFrame
             >>> scraper.changes
         """
-        # TODO: Add API ID columns to documentation
-
         self._scrape("changes")
 
         df = self._finalize_dataframe(data=self._changes, schema=changes_polars_schema)
@@ -451,8 +449,6 @@ class _ScraperRawMixin(_ScraperBase):
     @shared_doc(_SCRAPER_PLAY_BY_PLAY_DOC)
     def play_by_play(self) -> DataFrameT:
         """play_by_play — docstring lives in _docstrings._SCRAPER_PLAY_BY_PLAY_DOC."""
-        # TODO: Add change on / change off API ID columns to documentation
-
         if set(self.game_ids) != self._scraped_play_by_play:
             self._scrape("play_by_play")
 
