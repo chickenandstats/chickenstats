@@ -1,21 +1,17 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 import chickenstats_api
 import polars as pl
-
-if TYPE_CHECKING:
-    import pandas as pd
-    import pyarrow as pa
-    import narwhals as nw
 
 from chickenstats.api._api_constants import PBP_MAX_LIMIT, PRED_GOAL_MAX_LIMIT, STATS_MAX_LIMIT
 from chickenstats.api._api_utils import _to_int_list, _to_str_list
 from chickenstats.exceptions import UnsupportedBackendError
 from chickenstats.utilities import ChickenProgress, ChickenProgressIndeterminate
 from chickenstats.utilities.enums import Backend
+from chickenstats.utilities.types import DataFrameT
 from chickenstats.utilities.utilities import _to_backend
 
 
@@ -211,7 +207,7 @@ class ChickenStats:
         self.backend = backend
         self.limit = limit
 
-    def _finalize_dataframe(self, response) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    def _finalize_dataframe(self, response) -> DataFrameT:
         """Internal method to finalize dataframes when returning stats."""
         if self.backend not in (Backend.POLARS, Backend.PANDAS, Backend.PYARROW, Backend.NARWHALS):
             raise UnsupportedBackendError(f"Unsupported backend: {self.backend!r}")
@@ -313,7 +309,7 @@ class ChickenStats:
         opp_team: list[str] | None = None,
         strength_state: list[str] | None = None,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download play-by-play data from the chickenstats API.
 
         Parameters:
@@ -433,7 +429,7 @@ class ChickenStats:
         opposition: bool = False,
         level: str | None = None,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download individual game stats data from the chickenstats API.
 
         Parameters:
@@ -533,7 +529,7 @@ class ChickenStats:
         teammates: bool = False,
         opposition: bool = False,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download season-level aggregated stats data from the chickenstats API.
 
         Parameters:
@@ -617,7 +613,7 @@ class ChickenStats:
         score_state: bool = False,
         level: str | None = None,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download game-level team stats data from the chickenstats API.
 
         Parameters:
@@ -690,7 +686,7 @@ class ChickenStats:
         strength_state: list[str] | str | None = None,
         score_state: bool = False,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download season-level team stats data from the chickenstats API.
 
         Parameters:
@@ -865,7 +861,7 @@ class ChickenStats:
         linemates: bool = False,
         opposition: bool = False,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download game-level line stats data from the chickenstats API.
 
         Parameters:
@@ -946,7 +942,7 @@ class ChickenStats:
         linemates: bool = False,
         opposition: bool = False,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download season-level line stats data from the chickenstats API.
 
         Parameters:
@@ -1019,7 +1015,7 @@ class ChickenStats:
         team: list[str] | str | None = None,
         situation: list[str] | str | None = None,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download RAPM scores from the chickenstats API.
 
         Parameters:
@@ -1083,7 +1079,7 @@ class ChickenStats:
         sessions: list[str] | str | None = None,
         game_id: list[str | int] | str | int | None = None,
         disable_progress_bar: bool = False,
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download pre-computed pred_goal values from the chickenstats API.
 
         Parameters:
@@ -1130,9 +1126,7 @@ class ChickenStats:
 
         return df
 
-    def get_live_games(
-        self, disable_progress_bar: bool = True
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    def get_live_games(self, disable_progress_bar: bool = True) -> DataFrameT:
         """Get currently live games from the chickenstats API.
 
         Parameters:
@@ -1164,7 +1158,7 @@ class ChickenStats:
 
     def download_live_pbp(
         self, game_id: list[str | int] | str | int | None = None, disable_progress_bar: bool = False
-    ) -> pl.DataFrame | pd.DataFrame | pa.Table | nw.DataFrame:
+    ) -> DataFrameT:
         """Download live play-by-play data from the chickenstats API.
 
         Parameters:
