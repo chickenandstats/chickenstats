@@ -1,6 +1,12 @@
 name: build
 
 on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: '0 6 1 * *'
   workflow_call:
@@ -16,6 +22,12 @@ concurrency:
 
 jobs:
   test:
+    # On push/pull_request, only run the fast ubuntu + 3.13 combo for quick PR
+    # signal. The full OS x Python matrix still runs on schedule, workflow_dispatch,
+    # and workflow_call (i.e. the pre-publish gate in new_release.yaml).
+    if: >-
+      github.event_name != 'push' && github.event_name != 'pull_request' ||
+      (matrix.python == '3.13' && matrix.os == 'ubuntu-latest')
     strategy:
       fail-fast: false
       matrix:
