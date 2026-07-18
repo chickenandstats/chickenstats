@@ -40,7 +40,7 @@ Source Code: https://github.com/chickenandstats/chickenstats
 """
 
 from chickenstats.chicken_nhl.scraper import Scraper
-from chickenstats.chicken_nhl.season import Season, multi_season_schedule
+from chickenstats.chicken_nhl.season import Season, multi_season_schedule, add_schedule_context
 from chickenstats.chicken_nhl.game import Game
 from chickenstats.chicken_nhl.player import Player
 from chickenstats.chicken_nhl.team import Team
@@ -58,6 +58,7 @@ __all__ = [
     "Scraper",
     "Season",
     "multi_season_schedule",
+    "add_schedule_context",
     "Game",
     "Player",
     "Team",
