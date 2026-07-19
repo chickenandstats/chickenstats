@@ -210,6 +210,8 @@ _PBP_FIELDS: dict[str, tuple[str, str]] = {
     "is_away": ("int", "Whether event is away, e.g., 1"),
     "home_team": ("str", "Home team, e.g., CHI"),
     "away_team": ("str", "Away team, e.g., NSH"),
+    "home_team_name": ("str", "Home team's full name, e.g., CHICAGO BLACKHAWKS"),
+    "away_team_name": ("str", "Away team's full name, e.g., NASHVILLE PREDATORS"),
     "home_skaters": ("int", "Number of home team skaters on-ice (excl. goalies), e.g., 6"),
     "away_skaters": ("int", "Number of away team skaters on-ice (excl. goalies), e.g., 5"),
     "home_on": (

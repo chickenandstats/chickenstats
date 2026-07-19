@@ -27,6 +27,7 @@ from chickenstats.chicken_nhl._docstrings import (
     shared_doc,
 )
 from chickenstats.chicken_nhl._game_core import _GameBase
+from chickenstats.chicken_nhl.team import team_names
 from chickenstats.exceptions import DataMismatchError
 
 # Collapse raw NHL position codes to the F/D/G encoding used in xG model training.
@@ -212,12 +213,17 @@ class _GamePBPMixin(_GameBase):
             "GOFF": 16,
         }
 
+        home_team = self.home_team["abbrev"]
+        away_team = self.away_team["abbrev"]
+
         for event in game_list:
             event.update(
                 {
                     "game_date": self.game_date,
-                    "home_team": self.home_team["abbrev"],
-                    "away_team": self.away_team["abbrev"],
+                    "home_team": home_team,
+                    "away_team": away_team,
+                    "home_team_name": team_names.get(home_team, home_team),
+                    "away_team_name": team_names.get(away_team, away_team),
                     "version": event.get("version", 1),
                 }
             )
