@@ -188,6 +188,7 @@ pass_env = ["*"]
 set_env = {COVERAGE_FILE = ".coverage.{env_name}", CHICKENSTATS_USERNAME = "{env:CHICKENSTATS_USERNAME}", CHICKENSTATS_PASSWORD = "{env:CHICKENSTATS_PASSWORD}"}
 commands = [["pytest", "-m", "not live", "{posargs}", "--cache-clear"]]
 package = "editable"
+extras = ["plotting"]
 dependency_groups = ["tests"]
 
 [tool.tox.env.clean]
