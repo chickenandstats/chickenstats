@@ -99,4 +99,4 @@ Please open an [issue](https://github.com/chickenandstats/chickenstats/issues). 
 
 ## Architecture
 
-See [CLAUDE.md](CLAUDE.md) for a map of the codebase: submodule roles, class inheritance chains, internal file descriptions, and key patterns.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for a map of the codebase: submodule roles, class inheritance chains, internal file descriptions, and key patterns.
