@@ -70,7 +70,7 @@ class _GameHTMLMixin(_GameBase):
         """Worker method to transform shifts into changes."""
         changes_map = {}
 
-        # 1. Single Pass: Group all shifts by their start and end times instantly
+        # Group all shifts by their start and end times in a single pass
         for shift in shifts:
             period = shift["period"]
             team_venue = shift["team_venue"]
@@ -114,7 +114,7 @@ class _GameHTMLMixin(_GameBase):
             period, team_venue, time_seconds = key
             data = changes_map[key]
 
-            # Sort players numerically by jersey, then aggregate instantly using the static helper
+            # Sort players numerically by jersey before aggregating
             on_players = sorted(data["on"], key=lambda k: k.get("jersey", 0))
             off_players = sorted(data["off"], key=lambda k: k.get("jersey", 0))
 
@@ -207,7 +207,6 @@ class _GameHTMLMixin(_GameBase):
                 "change_off_goalie_api_id": off_data["G"]["api_ids"],
             }
 
-            # Validate instantly and append
             final_changes.append(ChangeEvent.model_validate(change_dict).model_dump())
 
         return final_changes
@@ -420,7 +419,6 @@ class _GameHTMLMixin(_GameBase):
                     if len(event_players) > 1:
                         event_players[0], event_players[1] = event_players[1], event_players[0]
 
-            # O(1) Dictionary Lookup for Players
             for idx, event_player in enumerate(event_players):
                 num = idx + 1
                 event_player = event_player.replace(" #", "")
@@ -564,7 +562,7 @@ class _GameHTMLMixin(_GameBase):
                 except (AttributeError, AssertionError):
                     pass
 
-                # (Your specific penalty overwrites like "GOALKEEPER INTERFERENCE" go here identically)
+                # Hand-curated overwrites for penalty descriptions that need normalizing.
                 if event.get("penalty"):
                     desc = event["description"]
                     if "INTERFERENCE" in desc and "GOALKEEPER" in desc:
@@ -983,7 +981,8 @@ class _GameHTMLMixin(_GameBase):
             )
             shift["player_name"] = correct_names_dict.get(player_name, player_name)
 
-            # Fast Time Parsing (Restored your original 'continue' logic to prevent bad data)
+            # Skip malformed time strings (no colon) rather than raising, so one bad
+            # value doesn't fail the whole shift.
             for col in ["start_time", "end_time", "duration"]:
                 t_str = shift.get(col, "")
                 if ":" not in t_str:
@@ -1097,7 +1096,7 @@ class _GameHTMLMixin(_GameBase):
 
                 final_shifts.append(PlayerShift.model_validate(shift).model_dump())
 
-            # B. Inject Missing Goalies instantly using the dictionary
+            # B. Inject missing goalies using team_goalies
             for team in ["HOME", "AWAY"]:
                 if len(team_goalies[team][period]) < 1:
                     base_goalie = None
