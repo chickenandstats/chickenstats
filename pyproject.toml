@@ -178,18 +178,51 @@ exclude_also = [
 
 [tool.tox]
 min_version = "4.0"
-env_list = ["{py310,py311,py312,py313}-{lin,mac,win}"]
+env_list = [
+    "py310-lin", "py310-mac", "py310-win",
+    "py311-lin", "py311-mac", "py311-win",
+    "py312-lin", "py312-mac", "py312-win",
+    "py313-lin", "py313-mac", "py313-win",
+]
 
 [tool.tox.env_run_base]
 labels = ["ci"]
 skip_install = false
-platform = {lin = "linux", mac = "darwin", win = "win32"}
 pass_env = ["*"]
 set_env = {COVERAGE_FILE = ".coverage.{env_name}", CHICKENSTATS_USERNAME = "{env:CHICKENSTATS_USERNAME}", CHICKENSTATS_PASSWORD = "{env:CHICKENSTATS_PASSWORD}"}
 commands = [["pytest", "-m", "not live", "{posargs}", "--cache-clear"]]
 package = "editable"
 extras = ["plotting"]
 dependency_groups = ["tests"]
+
+# tox's pyproject-native env_list doesn't expand brace-generative names (e.g.
+# "{py310,py311}-{lin,mac}") into individually runnable envs, unlike classic
+# tox.ini -- each combination needs its own explicit block below. All inherit
+# env_run_base's commands/dependency_groups/extras/etc., overriding only platform.
+[tool.tox.env.py310-lin]
+platform = "linux"
+[tool.tox.env.py310-mac]
+platform = "darwin"
+[tool.tox.env.py310-win]
+platform = "win32"
+[tool.tox.env.py311-lin]
+platform = "linux"
+[tool.tox.env.py311-mac]
+platform = "darwin"
+[tool.tox.env.py311-win]
+platform = "win32"
+[tool.tox.env.py312-lin]
+platform = "linux"
+[tool.tox.env.py312-mac]
+platform = "darwin"
+[tool.tox.env.py312-win]
+platform = "win32"
+[tool.tox.env.py313-lin]
+platform = "linux"
+[tool.tox.env.py313-mac]
+platform = "darwin"
+[tool.tox.env.py313-win]
+platform = "win32"
 
 [tool.tox.env.clean]
 platform = ".*"
