@@ -1218,12 +1218,14 @@ def prep_team_stats(
             df = pbp
 
         # ---- "For" stats ----
-        group_list = ["season", "session", "event_team"]
+        group_list = ["season", "session"]
+        if level in ("game", "period"):
+            group_list += ["game_id", "game_date"]
+        group_list.append("event_team")
+        if level in ("game", "period"):
+            group_list.append("opp_team")
         if strengths:
             group_list.append("strength_state")
-        if level in ("game", "period"):
-            group_list[2:2] = ["game_id", "game_date"]
-            group_list.insert(5, "opp_team")
         if level == "period":
             group_list.append("period")
         if score:
@@ -1304,12 +1306,15 @@ def prep_team_stats(
         )
 
         # ---- "Against" stats ----
-        group_list_a = ["season", "session", "opp_team"]
+        # Mirrors the "for" block above (opp_team/event_team swapped) -- see its comment.
+        group_list_a = ["season", "session"]
+        if level in ("game", "period"):
+            group_list_a += ["game_id", "game_date"]
+        group_list_a.append("opp_team")
+        if level in ("game", "period"):
+            group_list_a.append("event_team")
         if strengths:
             group_list_a.append("opp_strength_state")
-        if level in ("game", "period"):
-            group_list_a[2:2] = ["game_id", "game_date"]
-            group_list_a.insert(5, "event_team")
         if level == "period":
             group_list_a.append("period")
         if score:

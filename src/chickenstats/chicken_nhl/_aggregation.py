@@ -246,7 +246,6 @@ def prep_ind(
                 "shot",
                 "shot_adj",
                 "take",
-                # "corsi",
                 "fenwick",
                 "fenwick_adj",
                 "pred_goal",
@@ -258,8 +257,6 @@ def prep_ind(
                 "nzf",
                 "dzf",
             ]
-
-            # stats_dict = {x: "sum" for x in stats_list if x in df.columns}
 
             agg_stats = [pl.sum(x) for x in stats_list if x in df.columns]
 
@@ -438,8 +435,7 @@ def prep_ind(
 
             player_df = player_df.rename(rename_cols)
 
-        # suffix is explicit (not just Polars' default) because isb/isb_adj below depend on
-        # the "_right"-suffixed columns this join produces for the player_2 (blocker) side.
+        # suffix="_right" explicit — isb/isb_adj below reference those columns.
         ind_stats = ind_stats.join(
             player_df, on=merge_list, how="full", coalesce=True, nulls_equal=True, suffix="_right"
         )
@@ -780,11 +776,7 @@ def prep_oi(
         else:
             raise ValueError(f"Unrecognized player slot column: {player!r}")
 
-        # Defer aggregation: select the slim (group_list + stat) columns and rename to
-        # canonical player/eh_id/api_id/position names here, but don't group_by per slot —
-        # the per-category concat + single group_by a few lines below (event_stats/
-        # opp_stats/zones_stats) already re-aggregates across all 7 slots in one pass, so
-        # aggregating here too was a redundant full-frame group_by repeated 21 times.
+        # Aggregation is deferred to the single group_by below, after all slots are concatenated.
         select_cols = list(dict.fromkeys([*group_list, *stats_cols]))
         player_df = df.select(select_cols)
 
@@ -868,8 +860,7 @@ def prep_oi(
         x for x in merge_cols if x in event_stats.columns and x in opp_stats.columns and x in zones_stats.columns
     ]
 
-    # suffix is explicit (not just Polars' default) because toi/bsf/bsf_adj/cf_adj below
-    # depend on the "_right"-suffixed columns this join produces for the opp_stats side.
+    # suffix="_right" explicit — toi/bsf/bsf_adj/cf_adj below reference those columns.
     oi_stats = event_stats.join(
         opp_stats, on=merge_cols, how="full", coalesce=True, nulls_equal=True, suffix="_right"
     )  # .fill_null(0)
@@ -1167,15 +1158,8 @@ def prep_lines(
         if "opp_team" not in group_list:
             group_list.append("opp_team")
 
-    # Creating dictionary of statistics for the groupby function
-
-    # `stats` (raw event column) and `columns` (renamed sabermetric abbreviation) are
-    # positionally paired, index-for-index, rather than written as one inline dict --
-    # this list reads as "row N raw stat -> row N abbreviation" for a domain reader
-    # scanning the two blocks (this one and the mirroring "against" block below), and
-    # keeps the raw names identical/comparable across both. Must stay equal length and
-    # in the same order; strict=True below turns a future misalignment into an
-    # immediate error instead of a silently wrong (truncated) rename mapping.
+    # stats/columns are positionally paired (index-for-index rename); must stay equal
+    # length and order — strict=True below catches misalignment instead of truncating.
     stats = [
         "pred_goal",
         "pred_goal_adj",
@@ -1347,9 +1331,7 @@ def prep_lines(
 
     # Creating dictionary of statistics for the groupby function
 
-    # Mirrors the "for" block above (positionally-paired stats/columns, same convention
-    # and reasoning) but for the opponent's perspective -- same raw stats, "a" suffix
-    # instead of "f" (xga vs xgf, fa vs ff, etc.).
+    # Mirrors the "for" block above, "a" suffix instead of "f" (xga vs xgf, etc.)
     stats = [
         "pred_goal",
         "pred_goal_adj",
@@ -1565,8 +1547,7 @@ def prep_lines(
         if "opp_team" not in merge_list:
             merge_list.insert(3, "opp_team")
 
-    # suffix is explicit (not just Polars' default) because toi below depends on the
-    # "_right"-suffixed column this join produces for the lines_a (against) side.
+    # suffix="_right" explicit — toi below references that column.
     lines = lines_f.join(lines_a, how="full", on=merge_list, coalesce=True, nulls_equal=True, suffix="_right")
 
     null_columns = (pl.col(x).fill_null(0) for x in lines.columns if x not in merge_list)
@@ -1625,17 +1606,19 @@ def prep_team_stats(
 
     data = df.join(df_ext, how="left", on=merge_cols, nulls_equal=True)
 
-    # Getting the "for" stats
+    # "for" stats — group_list built directly in final order
+    group_list = ["season", "session"]
 
-    group_list = ["season", "session", "event_team"]
+    if level == "game" or level == "period" or opposition:
+        group_list += ["game_id", "game_date"]
+
+    group_list.append("event_team")
+
+    if level == "game" or level == "period" or opposition:
+        group_list.append("opp_team")
 
     if strength_state:
         group_list.append("strength_state")
-
-    if level == "game" or level == "period" or opposition:
-        group_list.insert(3, "opp_team")
-
-        group_list[2:2] = ["game_id", "game_date"]
 
     if level == "period":
         group_list.append("period")
@@ -1643,8 +1626,7 @@ def prep_team_stats(
     if score:
         group_list.append("score_state")
 
-    # `stats`/`new_cols` positionally paired -- see the equivalent comment in prep_lines
-    # for the rationale (index-for-index raw-stat -> abbreviation, mirrored for/against).
+    # stats/new_cols positionally paired (index-for-index rename)
     stats = [
         "pred_goal",
         "pred_goal_adj",
@@ -1732,15 +1714,19 @@ def prep_team_stats(
 
     # Getting the "against" stats
 
-    group_list = ["season", "session", "opp_team"]
+    # Mirrors the "for" block above (opp_team/event_team swapped) -- see its comment.
+    group_list = ["season", "session"]
+
+    if level == "game" or level == "period":
+        group_list += ["game_id", "game_date"]
+
+    group_list.append("opp_team")
+
+    if level == "game" or level == "period":
+        group_list.append("event_team")
 
     if strength_state:
         group_list.append("opp_strength_state")
-
-    if level == "game" or level == "period":
-        group_list.insert(3, "event_team")
-
-        group_list[2:2] = ["game_id", "game_date"]
 
     if level == "period":
         group_list.append("period")
@@ -1748,8 +1734,7 @@ def prep_team_stats(
     if score:
         group_list.append("opp_score_state")
 
-    # `stats`/`new_cols` positionally paired -- see the equivalent comment in prep_lines
-    # for the rationale (index-for-index raw-stat -> abbreviation, mirrored for/against).
+    # stats/new_cols positionally paired (index-for-index rename)
     stats = [
         "pred_goal",
         "pred_goal_adj",
@@ -1842,8 +1827,7 @@ def prep_team_stats(
 
     merge_list = [x for x in merge_list if x in stats_for.columns and x in stats_against.columns]
 
-    # suffix is explicit (not just Polars' default) because toi below depends on the
-    # "_right"-suffixed column this join produces for the stats_against side.
+    # suffix="_right" explicit — toi below references that column.
     team_stats = stats_for.join(
         stats_against, on=merge_list, how="full", nulls_equal=True, coalesce=True, suffix="_right"
     )
