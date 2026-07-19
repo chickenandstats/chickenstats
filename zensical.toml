@@ -158,6 +158,9 @@ show_root_full_path = false
 separate_signature = true
 merge_init_into_class = false
 inherited_members = true
+# Needed so griffe picks up docstrings assigned at runtime via @shared_doc, not just
+# the static AST (chicken_nhl's mixin files rely on this).
+force_inspection = true
 
 [project.markdown_extensions.toc]
 toc_depth = 4
