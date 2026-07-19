@@ -21,13 +21,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test-fast:
+    # Quick PR signal: just ubuntu + 3.13. The full OS x Python matrix (below)
+    # runs on schedule, workflow_dispatch, and workflow_call (the pre-publish
+    # gate in new_release.yaml) instead. matrix.* isn't available in a job-level
+    # if:, so this needs its own job rather than a matrix condition.
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install tox
+        run: uv tool install tox --with tox-uv
+
+      - name: Run Test Suite
+        run: tox run -e py313-lin
+        env:
+          CHICKENSTATS_USERNAME: ${{ secrets.CHICKENSTATS_USERNAME }}
+          CHICKENSTATS_PASSWORD: ${{ secrets.CHICKENSTATS_PASSWORD }}
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-py313-lin
+          path: .coverage.py313-lin
+          include-hidden-files: true
+
   test:
-    # On push/pull_request, only run the fast ubuntu + 3.13 combo for quick PR
-    # signal. The full OS x Python matrix still runs on schedule, workflow_dispatch,
-    # and workflow_call (i.e. the pre-publish gate in new_release.yaml).
-    if: >-
-      github.event_name != 'push' && github.event_name != 'pull_request' ||
-      (matrix.python == '3.13' && matrix.os == 'ubuntu-latest')
+    if: github.event_name != 'push' && github.event_name != 'pull_request'
     strategy:
       fail-fast: false
       matrix:
@@ -88,7 +118,7 @@ jobs:
 
   report:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [test, test-fast]
     if: always()
     steps:
       - uses: actions/checkout@v4
