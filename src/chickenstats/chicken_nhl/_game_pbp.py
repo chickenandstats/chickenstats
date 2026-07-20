@@ -224,6 +224,7 @@ class _GamePBPMixin(_GameBase):
                     "away_team": away_team,
                     "home_team_name": team_names.get(home_team, home_team),
                     "away_team_name": team_names.get(away_team, away_team),
+                    "venue_location": self.venue_location,
                     "version": event.get("version", 1),
                 }
             )

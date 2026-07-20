@@ -397,6 +397,7 @@ class PBPEvent(BaseModel):
     away_team: str
     home_team_name: str
     away_team_name: str
+    venue_location: str | None = None
     home_skaters: int
     away_skaters: int
     home_on: list | str | None = None

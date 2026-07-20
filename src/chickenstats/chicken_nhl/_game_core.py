@@ -27,6 +27,7 @@ class _GameBase:
         game_id: int
         home_team: dict
         away_team: dict
+        venue_location: str | None
         game_date: str
         api_response: dict | None
         html_rosters_endpoint: str
@@ -156,8 +157,8 @@ class _GameCore(_GameBase):
         so it is safe to call multiple times (e.g., from different mixins or prefetch).
 
         Populates: ``api_response``, ``away_team``, ``home_team``, ``venue``,
-        ``game_date``, ``start_time_et``, ``tv_broadcasts``, ``game_state``,
-        ``game_schedule_state``, ``time_remaining``, ``seconds_remaining``,
+        ``venue_location``, ``game_date``, ``start_time_et``, ``tv_broadcasts``,
+        ``game_state``, ``game_schedule_state``, ``time_remaining``, ``seconds_remaining``,
         ``running``, ``in_intermission``, ``current_period``, ``current_period_type``.
         """
         if self.api_response is not None:
@@ -190,6 +191,7 @@ class _GameCore(_GameBase):
 
         # Venue and Time information
         self.venue = response["venue"]["default"].upper()
+        self.venue_location = response.get("venueLocation", {}).get("default")
 
         est = ZoneInfo("America/New_York")
         utc = timezone.utc
