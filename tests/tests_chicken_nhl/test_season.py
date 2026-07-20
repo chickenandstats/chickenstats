@@ -395,6 +395,7 @@ def _mock_game(**overrides) -> dict:
         "startTimeUTC": "2023-10-10T23:00:00Z",
         "venueTimezone": "US/Central",
         "gameState": "OFF",
+        "gameScheduleState": "OK",
         "homeTeam": {
             "abbrev": "NSH",
             "id": 18,

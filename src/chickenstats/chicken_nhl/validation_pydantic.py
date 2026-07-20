@@ -791,6 +791,8 @@ class ScheduleGame(ChickenBaseModel):
     game_date: str
     start_time: str
     game_state: str
+    game_schedule_state: str
+    game_outcome: str | None = None
     home_team: str
     home_team_id: int
     home_score: int

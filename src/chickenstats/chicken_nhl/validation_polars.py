@@ -94,6 +94,8 @@ schedule_polars_schema = {
     "game_date": pl.String,
     "start_time": pl.String,
     "game_state": pl.String,
+    "game_schedule_state": pl.String,
+    "game_outcome": pl.String,
     "home_team": pl.String,
     "home_team_id": pl.Int64,
     "home_score": pl.Int64,

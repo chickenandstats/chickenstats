@@ -228,6 +228,8 @@ class Season:
                 "game_date": game_date,
                 "start_time": start_time,
                 "game_state": game["gameState"],
+                "game_schedule_state": game["gameScheduleState"],
+                "game_outcome": game.get("gameOutcome", {}).get("lastPeriodType"),
                 "home_team": game["homeTeam"]["abbrev"],
                 "home_team_id": game["homeTeam"]["id"],
                 "home_score": game["homeTeam"].get("score", 0),
@@ -287,6 +289,10 @@ class Season:
                 Start time for the game in the home time zone, in military time, e.g., 19:00
             game_state (str):
                 Status of the game, whether official or future, e.g., OFF
+            game_schedule_state (str):
+                Whether the game is on as scheduled, postponed, or cancelled, e.g., OK
+            game_outcome (str | None):
+                How the game ended, e.g., REG. None if not yet played.
             home_team (str):
                 Three-letter code for the home team, e.g., NSH
             home_team_id (int):
