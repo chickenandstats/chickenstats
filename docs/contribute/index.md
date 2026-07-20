@@ -7,7 +7,7 @@ description: "Contribute to chickenstats"
 # :fontawesome-solid-user-group: **Contribute**
 
 I appreciate any and all input or support. Feel free to contribute with bug reports or feature requests at
-the **[GitHub issues page](https://github.com/chickenandstats/chickenstats/issues)**.
+the **[GitHub issues page](https://github.com/chickenstats/chickenstats/issues)**.
 For anything longer term, I've set out my development plans at the
 **[:octicons-project-roadmap-24: Roadmap](roadmap.md)**. 
 
@@ -77,7 +77,7 @@ please see **[:material-google-analytics: xG Model](../xg_model/index.md)**.
 
 ## :material-bug: **Bugs & feature requests**
 
-Please report any bugs or issues via the `chickenstats` **[issues](https://github.com/chickenandstats/chickenstats/issues)** page, where you can also post feature requests.
+Please report any bugs or issues via the `chickenstats` **[issues](https://github.com/chickenstats/chickenstats/issues)** page, where you can also post feature requests.
 Before doing so, please check the [roadmap](roadmap.md), there might already be plans to include your request. 
 
 ## :material-message: **Contact information**

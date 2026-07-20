@@ -43,9 +43,9 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://www.chickenstats.com"
-Repository = "https://github.com/chickenandstats/chickenstats"
+Repository = "https://github.com/chickenstats/chickenstats"
 Documentation = "https://www.chickenstats.com"
-"Bug Tracker" = "https://github.com/chickenandstats/chickenstats/issues"
+"Bug Tracker" = "https://github.com/chickenstats/chickenstats/issues"
 
 [project.optional-dependencies]
 plotting = [
@@ -300,4 +300,4 @@ topo_order = false
 sort_commits = "oldest"
 
 [tool.uv.sources]
-chickenstats_api = { git = "https://github.com/chickenandstats/chickenstats-api-python.git" }
+chickenstats_api = { git = "https://github.com/chickenstats/chickenstats-api-python.git" }

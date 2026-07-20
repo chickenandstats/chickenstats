@@ -7,7 +7,7 @@ description: "Technical documentation & reference materials for chickenstats,
 
 # :chickenstats-logo-outline: **`chickenstats`**
 
-Welcome to the technical documentation & reference materials for **[chickenstats](https://github.com/chickenandstats/chickenstats)**,
+Welcome to the technical documentation & reference materials for **[chickenstats](https://github.com/chickenstats/chickenstats)**,
 an open-source Python package for scraping & analyzing sports data.
 
 ![Hero image of a scatter plot with drumsticks inter-mixed](assets/site_images/hero_transparent.png)
@@ -278,7 +278,7 @@ If you need help with any aspect of `chickenstats`, from installation to usage, 
 You can find me on :simple-bluesky: Bluesky at **[@chickenandstats.com](https://bsky.app/profile/chickenandstats.com)** or :material-email:
 email me at **[chicken@chickenandstats.com](mailto:chicken@chickenandstats.com)**.
 
-Please report any bugs or issues via the `chickenstats` **[issues](https://github.com/chickenandstats/chickenstats/issues)** page, where you can also post feature requests.
+Please report any bugs or issues via the `chickenstats` **[issues](https://github.com/chickenstats/chickenstats/issues)** page, where you can also post feature requests.
 Before doing so, please check the [roadmap](./contribute/roadmap.md), there might already be plans to include your request.
 
 ## :material-heart: **Acknowledgements**

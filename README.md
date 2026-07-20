@@ -2,14 +2,14 @@
 
 <div style="text-align: center;">
 
-[![Hero image - scatter plot with drumsticks and tooltips](https://raw.githubusercontent.com/chickenandstats/chickenstats/main/assets/hero_transparent.png)](https://chickenstats.com)
+[![Hero image - scatter plot with drumsticks and tooltips](https://raw.githubusercontent.com/chickenstats/chickenstats/main/assets/hero_transparent.png)](https://chickenstats.com)
 
 [![PyPI - Version](https://img.shields.io/pypi/v/chickenstats?color=BrightGreen)](https://pypi.org/project/chickenstats)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/chickenstats?color=BrightGreen)](https://pypi.org/project/chickenstats)
-[![tests](https://github.com/chickenandstats/chickenstats/actions/workflows/tests.yml/badge.svg)](https://github.com/chickenandstats/chickenstats/actions/workflows/tests.yml)
-[![codecov](https://codecov.io/gh/chickenandstats/chickenstats/graph/badge.svg?token=Z1ETX5L8FL)](https://codecov.io/gh/chickenandstats/chickenstats)
-![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/chickenandstats/chickenstats?color=BrightGreen)
-![GitHub License](https://img.shields.io/github/license/chickenandstats/chickenstats?color=BrightGreen)
+[![tests](https://github.com/chickenstats/chickenstats/actions/workflows/tests.yml/badge.svg)](https://github.com/chickenstats/chickenstats/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/chickenstats/chickenstats/graph/badge.svg?token=Z1ETX5L8FL)](https://codecov.io/gh/chickenstats/chickenstats)
+![GitHub Release Date - Published_At](https://img.shields.io/github/release-date/chickenstats/chickenstats?color=BrightGreen)
+![GitHub License](https://img.shields.io/github/license/chickenstats/chickenstats?color=BrightGreen)
 
 </div>
 
@@ -179,7 +179,7 @@ If you need help with any aspect of `chickenstats`, from installation to usage, 
 You can find me on Bluesky at **[@chickenandstats.com](https://bsky.app/profile/chickenandstats.com)** or
 email me at **[chicken@chickenandstats.com](mailto:chicken@chickenandstats.com)**.
 
-Please report any bugs or issues via the `chickenstats` **[issues](https://github.com/chickenandstats/chickenstats/issues)** page, where you can also post feature requests.
+Please report any bugs or issues via the `chickenstats` **[issues](https://github.com/chickenstats/chickenstats/issues)** page, where you can also post feature requests.
 Before doing so, please check the [roadmap](https://chickenstats.com/contribute/roadmap/), there might already be plans to include your request.
 
 ---
@@ -188,7 +188,7 @@ Before doing so, please check the [roadmap](https://chickenstats.com/contribute/
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for development setup,
 commit conventions, and the PR process. Found a bug or have a feature request? Open an
-[issue](https://github.com/chickenandstats/chickenstats/issues).
+[issue](https://github.com/chickenstats/chickenstats/issues).
 
 This project follows a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold it.
 
