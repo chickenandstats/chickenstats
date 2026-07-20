@@ -1,7 +1,6 @@
 """Dictionaries used to create pandas and polars pandera schemas.
 
 Includes:
-    * pandas_dtype_map - mapping of base datatypes to pandas pandera dtypes
     * polars_dtype_map - mapping of base datatypes to native polars dtypes
     * pandas_pandera_options - options to pass to pandas pandera DataFrameSchema
     * polars_pandera_options - options to pass to polars pandera DataFrameSchema
@@ -27,23 +26,12 @@ from __future__ import annotations
 
 import datetime as dt
 
-import pandera.pandas as pa_pd
-
 import polars as pl
 
 
 # ------------------------------
 # Mapping default data types to pandera / native dtypes
 # ------------------------------
-
-# pandas types
-pandas_dtype_map: dict = {
-    int: "Int64",  # Int64 (capital I) supports NaN/None natively
-    str: str,
-    float: float,
-    bool: bool,
-    dt.datetime: pa_pd.DateTime,
-}
 
 # polars types
 polars_dtype_map: dict = {
