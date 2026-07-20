@@ -285,6 +285,8 @@ class HTMLRosterPlayer(ChickenBaseModel):
     position: str
     starter: int
     status: str
+    captain: int
+    alternate_captain: int
 
 
 class RosterPlayer(ChickenBaseModel):
@@ -301,6 +303,8 @@ class RosterPlayer(ChickenBaseModel):
     position: str
     starter: int
     status: str
+    captain: int
+    alternate_captain: int
     headshot_url: str | None
 
 

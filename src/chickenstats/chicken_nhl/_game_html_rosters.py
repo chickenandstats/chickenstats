@@ -127,7 +127,11 @@ class _GameHTMLRostersMixin(_GameBase):
         """Worker to clean, fix, and validate a single HTML roster record."""
         raw_name = raw_player.get("player_name", "").upper()
 
-        # Remove Captain/Alternate (C)/(A) indicators
+        # Captain/Alternate (C)/(A) indicators
+        marker = re.search(r"\(\s?([CA])\s?\)", raw_name)
+        raw_player["captain"] = 1 if marker is not None and marker.group(1) == "C" else 0
+        raw_player["alternate_captain"] = 1 if marker is not None and marker.group(1) == "A" else 0
+
         clean_name = re.sub(r"\(\s?(.*)\)", "", raw_name)
         clean_name = clean_name.strip().encode("latin-1").decode("utf-8")
         raw_player["player_name"] = unidecode(clean_name)

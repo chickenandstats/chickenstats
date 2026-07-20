@@ -56,6 +56,8 @@ class _GameRostersMixin(_GameBase):
             merged_player["team_name"] = html_match.get("team_name")
             merged_player["status"] = html_match.get("status", "UNKNOWN")
             merged_player["starter"] = html_match.get("starter", 0)
+            merged_player["captain"] = html_match.get("captain", 0)
+            merged_player["alternate_captain"] = html_match.get("alternate_captain", 0)
 
             combined_roster.append(rosters_fixes(self.game_id, merged_player))
 

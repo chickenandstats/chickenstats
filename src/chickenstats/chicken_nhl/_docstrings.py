@@ -633,6 +633,8 @@ _HTML_ROSTERS_FIELDS: dict[str, tuple[str, str]] = {
     "position": ("str", "Player's position, e.g., L"),
     "starter": ("int", "Whether the player started the game, e.g., 0"),
     "status": ("str", "Whether player is active or scratched, e.g., ACTIVE"),
+    "captain": ("int", "Whether the player is team captain, e.g., 0"),
+    "alternate_captain": ("int", "Whether the player is an alternate captain, e.g., 0"),
 }
 
 # ---------------------------------------------------------------------------
@@ -652,6 +654,8 @@ _ROSTERS_FIELDS: dict[str, tuple[str, str]] = {
     "position": ("str", "Player's position, e.g., L"),
     "starter": ("int", "Whether the player started the game, e.g., 0"),
     "status": ("str", "Whether player is active or scratched, e.g., ACTIVE"),
+    "captain": ("int", "Whether the player is team captain, e.g., 0"),
+    "alternate_captain": ("int", "Whether the player is an alternate captain, e.g., 0"),
     "headshot_url": (
         "str | None",
         "URL to get player's headshot, e.g., https://assets.nhle.com/mugs/nhl/20192020/NSH/8476887.png",
