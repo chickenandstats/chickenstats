@@ -460,6 +460,32 @@ class TestGame:
         assert isinstance(game.play_by_play, list) and len(game.play_by_play) > 0
         assert isinstance(game.play_by_play_ext, list) and len(game.play_by_play_ext) > 0
 
+    @pytest.mark.regression
+    @pytest.mark.parametrize(
+        "game_id",
+        [
+            # Each of these has at least one GOAL/SHOT/MISS event with no recorded
+            # coords_x/coords_y (common in this era). Previously XGFields.model_validate
+            # raised on the missing/None coords, which _pbp_pipeline re-raised as
+            # DataMismatchError, failing play_by_play (and everything else) for the
+            # whole game. _calculate_pbp_xg now skips xG-feature validation for
+            # fenwick events with no coords instead of crashing the whole game.
+            2014020983,
+            2013020999,
+            2013020971,
+            2016020801,
+            2014020890,
+        ],
+    )
+    def test_play_by_play_missing_shot_coords_no_crash(self, game_id):
+        game = Game(game_id)
+        assert isinstance(game.play_by_play, list) and len(game.play_by_play) > 0
+        xg_fields = game.xg_fields
+        assert isinstance(xg_fields, list)
+        for row in xg_fields:
+            assert row["coords_x"] is not None
+            assert row["coords_y"] is not None
+
     # -------------------------------------------------------------------------
     # prefetch (merged with prefetch_caches_data)
     # -------------------------------------------------------------------------

@@ -337,10 +337,14 @@ class _ScraperCore(_ScraperBase):
 
         except (ChickenstatsError, RequestException, ValidationError):
             # Expected per-game failures: data-quality issues, network errors, bad payloads.
+            # Evict the cached Game so a retry starts fresh instead of reusing
+            # cached_property state left over from the failed attempt.
+            self._games.pop(game_id, None)
             logger.warning("Failed to scrape game %s", game_id, exc_info=True)
             return None
         except Exception:  # noqa: BLE001
             # Unexpected error — likely a real bug; log louder but don't crash the batch.
+            self._games.pop(game_id, None)
             logger.error("Unexpected error scraping game %s", game_id, exc_info=True)
             return None
 

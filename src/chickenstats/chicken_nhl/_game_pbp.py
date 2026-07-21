@@ -712,12 +712,14 @@ class _GamePBPMixin(_GameBase):
             final_pbp.append(PBPEvent.model_validate(play).model_dump())
             final_ext.append(PBPEventExt.model_construct(**play).model_dump())
             if play["event"] in fenwick_events:
-                xg_play = {
-                    **play,
-                    "position": _POSITION_COLLAPSE.get(play.get("player_1_position") or "", "F"),
-                    "score_diff": max(-4, min(4, play.get("score_diff") or 0)),
-                }
-                final_xg.append(XGFields.model_validate(xg_play).model_dump())
+                has_coords = play.get("coords_x") is not None and play.get("coords_y") is not None
+                if has_coords:
+                    xg_play = {
+                        **play,
+                        "position": _POSITION_COLLAPSE.get(play.get("player_1_position") or "", "F"),
+                        "score_diff": max(-4, min(4, play.get("score_diff") or 0)),
+                    }
+                    final_xg.append(XGFields.model_validate(xg_play).model_dump())
 
         return final_pbp, final_ext, final_xg
 

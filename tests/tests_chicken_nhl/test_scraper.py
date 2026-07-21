@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 import polars as pl
 import narwhals as nw
@@ -489,6 +489,28 @@ class TestScraper:
         assert any(
             record.levelname == "WARNING" and "Failed to scrape game" in record.message for record in caplog.records
         )
+
+    def test_scrape_single_game_evicts_stale_game_on_failure(self):
+        """If Game construction succeeds and gets cached, but a later scrape_type's
+        property access raises, the cached Game must be evicted from scraper._games —
+        otherwise a retry (or a different property access for the same game_id) would
+        reuse cached_property state left over from the failed attempt instead of
+        starting fresh, unlike pre-caching behavior where a new Game was always built.
+        """
+        from chickenstats.exceptions import DataMismatchError
+        from chickenstats.chicken_nhl.game import Game
+
+        scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
+        game_id = 2023020001
+
+        scraper._scrape_single_game(game_id=game_id, scrape_type="api_rosters")
+        assert game_id in scraper._games
+
+        with patch.object(Game, "play_by_play", new_callable=PropertyMock, side_effect=DataMismatchError("simulated")):
+            result = scraper._scrape_single_game(game_id=game_id, scrape_type="play_by_play")
+
+        assert result is None
+        assert game_id not in scraper._games
 
     def test_scrape_single_game_unexpected_error_logs_error(self, caplog):
         """An exception type that isn't one of the known/expected failure classes (e.g. a

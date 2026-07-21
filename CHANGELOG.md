@@ -4,6 +4,26 @@
 
 ### Bug Fixes
 
+- Skip xG feature validation for fenwick events with no recorded coordinates
+_calculate_pbp_xg only computed event_distance/event_angle when coords_x/coords_y
+were present, but unconditionally validated every GOAL/SHOT/MISS event against
+XGFields, which declares coords_x/coords_y/event_distance as required non-null
+floats. A fenwick event with no recorded shot location (real for older-era NHL
+data, e.g. many 2010-2019 games) raised a pydantic ValidationError, which
+_pbp_pipeline re-raised as DataMismatchError — failing the whole game's
+play_by_play/play_by_play_ext/xg_fields output, not just that one play, since all
+three share one cached pipeline. PBPEvent/PBPEventExt already treat these fields
+as optional; XGFields now simply omits fenwick events with no coordinates from
+xg_fields instead of crashing the game.
+- Evict cached Game instance from Scraper on scrape failure
+Scraper now caches one Game per game_id for its lifetime (a real perf win — see
+"Cache Game instances per game_id on Scraper" below), but a game whose first
+access failed partway through one scrape phase left its partially-populated Game
+object in the cache. Any retry or different property access for that game_id
+then reused the half-computed cached_property state instead of starting fresh,
+unlike the old behavior of building a new Game on every call. Pop the game_id
+from the cache in both exception branches of _scrape_single_game so a retry
+always starts clean.
 - Updating CI tests
 Updating CI tests to pull the correct tox environments from the pyproject.toml file
 - Updating for tox changes
