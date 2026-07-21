@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import datetime
 import importlib.resources
+import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, cast
 
@@ -51,6 +52,39 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 from rich.text import Text
+
+logger = logging.getLogger(__name__)
+
+
+class _LoggingRetry(urllib3.Retry):
+    """urllib3.Retry that logs each retry via the standard logging module.
+
+    Retries are otherwise silent — a request that succeeds on attempt 2-5
+    (or waits out a ``Retry-After`` header) produces no output anywhere,
+    which makes a load-dependent slowdown (many retries, each adding backoff
+    time) indistinguishable from a hang until someone goes looking. WARNING
+    level means this surfaces via Python's default last-resort stderr
+    handler with no logging config needed downstream — the same mechanism
+    ``chicken_nhl`` already relies on for its own "Failed to scrape game"
+    warnings.
+    """
+
+    def increment(self, method=None, url=None, response=None, error=None, _pool=None, _stacktrace=None):
+        new_retry = super().increment(
+            method=method, url=url, response=response, error=error, _pool=_pool, _stacktrace=_stacktrace
+        )
+        attempt = self.total - new_retry.total if self.total is not None and new_retry.total is not None else "?"
+        reason = f"HTTP {response.status}" if response is not None else repr(error)
+        logger.warning(
+            "Retrying %s %s (attempt %s/%s) after %s -- sleeping %.1fs",
+            method,
+            url,
+            attempt,
+            self.total or 5,
+            reason,
+            new_retry.get_backoff_time(),
+        )
+        return new_retry
 
 
 class ChickenHTTPAdapter(HTTPAdapter):
@@ -111,7 +145,7 @@ class ChickenSession(requests.Session):
         """Initializes Requests Session object."""
         super().__init__()
 
-        retry = urllib3.Retry(
+        retry = _LoggingRetry(
             total=5,
             backoff_factor=1,
             respect_retry_after_header=True,

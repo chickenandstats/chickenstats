@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import MagicMock, patch
 
 import polars as pl
@@ -35,6 +36,7 @@ from chickenstats.utilities.utilities import (
     ChickenSession,
     ScrapeSpeedColumn,
     _detect_backend,
+    _LoggingRetry,
     _to_backend,
     _to_polars,
     add_cs_mplstyles,
@@ -100,6 +102,38 @@ def test_adapter_send_passes_explicit_timeout():
     with patch.object(HTTPAdapter, "send", return_value=MagicMock()) as mock_send:
         adapter.send(MagicMock(), timeout=30)
         assert mock_send.call_args.kwargs["timeout"] == 30
+
+
+# ---------------------------------------------------------------------------
+# _LoggingRetry
+# ---------------------------------------------------------------------------
+
+
+def test_logging_retry_warns_on_status_retry(caplog):
+    """A retryable status response logs a WARNING with the status code."""
+    retry = _LoggingRetry(total=5, status_forcelist=[500])
+    response = MagicMock(status=500)
+    with caplog.at_level(logging.WARNING):
+        retry.increment(method="GET", url="https://api-web.nhle.com/x", response=response)
+    assert "Retrying" in caplog.text
+    assert "HTTP 500" in caplog.text
+
+
+def test_logging_retry_warns_on_connection_error(caplog):
+    """A connection error (no response) logs a WARNING with the error, not a status code."""
+    retry = _LoggingRetry(total=5)
+    error = ConnectionError("boom")
+    with caplog.at_level(logging.WARNING):
+        retry.increment(method="GET", url="https://api-web.nhle.com/x", error=error)
+    assert "Retrying" in caplog.text
+    assert "boom" in caplog.text
+
+
+def test_logging_retry_used_by_chicken_session():
+    """ChickenSession actually mounts _LoggingRetry, not plain urllib3.Retry."""
+    session = ChickenSession()
+    adapter = session.get_adapter("https://api-web.nhle.com/x")
+    assert isinstance(adapter.max_retries, _LoggingRetry)
 
 
 # ---------------------------------------------------------------------------
