@@ -1,0 +1,54 @@
+name: tests-offline
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline:
+    name: offline (${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.13']
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Run the offline tests
+        run: uv run --python ${{ matrix.python }} --group tests --all-extras pytest
+
+  core-only:
+    name: core dependencies only
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Run the offline tests without optional packages
+        run: >
+          uv run --isolated --no-dev --no-default-groups
+          --with pytest --with pytest-cov --with pytest-xdist --with pytest-rerunfailures
+          pytest --no-cov

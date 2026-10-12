@@ -24,10 +24,10 @@ jobs:
         run: uv sync --dev --all-extras
 
       - name: ruff check
-        run: uv run ruff check src/
+        run: uv run ruff check --no-fix --output-format=github src/ tests/ scripts/
 
       - name: ruff format check
-        run: uv run ruff format --check src/
+        run: uv run ruff format --check src/ tests/ scripts/
 
       - name: ty check
         run: uv run ty check src/
