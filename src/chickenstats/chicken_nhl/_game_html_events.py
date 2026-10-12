@@ -51,8 +51,10 @@ class _GameHTMLEventsMixin(_GameBase):
         del soup
         events_data = [unidecode(x).replace("\n ", ", ").replace("\n", "") for x in events_data]
 
-        length = int(len(events_data) / 8)
-        events_data = np.array(events_data).reshape(length, 8)
+        # While a game is in progress the report can end with a half-written row for the
+        # current event, so keep only the complete rows of 8 cells
+        length = len(events_data) // 8
+        events_data = np.array(events_data[: length * 8]).reshape(length, 8)
 
         for _idx, event in enumerate(events_data):
             column_names = [
@@ -172,8 +174,11 @@ class _GameHTMLEventsMixin(_GameBase):
                     event["event_team"] = ""
 
             if event["event"] == "FAC":
+                # While a game is in progress the report can list a faceoff before its winner
+                # is written. The row is kept, with no winning team, in the order the report
+                # lists the two players
                 _m = re.search(fo_team_re, event["description"])
-                event["event_team"] = _m.group(1) if _m is not None else None
+                event["event_team"] = _m.group(1) if _m is not None else ""
 
             if event["event"] == "BLOCK" and "BLOCKED BY" in event["description"]:
                 _m = re.search(block_team_re, event["description"])

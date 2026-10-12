@@ -40,6 +40,10 @@ class _GameRostersMixin(_GameBase):
             else:
                 scratch_lookup[key] = player
 
+        # The API roster only lists dressed players, so when the HTML roster report isn't
+        # available (e.g. not yet posted for a game in progress) they are all active
+        default_status = "UNKNOWN" if html_rosters else "ACTIVE"
+
         combined_roster = []
         api_jerseys = set()
 
@@ -52,7 +56,7 @@ class _GameRostersMixin(_GameBase):
 
             html_match = active_lookup.get(team_jersey) or scratch_lookup.get(team_jersey) or {}
             merged_player["team_name"] = html_match.get("team_name")
-            merged_player["status"] = html_match.get("status", "UNKNOWN")
+            merged_player["status"] = html_match.get("status", default_status)
             merged_player["starter"] = html_match.get("starter", 0)
 
             combined_roster.append(rosters_fixes(self.game_id, merged_player))

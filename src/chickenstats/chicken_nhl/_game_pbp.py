@@ -513,7 +513,9 @@ class _GamePBPMixin(_GameBase):
                         else {"OFF": "DEF", "DEF": "OFF", "NEU": "NEU"}.get(fac_zone or "")
                     )
 
-                    if abs(fac_coords_x) <= 25:
+                    # A faceoff the API feed hasn't caught up to yet has no coordinates,
+                    # so its zone from the HTML report is used as-is
+                    if fac_coords_x is not None and abs(fac_coords_x) <= 25:
                         event["zone_start"] = "NEU"
 
                     event["zone"] = event["zone_start"]
@@ -599,19 +601,24 @@ class _GamePBPMixin(_GameBase):
 
             cx = float(play.get("coords_x") or 0.0)
             cy = float(play.get("coords_y") or 0.0)
-            play["abs_y_distance"] = abs(cy)
 
             is_fenwick = play["event"] in fenwick_events
             has_coords = play.get("coords_x") is not None and play["coords_x"] != ""
+
+            # A shot the API feed hasn't caught up to yet has no location
+            play["abs_y_distance"] = abs(cy) if has_coords or not is_fenwick else None
 
             # Adding fields used for xG model training
             if is_fenwick and has_coords and last_xg_ev and last_xg_ev["period"] == play["period"]:
                 sec_since = play["game_seconds"] - last_xg_ev["game_seconds"]
                 s_tm = play["event_team"] == last_xg_ev["event_team"]
                 l_ev = last_xg_ev["event"]
-                lx = float(last_xg_ev.get("coords_x") or 0.0)
-                ly = float(last_xg_ev.get("coords_y") or 0.0)
-                dist = ((cx - lx) ** 2 + (cy - ly) ** 2) ** 0.5
+                if last_xg_ev.get("coords_x") is None:
+                    dist = None
+                else:
+                    lx = float(last_xg_ev["coords_x"])
+                    ly = float(last_xg_ev.get("coords_y") or 0.0)
+                    dist = ((cx - lx) ** 2 + (cy - ly) ** 2) ** 0.5
 
                 play["is_rebound"] = int(
                     l_ev in {"SHOT", "MISS", "BLOCK"} and sec_since <= 3 and s_tm == (l_ev != "BLOCK")
@@ -621,7 +628,7 @@ class _GamePBPMixin(_GameBase):
                 play["prior_face"] = int(l_ev == "FAC")
                 play["seconds_since_last"] = float(sec_since) if sec_since > 0 else None
                 play["distance_from_last"] = dist
-                play["play_speed"] = dist / sec_since if sec_since > 0 else None
+                play["play_speed"] = dist / sec_since if dist is not None and sec_since > 0 else None
                 play["seconds_since_stoppage"] = (
                     float(play["game_seconds"] - last_face_game_seconds) if last_face_game_seconds is not None else None
                 )

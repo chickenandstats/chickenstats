@@ -73,15 +73,16 @@ class _GameAPIMixin(_GameBase):
                 }
             )
 
-            # Use Pattern Matching for event-specific details
+            # Use Pattern Matching for event-specific details. Player ids are read with .get()
+            # because the feed can list an event before its players are filled in
             match event_info["event"]:
                 case "faceoff":
                     event_info.update(
                         {
                             "event": "FAC",
-                            "player_1_api_id": event_details["winningPlayerId"],
+                            "player_1_api_id": event_details.get("winningPlayerId"),
                             "player_1_type": "WINNER",
-                            "player_2_api_id": event_details["losingPlayerId"],
+                            "player_2_api_id": event_details.get("losingPlayerId"),
                             "player_2_type": "LOSER",
                         }
                     )
@@ -89,9 +90,9 @@ class _GameAPIMixin(_GameBase):
                     event_info.update(
                         {
                             "event": "HIT",
-                            "player_1_api_id": event_details["hittingPlayerId"],
+                            "player_1_api_id": event_details.get("hittingPlayerId"),
                             "player_1_type": "HITTER",
-                            "player_2_api_id": event_details["hitteePlayerId"],
+                            "player_2_api_id": event_details.get("hitteePlayerId"),
                             "player_2_type": "HITTEE",
                         }
                     )
@@ -99,7 +100,7 @@ class _GameAPIMixin(_GameBase):
                     event_info.update(
                         {
                             "event": "GIVE" if event_info["event"] == "giveaway" else "TAKE",
-                            "player_1_api_id": event_details["playerId"],
+                            "player_1_api_id": event_details.get("playerId"),
                             "player_1_type": "GIVER" if event_info["event"] == "giveaway" else "TAKER",
                         }
                     )
@@ -111,7 +112,7 @@ class _GameAPIMixin(_GameBase):
                             "event": "BLOCK",
                             "player_1_api_id": event_details.get("blockingPlayerId"),
                             "player_1_type": "BLOCKER",
-                            "player_2_api_id": event_details["shootingPlayerId"],
+                            "player_2_api_id": event_details.get("shootingPlayerId"),
                             "player_2_type": "SHOOTER",
                         }
                     )
@@ -121,21 +122,26 @@ class _GameAPIMixin(_GameBase):
                     event_info.update(
                         {
                             "event": "STOP",
-                            "stoppage_reason": event_details["reason"].upper().replace("-", " "),
+                            "stoppage_reason": event_details.get("reason", "").upper().replace("-", " "),
                             "stoppage_reason_secondary": event_details.get("secondaryReason", "")
                             .upper()
                             .replace("-", " "),
                         }
                     )
-                case "period-start" | "period-end" | "game-end" | "shootout-complete" | "delayed-penalty":
-                    codes = {
-                        "period-start": "PSTR",
-                        "period-end": "PEND",
-                        "game-end": "GEND",
-                        "shootout-complete": "SOC",
-                        "delayed-penalty": "DELPEN",
-                    }
-                    event_info["event"] = codes[event_info["event"]]
+
+        elif event_info["event"] == "stoppage":
+            # The feed can list a stoppage before its reason is filled in
+            event_info.update({"event": "STOP", "stoppage_reason": "", "stoppage_reason_secondary": ""})
+
+        # Period and game markers usually come without details, so they are translated either way
+        marker_codes = {
+            "period-start": "PSTR",
+            "period-end": "PEND",
+            "game-end": "GEND",
+            "shootout-complete": "SOC",
+            "delayed-penalty": "DELPEN",
+        }
+        event_info["event"] = marker_codes.get(event_info["event"], event_info["event"])
 
         # Apply external fixes and map roster metadata (names, positions, eh_ids)
         event_info = api_events_fixes(self.game_id, event_info)

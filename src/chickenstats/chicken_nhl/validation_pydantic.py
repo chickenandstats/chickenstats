@@ -720,10 +720,11 @@ class XGFields(BaseModel):
     position: str  # "F" (C/L/R/W collapsed), "D", or "G"
     shot_type: str
     strength_state: str  # e.g. "5v5"
-    event_distance: float
-    event_angle: float | None
-    coords_x: float
-    coords_y: float
+    # Location fields are null for a shot the API feed hasn't caught up to yet
+    event_distance: float | None = None
+    event_angle: float | None = None
+    coords_x: float | None = None
+    coords_y: float | None = None
     is_rebound: int
     rush_attempt: int
     is_scramble: int
@@ -734,7 +735,7 @@ class XGFields(BaseModel):
     prior_event_angle: float | None = None
     prior_event_distance: float | None = None
     seconds_since_stoppage: float | None = None
-    abs_y_distance: float
+    abs_y_distance: float | None = None
     prior_event_same: str | None = None  # "SHOT" | "MISS" | "BLOCK" | "GIVE" | "TAKE" | "HIT"
     prior_event_opp: str | None = None
     prior_face: int
