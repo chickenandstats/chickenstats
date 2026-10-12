@@ -10,7 +10,7 @@ Thank you for your interest in contributing! This guide covers the essentials fo
 # Fork and clone the repo, then install all dev dependencies
 uv sync --group dev
 
-# Install pre-commit hooks (ruff, ty, conventional commits, nb-clean), including the commit message checks
+# Install pre-commit hooks (ruff, ty, nb-clean), including the commit message check
 uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
 ```
 
@@ -61,7 +61,8 @@ Docstrings follow [Google style](https://google.github.io/styleguide/pyguide.htm
 
 ## Commit format
 
-[Conventional commits](https://www.conventionalcommits.org/) are required and enforced by a pre-commit hook. The
+[Conventional commits](https://www.conventionalcommits.org/) are required. A commit-msg hook checks every message
+with `scripts/check_commit_message.py`, and CI runs the same script over the commits of a pull request. The
 changelog and the GitHub release notes are generated from commit subjects, so the subject is what users read.
 
 ```
@@ -81,8 +82,7 @@ type(scope)!: subject
 | `style` | Formatting only | No |
 | `chore` | Maintenance | No |
 
-Every commit has a one-line summary, a blank line, then a body. A second pre-commit hook rejects a commit without
-a body.
+Every commit has a one-line summary, a blank line, then a body. The hook rejects a commit without a body.
 
 ```
 fix: count a shootout as one goal for the winner in play_by_play
@@ -94,26 +94,36 @@ win could read 5-4. The score now changes once, when the shootout ends.
 The summary:
 
 - Write it for someone reading the changelog: say what changed for the user and name the public function, class or
-  column. `fix: update _game_pbp.py` says nothing.
-- Imperative mood, lower-case first word, no trailing period, 72 characters or fewer.
-- One change per commit. If the summary needs "and", split the commit.
+  column. `fix: update _game_pbp.py` says nothing, and the hook rejects it along with `wip`, `misc` and `fix bug`.
+- Start with an imperative verb: `add`, not `adds`, `added` or `adding`.
+- Lower-case first word, no trailing period, 72 characters or fewer.
+- One change per commit. If the summary needs "and", split the commit. The hook prints a warning when it sees one.
 
 The body:
 
 - Say what was wrong or missing, and what the code does now. Give the reason when it is not obvious.
 - Plain, specific sentences in your own words: name the function, the column, the game or the number. No filler, no
-  praise for the change, no restating the diff line by line.
+  praise for the change, no restating the diff line by line. The hook prints a warning for words such as
+  "this commit", "robust" or "in order to".
+- Wrap lines at 72 characters. A URL or an indented command can run longer.
+- A commit is signed by the person who made it. No co-author lines and no credit to a tool.
 - The body is for reviewers and is not copied into the changelog.
 
 Append `!` whenever existing code could get a different result: a returned value, a column name, type or nullability,
-a signature or a default. These are listed first, under "Breaking changes":
+a signature or a default. Add a `Breaking:` paragraph to the body that says what changed for the caller. The hook
+requires the two together. These commits are listed first, under "Breaking changes":
 
 ```
 fix!: return null instead of 0.0 for percentages with a zero denominator
 ```
 
 The scope is optional. When used, it is one of `chicken_nhl`, `evolving_hockey`, `api`, `utilities`, `cli`, `viz`
-or `docs`.
+or `docs`. The list is in `scripts/commit_scopes.txt`, and the hook rejects any other scope.
+
+Merge and revert commits, and commits CI makes with `[skip ci]`, are not checked.
+
+The checker and its tests are the same files in `chickenstats`, `chickenstats-api` and `chickenstats-xg`. A change to
+the rules goes into all three.
 
 `CHANGELOG.md` is generated, not edited by hand. Regenerate it on `main` once a release is tagged:
 
