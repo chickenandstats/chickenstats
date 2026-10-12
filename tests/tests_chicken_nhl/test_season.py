@@ -10,6 +10,7 @@ except ImportError:
     HAS_PANDAS = False
 
 from chickenstats.chicken_nhl.season import Season, multi_season_schedule, add_schedule_context, _TEAMS_BY_YEAR
+from chickenstats.exceptions import InvalidSeasonError
 
 _skip_no_pandas = pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installed")
 
@@ -74,7 +75,7 @@ class TestSeason:
             assert isinstance(schedule, pl.DataFrame)
 
     def test_season_fail(self):
-        with pytest.raises(Exception):
+        with pytest.raises(InvalidSeasonError):
             Season(2030)
 
     def test_season_immediately_after_last_tabled_year_raises(self):
@@ -86,7 +87,7 @@ class TestSeason:
         and `schedule()` would silently return an empty DataFrame instead of erroring.
         """
         next_untabled_year = max(_TEAMS_BY_YEAR) + 1
-        with pytest.raises(Exception):
+        with pytest.raises(InvalidSeasonError):
             Season(next_untabled_year)
 
     @pytest.mark.nhl
@@ -357,8 +358,6 @@ class TestSeasonInit:
     def test_invalid_year_format_raises(self):
         """A year that isn't a recognizable 4- or 8-digit form must raise a clear error
         instead of silently leaving `self.season` unset."""
-        from chickenstats.exceptions import InvalidSeasonError
-
         with pytest.raises(InvalidSeasonError):
             Season("not-a-year")
 

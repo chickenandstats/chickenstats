@@ -232,12 +232,12 @@ class TestPlayer:
     @pytest.mark.nhl
     def test_private_properties(self, forsberg):
         """Lines 172, 177, 192, 197, 202, 211: private data properties."""
-        _ = forsberg._featured_regular_season_stats
-        _ = forsberg._featured_career_stats
-        _ = forsberg._career_playoff_stats
-        _ = forsberg._last_five_games
-        _ = forsberg._season_totals
-        _ = forsberg._game_logs
+        assert forsberg._featured_regular_season_stats
+        assert forsberg._featured_career_stats
+        assert forsberg._career_playoff_stats
+        assert forsberg._last_five_games
+        assert forsberg._season_totals
+        assert forsberg._game_logs
 
 
 class TestSearchPlayers:

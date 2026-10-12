@@ -20,6 +20,7 @@ class TestBuildRapmMatrix:
         stints_df, _ = stints
         matrix = build_rapm_matrix(stints_df, metric="cf", situation="EV")
 
+        assert matrix.x.shape[0] > 0
         assert matrix.x.shape[0] == len(matrix.y) == len(matrix.weights)
         assert matrix.dates is not None
         assert len(matrix.dates) == len(matrix.y)

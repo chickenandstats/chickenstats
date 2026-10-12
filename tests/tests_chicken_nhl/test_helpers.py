@@ -11,6 +11,7 @@ from chickenstats.chicken_nhl._game_utils import (
     load_score_adjustments,
 )
 from chickenstats.utilities.utilities import convert_to_list
+from chickenstats.exceptions import InvalidInputError
 from chickenstats.utilities.utilities import charts_directory, data_directory, norm_coords
 
 
@@ -26,11 +27,9 @@ def test_pbp():
 def test_norm_coords(test_pbp, norm_column="event_team", norm_value="NSH"):
     data = norm_coords(data=test_pbp, normalization_column=norm_column, normalization_value=norm_value)
 
-    if "norm_coords_x" in data.columns and "norm_coords_y" in data.columns:
-        assert True
-
-    else:
-        raise AssertionError()
+    assert {"norm_coords_x", "norm_coords_y"} <= set(data.columns)
+    assert data["norm_coords_x"].notna().any()
+    assert data["norm_coords_y"].notna().any()
 
 
 @pytest.mark.parametrize(
@@ -44,14 +43,14 @@ def test_convert_to_list(test_list):
 
 
 def test_convert_to_list_fail():
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidInputError):
         convert_to_list(cast(Any, {"test_key": "test_value"}), "TEST")
 
 
 def test_return_name_html():
     name = return_name_html("GOALIE - PEKKA RINNE")
 
-    assert isinstance(name, str) is True
+    assert name == "PEKKA RINNE"
 
 
 def test_return_name_html_no_hyphen_no_crash():

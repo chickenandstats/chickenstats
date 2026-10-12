@@ -14,6 +14,7 @@ except ImportError:
 
 from chickenstats.chicken_nhl._game_utils import parse_time, prefetch_concurrent
 from chickenstats.chicken_nhl.game import Game
+from chickenstats.exceptions import InvalidGameIDError
 
 
 # -----------------------------------------------------------------------------
@@ -57,7 +58,7 @@ _BEHAVIORAL = [
 
 class TestGame:
     def test_game_fail(self):
-        with pytest.raises(Exception):
+        with pytest.raises(InvalidGameIDError):
             Game("FAIL")
 
     def test_repr(self):
@@ -642,13 +643,3 @@ class TestGameCoverage:
             game.__dict__["rosters"] = []
             result = game.html_events
         assert result == []
-
-    def test_changes_shootout_game_seconds(self):
-        """Regular-season OT period (period 4, R) uses 3600 + time_seconds."""
-        # 2023020001 is a regular season game — if it went to OT, period-4 changes
-        # use 3600 base. We verify the formula is applied (game_seconds >= 3600).
-        game = Game(2023020001)
-        changes = game.changes
-        ot_changes = [c for c in changes if c.get("period") == 4 and game.session == "R"]
-        for c in ot_changes:
-            assert c.get("game_seconds", 0) >= 3600

@@ -276,6 +276,7 @@ class TestScraper:
         _ = scraper.api_rosters
         count_after_second = len(scraper._api_rosters)
 
+        assert count_after_first == 1
         assert count_after_first == count_after_second
 
     # -----------------------------------------------------------------------------
@@ -768,6 +769,7 @@ class TestScraper:
         assert isinstance(scraper._stats, pl.DataFrame)
         assert isinstance(scraper._ind_stats, pl.DataFrame)
         assert isinstance(scraper._oi_stats, pl.DataFrame)
+        assert (scraper._stats.height, scraper._ind_stats.height, scraper._oi_stats.height) == (120, 81, 126)
 
     # -----------------------------------------------------------------------------
     # Bad game tracking
