@@ -169,9 +169,8 @@ markers = [
     "matplotlib: test requires matplotlib installed",
     "pil: test requires pillow installed",
 ]
-# Tests that need the NHL or the chickenstats API are left out unless asked for, e.g. pytest -m nhl.
-# The offline run covers less of season.py and player.py, so its coverage floor is 89; the full run keeps 90.
-addopts = "-n auto --dist loadscope --cov=src/chickenstats --cov-branch -m 'not nhl and not live' --cov-fail-under=89"
+# Tests that need the NHL or the chickenstats API are left out unless asked for, e.g. pytest -m nhl
+addopts = "-n auto --dist loadscope --cov=src/chickenstats --cov-branch -m 'not nhl and not live'"
 
 [tool.coverage.run]
 source = ["chickenstats"]
@@ -207,7 +206,7 @@ labels = ["ci"]
 skip_install = false
 pass_env = ["*"]
 set_env = {COVERAGE_FILE = ".coverage.{env_name}", CHICKENSTATS_USERNAME = "{env:CHICKENSTATS_USERNAME}", CHICKENSTATS_PASSWORD = "{env:CHICKENSTATS_PASSWORD}"}
-commands = [["pytest", "-m", "not live", "--cov-fail-under=90", "{posargs}", "--cache-clear", "--reruns", "2", "--reruns-delay", "10"]]
+commands = [["pytest", "-m", "not live", "{posargs}", "--cache-clear", "--reruns", "2", "--reruns-delay", "10"]]
 package = "editable"
 extras = ["plotting"]
 dependency_groups = ["tests"]
@@ -228,7 +227,7 @@ package = "editable"
 depends = ["clean"]
 extras = ["plotting"]
 dependency_groups = ["tests"]
-commands = [["pytest", "-m", "not regression and not live", "--cov-fail-under=90", "{posargs:tests}", "--cov-append"]]
+commands = [["pytest", "-m", "not regression and not live", "{posargs:tests}", "--cov-append"]]
 
 [tool.tox.env.report]
 platform = ".*"

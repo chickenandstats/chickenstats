@@ -154,7 +154,7 @@ tests/
 
 **Network:** `tests/conftest.py` blocks the network for every test without the `nhl` or `live` marker. Game 2023020001 is served from `tests/tests_chicken_nhl/mock_data`; a request for anything else fails the test. New tests should use that game (the `fixture_game` fixture) unless they need another one.
 
-**Coverage:** 89% minimum for the default offline run, 90% for the full run through tox, both set in `pyproject.toml`.
+**Coverage:** 90% minimum, set in `pyproject.toml` `[tool.coverage.report]`. It applies to the default offline run and to the full run through tox.
 
 Run tests: `pytest` (uses settings from `pyproject.toml`, parallel by default via xdist).
 
