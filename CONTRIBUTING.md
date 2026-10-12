@@ -10,8 +10,8 @@ Thank you for your interest in contributing! This guide covers the essentials fo
 # Fork and clone the repo, then install all dev dependencies
 uv sync --group dev
 
-# Install pre-commit hooks (ruff, ty, conventional commits, nb-clean)
-uv run pre-commit install
+# Install pre-commit hooks (ruff, ty, conventional commits, nb-clean), including the commit message checks
+uv run pre-commit install --hook-type pre-commit --hook-type commit-msg
 ```
 
 ---
@@ -61,23 +61,64 @@ Docstrings follow [Google style](https://google.github.io/styleguide/pyguide.htm
 
 ## Commit format
 
-[Conventional commits](https://www.conventionalcommits.org/) are required and enforced by a pre-commit hook:
+[Conventional commits](https://www.conventionalcommits.org/) are required and enforced by a pre-commit hook. The
+changelog and the GitHub release notes are generated from commit subjects, so the subject is what users read.
 
 ```
-feat: add new feature
-fix: correct a bug
-docs: documentation only
-refactor: no behavior change
-test: add or update tests
-build: build system or dependency changes
-ci: CI/CD changes
-chore: maintenance tasks
+type(scope)!: subject
 ```
 
-For a breaking change, append `!` after the type:
+| Type | Use for | In the changelog |
+|------|---------|------------------|
+| `feat` | A new capability a user can call | Added |
+| `fix` | A wrong result, crash or misleading message | Fixed |
+| `perf` | Same output, less time or memory | Performance |
+| `docs` | Documentation only | Documentation |
+| `refactor` | No behavior change | No |
+| `test` | Tests only | No |
+| `build` | Build system or dependencies | No |
+| `ci` | CI/CD | No |
+| `style` | Formatting only | No |
+| `chore` | Maintenance | No |
+
+Every commit has a one-line summary, a blank line, then a body. A second pre-commit hook rejects a commit without
+a body.
 
 ```
-feat!: remove deprecated parameter
+fix: count a shootout as one goal for the winner in play_by_play
+
+Each shootout goal was added to the running score, so a 3-2 shootout
+win could read 5-4. The score now changes once, when the shootout ends.
+```
+
+The summary:
+
+- Write it for someone reading the changelog: say what changed for the user and name the public function, class or
+  column. `fix: update _game_pbp.py` says nothing.
+- Imperative mood, lower-case first word, no trailing period, 72 characters or fewer.
+- One change per commit. If the summary needs "and", split the commit.
+
+The body:
+
+- Say what was wrong or missing, and what the code does now. Give the reason when it is not obvious.
+- Plain, specific sentences in your own words: name the function, the column, the game or the number. No filler, no
+  praise for the change, no restating the diff line by line.
+- The body is for reviewers and is not copied into the changelog.
+
+Append `!` whenever existing code could get a different result: a returned value, a column name, type or nullability,
+a signature or a default. These are listed first, under "Breaking changes":
+
+```
+fix!: return null instead of 0.0 for percentages with a zero denominator
+```
+
+The scope is optional. When used, it is one of `chicken_nhl`, `evolving_hockey`, `api`, `utilities`, `cli`, `viz`
+or `docs`.
+
+`CHANGELOG.md` is generated, not edited by hand. Regenerate it on `main` once a release is tagged:
+
+```bash
+git-cliff --config pyproject.toml -o CHANGELOG.md
 ```
 
 ---

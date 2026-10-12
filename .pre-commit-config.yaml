@@ -39,6 +39,11 @@ repos:
 
   - repo: local
     hooks:
+      - id: commit-message-body
+        name: commit message has a summary and a body
+        entry: uv run python scripts/check_commit_message.py
+        language: system
+        stages: [commit-msg]
       - id: ruff
         name: ruff
         entry: uv run ruff check --fix
