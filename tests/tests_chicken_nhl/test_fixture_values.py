@@ -12,7 +12,16 @@ from unittest.mock import patch
 import polars as pl
 import pytest
 
-from chickenstats.chicken_nhl import Scraper, prep_ind, prep_lines, prep_oi, prep_stats, prep_stints, prep_team_stats
+from chickenstats.chicken_nhl import (
+    Game,
+    Scraper,
+    prep_ind,
+    prep_lines,
+    prep_oi,
+    prep_stats,
+    prep_stints,
+    prep_team_stats,
+)
 
 from test_live_games import LIVE_DATA_DIR, snapshot_session_get
 
@@ -267,6 +276,104 @@ def test_rows_come_back_in_the_same_order(fixture_game, function, arguments):
 
     assert frames[1].equals(frames[0])
     assert frames[2].equals(frames[0])
+
+
+# -----------------------------------------------------------------------------
+# Overtime and shootout
+# -----------------------------------------------------------------------------
+
+EXTRA_TIME_CASES = [
+    # fixture, (play-by-play rows, shifts, changes), away and home (team, score, shots), overtime seconds
+    ("shootout_game", (827, 729, 477), ("VGK", 4, 30), ("LAK", 3, 40), 300),
+    ("playoff_overtime_game", (884, 854, 516), ("NYR", 3, 25), ("CAR", 2, 47), 103),
+]
+
+
+@pytest.mark.parametrize("fixture, heights, away, home, overtime_seconds", EXTRA_TIME_CASES)
+def test_extra_time_game_matches_api_box_score(
+    request, saved_api_response, fixture, heights, away, home, overtime_seconds
+):
+    """A game that goes past regulation has the final score and the shots on goal the API reports."""
+    game = request.getfixturevalue(fixture)
+    api_response = saved_api_response(game.game_id)
+    play_by_play = game.play_by_play
+
+    assert game.failed_games == []
+    assert (play_by_play.height, game.shifts.height, game.changes.height) == heights
+
+    api_away, api_home = api_response["awayTeam"], api_response["homeTeam"]
+    assert (api_away["abbrev"], api_away["score"], api_away["sog"]) == away
+    assert (api_home["abbrev"], api_home["score"], api_home["sog"]) == home
+
+    last_event = play_by_play.tail(1)
+    assert last_event["event"].item() == "GEND"
+    assert (last_event["away_score"].item(), last_event["home_score"].item()) == (away[1], home[1])
+
+    # Shots on goal do not include shootout attempts, which are period 5
+    shots = dict(
+        play_by_play.filter(pl.col("period") <= 4).group_by("event_team").agg(pl.col("shot").sum()).drop_nulls().rows()
+    )
+    assert (shots[away[0]], shots[home[0]]) == (away[2], home[2])
+
+
+@pytest.mark.parametrize("fixture, heights, away, home, overtime_seconds", EXTRA_TIME_CASES)
+def test_overtime_is_timed_from_the_end_of_regulation(request, fixture, heights, away, home, overtime_seconds):
+    """Overtime events and line changes run from 3600 game seconds to the end of overtime."""
+    game = request.getfixturevalue(fixture)
+    overtime = game.play_by_play.filter(pl.col("period") == 4)
+    overtime_changes = game.changes.filter(pl.col("period") == 4)
+
+    assert overtime["event_length"].sum() == overtime_seconds
+    assert (overtime["game_seconds"].min(), overtime["game_seconds"].max()) == (3600, 3600 + overtime_seconds)
+
+    assert overtime_changes.height > 0
+    assert overtime_changes["game_seconds"].min() == 3600
+    assert overtime_changes["game_seconds"].max() == 3600 + overtime_seconds
+
+    team_stats = prep_team_stats(game.play_by_play, game.play_by_play_ext, level="game", strength_state=False)
+    assert team_stats["toi"].to_list() == pytest.approx([(3600 + overtime_seconds) / 60] * 2)
+    assert prep_stints(game.play_by_play)["toi"].sum() == 3600 + overtime_seconds
+
+
+def test_regular_season_overtime_is_three_on_three(shootout_game):
+    """Regular-season overtime is played 3v3, with 4v3 after a penalty."""
+    overtime = shootout_game.play_by_play.filter(pl.col("period") == 4)
+    states = dict(overtime["strength_state"].value_counts().rows())
+
+    assert states["3v3"] == 28
+    assert states["4v3"] == 7
+
+
+def test_playoff_overtime_is_five_on_five(playoff_overtime_game):
+    """Playoff overtime is played 5v5 and ends on the goal."""
+    overtime = playoff_overtime_game.play_by_play.filter(pl.col("period") == 4)
+
+    assert dict(overtime["strength_state"].value_counts().rows())["5v5"] == 20
+    assert overtime.filter(pl.col("event") == "GOAL").height == 1
+    assert 5 not in playoff_overtime_game.play_by_play["period"].unique().to_list()
+
+
+def test_shootout_rows(shootout_game):
+    """The shootout is period 5: five attempts, one goal, no time on the clock."""
+    shootout = shootout_game.play_by_play.filter(pl.col("period") == 5)
+    events = dict(shootout["event"].value_counts().rows())
+
+    assert (events["SHOT"], events["GOAL"]) == (4, 1)
+    assert shootout["event_length"].sum() == 0
+    assert shootout["game_seconds"].unique().to_list() == [3900]
+    assert shootout["strength_state"].unique().to_list() == ["1v0"]
+
+
+@pytest.mark.parametrize(
+    "game_id, period, period_type", [(2023020001, 3, "REG"), (2023020125, 5, "SO"), (2023030223, 4, "OT")]
+)
+def test_current_period_of_a_finished_game(game_id, period, period_type):
+    """Once the API response is loaded, a finished game reports its last period."""
+    game = Game(game_id)
+    _ = game.api_events
+
+    assert game.game_state == "OFF"
+    assert (game.current_period, game.current_period_type) == (period, period_type)
 
 
 # -----------------------------------------------------------------------------

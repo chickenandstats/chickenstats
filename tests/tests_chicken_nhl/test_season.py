@@ -16,7 +16,6 @@ _skip_no_pandas = pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installe
 
 
 class TestSeason:
-    @pytest.mark.nhl
     def test_schedule_includes_game_date_dt_local(self):
         """Regression test: game_date_dt_local was silently dropped by a schema/data
         mismatch (present in the raw dict, absent from schedule_polars_schema)."""
@@ -25,7 +24,6 @@ class TestSeason:
         assert "game_date_dt_local" in schedule.columns
         assert schedule.schema["game_date_dt_local"] == pl.Datetime(time_unit="us")
 
-    @pytest.mark.nhl
     def test_schedule_game_date_dt_local_preserves_local_wall_clock(self):
         """game_date_dt_local must reflect each game's own venue-local wall-clock time,
         not get silently UTC-shifted (a real risk since different games in one schedule
@@ -90,7 +88,6 @@ class TestSeason:
         with pytest.raises(InvalidSeasonError):
             Season(next_untabled_year)
 
-    @pytest.mark.nhl
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_standings(self, backend):
         season = Season(year=2023, backend=backend)
@@ -259,7 +256,6 @@ class TestAddScheduleContext:
         result = add_schedule_context(schedule, backend="pandas")
         assert isinstance(result, pd.DataFrame)
 
-    @pytest.mark.nhl
     def test_real_schedule(self):
         schedule = Season(2023).schedule("NSH", disable_progress_bar=True)
         result = add_schedule_context(schedule)
@@ -368,7 +364,6 @@ class TestSeasonInit:
 
 
 class TestScheduleCaching:
-    @pytest.mark.nhl
     def test_cached_team_not_re_scraped(self):
         """Calling schedule() twice for the same team uses cached data."""
         season = Season(2023)
@@ -400,7 +395,6 @@ class TestScheduleCaching:
         season._scrape_schedule(disable_progress_bar=True)
         assert len(season._schedule) > 0
 
-    @pytest.mark.nhl
     def test_standings_second_call_uses_cache(self):
         """Second standings call hits the False branch of `if not self._standings:`."""
         season = Season(2023)

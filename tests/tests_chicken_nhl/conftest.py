@@ -1,5 +1,6 @@
 """Shared offline fixtures for the chicken_nhl tests."""
 
+import gzip
 import json
 import os
 from types import SimpleNamespace
@@ -12,12 +13,16 @@ MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "mock_data")
 FIXTURE_GAME_ID = 2023020001
 
 
-@pytest.fixture(scope="session")
-def fixture_game():
-    """Every scraped frame for game 2023020001 (NSH at TBL, TBL won 5-3), built once from the saved responses."""
-    scraper = Scraper([FIXTURE_GAME_ID], disable_progress_bar=True)
+SHOOTOUT_GAME_ID = 2023020125
+PLAYOFF_OVERTIME_GAME_ID = 2023030223
+
+
+def scrape_saved_game(game_id: int) -> SimpleNamespace:
+    """Scrape one game from the saved responses and return every frame."""
+    scraper = Scraper([game_id], disable_progress_bar=True)
 
     return SimpleNamespace(
+        game_id=game_id,
         play_by_play=scraper.play_by_play,
         play_by_play_ext=scraper.play_by_play_ext,
         rosters=scraper.rosters,
@@ -29,6 +34,36 @@ def fixture_game():
         api_events=scraper.api_events,
         failed_games=scraper.failed_games,
     )
+
+
+@pytest.fixture(scope="session")
+def saved_api_response():
+    """A function that returns the raw NHL API play-by-play response saved for a game."""
+
+    def load(game_id: int) -> dict:
+        path = os.path.join(MOCK_DATA_DIR, "saved", f"gamecenter_{game_id}_play-by-play.gz")
+        with gzip.open(path, "rb") as f:
+            return json.load(f)
+
+    return load
+
+
+@pytest.fixture(scope="session")
+def fixture_game():
+    """Every scraped frame for game 2023020001 (NSH at TBL, TBL won 5-3), built once from the saved responses."""
+    return scrape_saved_game(FIXTURE_GAME_ID)
+
+
+@pytest.fixture(scope="session")
+def shootout_game():
+    """Every scraped frame for game 2023020125 (VGK at LAK, VGK won 4-3 in a shootout)."""
+    return scrape_saved_game(SHOOTOUT_GAME_ID)
+
+
+@pytest.fixture(scope="session")
+def playoff_overtime_game():
+    """Every scraped frame for game 2023030223 (NYR at CAR, NYR won 3-2 in overtime)."""
+    return scrape_saved_game(PLAYOFF_OVERTIME_GAME_ID)
 
 
 @pytest.fixture(scope="session")

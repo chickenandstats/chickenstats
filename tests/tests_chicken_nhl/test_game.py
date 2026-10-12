@@ -511,9 +511,12 @@ class TestGameCoverage:
         assert result["player_1"] == "REFEREE"
         assert result["player_1_eh_id"] == "REFEREE"
 
-    def test_fut_game_state_no_period_attrs(self):
+    def test_current_period_is_set_when_the_api_response_loads(self):
         game = Game(2023020001)
-        assert hasattr(game, "current_period")
+        assert game.current_period == 0
+
+        _ = game.api_events
+        assert (game.current_period, game.current_period_type) == (3, "REG")
 
     def test_prefetch_concurrent_swallows_exceptions(self, caplog):
         """A failing prefetch task must not raise, and must be logged at WARNING (not DEBUG)
