@@ -36,13 +36,23 @@ Run a targeted subset during development:
 uv run pytest tests/tests_chicken_nhl/ -x
 ```
 
-Coverage threshold is 80% — the CI gate will fail if it drops below that.
-
-Regression tests (specific historical game IDs) and live API tests are excluded by default. Run them explicitly when needed:
+`uv run pytest` runs with the network blocked. Game 2023020001 is served from the responses saved in
+`tests/tests_chicken_nhl/mock_data`, and a test that tries to reach any other URL fails with that URL. A test that
+needs the NHL site carries the `nhl` marker; a test that needs the chickenstats API carries `live`. Both are left
+out by default. Run them explicitly when needed:
 
 ```sh
-uv run pytest -m regression
-uv run pytest -m live   # requires a live API endpoint and credentials
+uv run pytest -m nhl          # downloads from the NHL
+uv run pytest -m regression   # specific historical game IDs; these also need the NHL
+uv run pytest -m live         # requires a live API endpoint and credentials
+```
+
+The coverage floor is 89% for the default offline run and 90% for the full run through tox.
+
+Check that the tests still work with only the core dependencies installed:
+
+```sh
+uv run --isolated --no-dev --no-default-groups --with pytest --with pytest-cov --with pytest-xdist --with pytest-rerunfailures pytest --no-cov
 ```
 
 ---

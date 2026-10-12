@@ -148,10 +148,13 @@ tests/
 ```
 
 **Markers:**
-- `regression` — tests for specific historical game IDs; run with `-m regression`
-- `live` — integration tests requiring a live API endpoint; excluded by default
+- `nhl` — tests that download from the NHL; excluded by default, run with `-m nhl`
+- `regression` — tests for specific historical game IDs; these also carry `nhl`
+- `live` — integration tests requiring a live chickenstats API endpoint; excluded by default
 
-**Coverage:** 80% minimum enforced via `pyproject.toml` `[tool.coverage.report]`.
+**Network:** `tests/conftest.py` blocks the network for every test without the `nhl` or `live` marker. Game 2023020001 is served from `tests/tests_chicken_nhl/mock_data`; a request for anything else fails the test. New tests should use that game (the `fixture_game` fixture) unless they need another one.
+
+**Coverage:** 89% minimum for the default offline run, 90% for the full run through tox, both set in `pyproject.toml`.
 
 Run tests: `pytest` (uses settings from `pyproject.toml`, parallel by default via xdist).
 
