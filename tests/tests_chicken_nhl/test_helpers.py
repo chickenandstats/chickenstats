@@ -2,8 +2,15 @@ from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
-import pandas as pd
 import pytest
+
+try:
+    import pandas as pd
+
+    HAS_PANDAS = True
+except ImportError:
+    pd = None  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+    HAS_PANDAS = False
 
 from chickenstats.chicken_nhl._game_utils import (
     _return_name_html as return_name_html,
@@ -18,6 +25,9 @@ from chickenstats.utilities.utilities import charts_directory, data_directory, n
 @pytest.fixture(scope="package")
 def test_pbp():
     filepath = Path("./tests/tests_chicken_nhl/data/test_pbp.csv")
+
+    if not HAS_PANDAS:
+        pytest.skip("pandas not installed")
 
     test_pbp = pd.read_csv(filepath, low_memory=False)
 
@@ -34,7 +44,14 @@ def test_norm_coords(test_pbp, norm_column="event_team", norm_value="NSH"):
 
 @pytest.mark.parametrize(
     "test_list",
-    [2023020001, 2023020001.0, "2023020001", (2023020001, 2023020002), pd.Series([2023020001]), np.array([2023020001])],
+    [
+        2023020001,
+        2023020001.0,
+        "2023020001",
+        (2023020001, 2023020002),
+        np.array([2023020001]),
+        *([pd.Series([2023020001])] if HAS_PANDAS else []),
+    ],
 )
 def test_convert_to_list(test_list):
     test_list = convert_to_list(test_list, "GAME ID")

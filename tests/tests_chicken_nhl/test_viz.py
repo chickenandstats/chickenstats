@@ -3,13 +3,16 @@ import os
 import sys
 from unittest.mock import patch
 
+import polars as pl
+import pytest
+
+pytest.importorskip("matplotlib", reason="requires the 'plotting' extra")
+
 import matplotlib
 
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
-import polars as pl
-import pytest
 import requests
 
 pytest.importorskip("seaborn", reason="requires the 'plotting' extra")

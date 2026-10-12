@@ -27,6 +27,11 @@ from chickenstats.chicken_nhl.scraper import Scraper
 _skip_no_pandas = pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installed")
 _skip_no_pyarrow = pytest.mark.skipif(not HAS_PYARROW, reason="pyarrow not installed")
 
+# backend="narwhals" converts through Arrow, so it fails without pyarrow even though pyarrow is optional
+_narwhals_needs_pyarrow = pytest.mark.xfail(
+    not HAS_PYARROW, reason="backend='narwhals' needs pyarrow", raises=ModuleNotFoundError, strict=True
+)
+
 
 class TestScraper:
     # -----------------------------------------------------------------------------
@@ -696,7 +701,10 @@ class TestScraper:
 
     @pytest.mark.parametrize(
         ("backend", "expected_type"),
-        [pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow), ("narwhals", nw.DataFrame)],
+        [
+            pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow),
+            pytest.param("narwhals", nw.DataFrame, marks=_narwhals_needs_pyarrow),
+        ],
     )
     def test_stats_narwhals_backends(self, backend, expected_type):
         """stats property returns the correct type for pyarrow and narwhals backends."""
@@ -707,7 +715,10 @@ class TestScraper:
 
     @pytest.mark.parametrize(
         ("backend", "expected_type"),
-        [pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow), ("narwhals", nw.DataFrame)],
+        [
+            pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow),
+            pytest.param("narwhals", nw.DataFrame, marks=_narwhals_needs_pyarrow),
+        ],
     )
     def test_lines_narwhals_backends(self, backend, expected_type):
         """lines property returns the correct type for pyarrow and narwhals backends."""
@@ -718,7 +729,10 @@ class TestScraper:
 
     @pytest.mark.parametrize(
         ("backend", "expected_type"),
-        [pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow), ("narwhals", nw.DataFrame)],
+        [
+            pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow),
+            pytest.param("narwhals", nw.DataFrame, marks=_narwhals_needs_pyarrow),
+        ],
     )
     def test_team_stats_narwhals_backends(self, backend, expected_type):
         """team_stats property returns the correct type for pyarrow and narwhals backends."""
@@ -729,7 +743,10 @@ class TestScraper:
 
     @pytest.mark.parametrize(
         ("backend", "expected_type"),
-        [pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow), ("narwhals", nw.DataFrame)],
+        [
+            pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow),
+            pytest.param("narwhals", nw.DataFrame, marks=_narwhals_needs_pyarrow),
+        ],
     )
     def test_ind_stats_narwhals_backends(self, backend, expected_type):
         """ind_stats property returns the correct type for pyarrow and narwhals backends."""
@@ -740,7 +757,10 @@ class TestScraper:
 
     @pytest.mark.parametrize(
         ("backend", "expected_type"),
-        [pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow), ("narwhals", nw.DataFrame)],
+        [
+            pytest.param("pyarrow", _PA_TABLE, marks=_skip_no_pyarrow),
+            pytest.param("narwhals", nw.DataFrame, marks=_narwhals_needs_pyarrow),
+        ],
     )
     def test_oi_stats_narwhals_backends(self, backend, expected_type):
         """oi_stats property returns the correct type for pyarrow and narwhals backends."""
@@ -759,7 +779,7 @@ class TestScraper:
             pytest.param("pandas", marks=_skip_no_pandas),
             "polars",
             pytest.param("pyarrow", marks=_skip_no_pyarrow),
-            "narwhals",
+            pytest.param("narwhals", marks=_narwhals_needs_pyarrow),
         ],
     )
     def test_internal_cache_always_polars(self, backend):

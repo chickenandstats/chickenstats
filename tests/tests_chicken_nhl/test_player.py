@@ -1,9 +1,18 @@
-import pandas as pd
 import polars as pl
 import pytest
 
+try:
+    import pandas as pd
+
+    HAS_PANDAS = True
+except ImportError:
+    pd = None  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
+    HAS_PANDAS = False
+
 from chickenstats.chicken_nhl._player_names import correct_player_name
 from chickenstats.chicken_nhl.player import Player, search_players
+
+_skip_no_pandas = pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installed")
 
 
 # -----------------------------------------------------------------------------
@@ -144,7 +153,7 @@ def forsberg():
 
 
 class TestPlayer:
-    @pytest.mark.parametrize("backend", ["polars", "pandas"])
+    @pytest.mark.parametrize("backend", ["polars", pytest.param("pandas", marks=_skip_no_pandas)])
     def test_basic_instantiation(self, backend):
         player = Player(player_id=8476887, backend=backend)
         assert player.player_id == 8476887
@@ -287,7 +296,7 @@ class TestSearchPlayers:
         assert player.player_name == "Connor McDavid"
 
     @pytest.mark.nhl
-    @pytest.mark.parametrize("backend", ["polars", "pandas"])
+    @pytest.mark.parametrize("backend", ["polars", pytest.param("pandas", marks=_skip_no_pandas)])
     def test_backend_parameter(self, backend):
         results = search_players("mcdavid", backend=backend)
         if backend == "pandas":

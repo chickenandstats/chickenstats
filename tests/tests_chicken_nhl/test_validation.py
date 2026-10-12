@@ -24,10 +24,15 @@ from chickenstats.exceptions import UnsupportedBackendError
 from chickenstats.chicken_nhl._validation_schema import (
     reorder_columns,
     polars_dtype_map,
-    pandas_dtype_map,
     polars_pandera_options,
     pandas_pandera_options,
 )
+
+# pandas_dtype_map is built on first access and needs pandas; the tests that use it are skipped without it
+if HAS_PANDAS:
+    from chickenstats.chicken_nhl._validation_schema import pandas_dtype_map
+else:
+    pandas_dtype_map = {}
 from chickenstats.chicken_nhl.validation_pydantic import APIEvent, ChangeEvent, PBPEvent
 
 _skip_no_pandas = pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installed")
