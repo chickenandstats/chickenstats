@@ -136,8 +136,6 @@ exclude = [
     "*__init__.py",
     ]
 target-version = "py310"
-fix = true
-unsafe-fixes = true
 line-length = 120
 
 [tool.ruff.lint]
