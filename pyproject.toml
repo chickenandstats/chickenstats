@@ -164,13 +164,16 @@ filterwarnings = [
 ]
 markers = [
     "regression: fix-specific historical games; run explicitly with -m regression",
+    "nhl: tests that download from the NHL; every other test runs from the saved responses with the network blocked",
     "live: integration tests that require a live chickenstats API endpoint and credentials",
     "pandas: test requires pandas installed",
     "pyarrow: test requires pyarrow installed",
     "matplotlib: test requires matplotlib installed",
     "pil: test requires pillow installed",
 ]
-addopts = "-n auto --dist loadscope --cov=src/chickenstats --cov-branch"
+# Tests that need the NHL or the chickenstats API are left out unless asked for, e.g. pytest -m nhl.
+# The offline run covers less of season.py and player.py, so its coverage floor is 89; the full run keeps 90.
+addopts = "-n auto --dist loadscope --cov=src/chickenstats --cov-branch -m 'not nhl and not live' --cov-fail-under=89"
 
 [tool.coverage.run]
 source = ["chickenstats"]
@@ -206,7 +209,7 @@ labels = ["ci"]
 skip_install = false
 pass_env = ["*"]
 set_env = {COVERAGE_FILE = ".coverage.{env_name}", CHICKENSTATS_USERNAME = "{env:CHICKENSTATS_USERNAME}", CHICKENSTATS_PASSWORD = "{env:CHICKENSTATS_PASSWORD}"}
-commands = [["pytest", "-m", "not live", "{posargs}", "--cache-clear", "--reruns", "2", "--reruns-delay", "10"]]
+commands = [["pytest", "-m", "not live", "--cov-fail-under=90", "{posargs}", "--cache-clear", "--reruns", "2", "--reruns-delay", "10"]]
 package = "editable"
 extras = ["plotting"]
 dependency_groups = ["tests"]
@@ -227,7 +230,7 @@ package = "editable"
 depends = ["clean"]
 extras = ["plotting"]
 dependency_groups = ["tests"]
-commands = [["pytest", "-m", "not regression and not live", "{posargs:tests}", "--cov-append"]]
+commands = [["pytest", "-m", "not regression and not live", "--cov-fail-under=90", "{posargs:tests}", "--cov-append"]]
 
 [tool.tox.env.report]
 platform = ".*"

@@ -206,12 +206,14 @@ class TestTeam:
     # logo property (network)
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     def test_logo_returns_image(self):
         from PIL import Image
 
         team = Team(team_code="NSH")
         assert isinstance(team.logo, Image.Image)
 
+    @pytest.mark.nhl
     def test_logo_is_cached(self):
         """logo is a cached_property — repeated access shouldn't re-download."""
         team = Team(team_code="NSH")

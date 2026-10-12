@@ -33,6 +33,7 @@ class TestScraper:
     # api_events
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_ids", [[2023020001, 2023020002, 2023020003, 2023020004, 2023020005]])
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_api_events(self, game_ids, backend):
@@ -51,6 +52,7 @@ class TestScraper:
     # api_rosters
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_ids", [[2022020001, 2022020002, 2022020003, 2022020004, 2022020005]])
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_api_rosters(self, game_ids, backend):
@@ -69,6 +71,7 @@ class TestScraper:
     # changes
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_ids", [[2021020001, 2021020002, 2021020003, 2021020004, 2021020005]])
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_changes(self, game_ids, backend):
@@ -87,6 +90,7 @@ class TestScraper:
     # html_events
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_ids", [[2020020001, 2020020002, 2020020003, 2020020004, 2020020005]])
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_html_events(self, game_ids, backend):
@@ -105,6 +109,7 @@ class TestScraper:
     # html_rosters
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_ids", [[2019020001, 2019020002, 2019020003, 2019020004, 2019020005]])
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_html_rosters(self, game_ids, backend):
@@ -123,6 +128,7 @@ class TestScraper:
     # rosters
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_ids", [[2017020001, 2017020002, 2017020003, 2017020004, 2017020005]])
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_rosters(self, game_ids, backend):
@@ -141,6 +147,7 @@ class TestScraper:
     # shifts
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_ids", [[2016020001, 2016020002, 2016020003, 2016020004, 2016020005]])
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_shifts(self, game_ids, backend):
@@ -159,6 +166,7 @@ class TestScraper:
     # play_by_play + play_by_play_ext
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize(
         "game_ids",
         [
@@ -195,6 +203,7 @@ class TestScraper:
             assert isinstance(play_by_play, pl.DataFrame)
             assert len(play_by_play) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_ids", [[2023020001, 2023020002, 2023020003]])
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_play_by_play_ext(self, game_ids, backend):
@@ -285,6 +294,7 @@ class TestScraper:
         assert "api_rosters" not in scraper.__dict__
         assert 2023020002 in scraper.game_ids
 
+    @pytest.mark.nhl
     def test_add_games_scrapes_new_game(self):
         """After add_games(), accessing a property fetches data for the new game too."""
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)

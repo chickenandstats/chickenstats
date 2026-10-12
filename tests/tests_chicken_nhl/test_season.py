@@ -15,6 +15,7 @@ _skip_no_pandas = pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installe
 
 
 class TestSeason:
+    @pytest.mark.nhl
     def test_schedule_includes_game_date_dt_local(self):
         """Regression test: game_date_dt_local was silently dropped by a schema/data
         mismatch (present in the raw dict, absent from schedule_polars_schema)."""
@@ -23,6 +24,7 @@ class TestSeason:
         assert "game_date_dt_local" in schedule.columns
         assert schedule.schema["game_date_dt_local"] == pl.Datetime(time_unit="us")
 
+    @pytest.mark.nhl
     def test_schedule_game_date_dt_local_preserves_local_wall_clock(self):
         """game_date_dt_local must reflect each game's own venue-local wall-clock time,
         not get silently UTC-shifted (a real risk since different games in one schedule
@@ -33,6 +35,7 @@ class TestSeason:
         assert row["game_date_dt_local"][0].strftime("%H:%M") == "19:00"
         assert row["venue_timezone"][0] == "US/Central"
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize(
         "year,backend",
         [
@@ -49,6 +52,7 @@ class TestSeason:
         if backend == "polars":
             assert isinstance(schedule, pl.DataFrame)
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_schedule_nashville(self, backend):
         season = Season(year=2023, backend=backend)
@@ -85,6 +89,7 @@ class TestSeason:
         with pytest.raises(Exception):
             Season(next_untabled_year)
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_standings(self, backend):
         season = Season(year=2023, backend=backend)
@@ -99,6 +104,7 @@ class TestSeason:
 
 
 class TestMultiSeasonSchedule:
+    @pytest.mark.nhl
     @pytest.mark.parametrize("backend", [pytest.param("pandas", marks=_skip_no_pandas), "polars"])
     def test_combines_multiple_seasons(self, backend):
         schedule = multi_season_schedule([2021, 2022], teams="NSH", backend=backend, disable_progress_bar=True)
@@ -112,6 +118,7 @@ class TestMultiSeasonSchedule:
 
         assert seasons == {20212022, 20222023}
 
+    @pytest.mark.nhl
     def test_matches_manual_single_season_loop(self):
         combined = multi_season_schedule([2021, 2022], teams="NSH", disable_progress_bar=True)
 
@@ -120,6 +127,7 @@ class TestMultiSeasonSchedule:
         assert combined.shape == manual.shape
         assert combined["game_id"].to_list() == manual["game_id"].to_list()
 
+    @pytest.mark.nhl
     def test_accepts_range(self):
         schedule = multi_season_schedule(range(2021, 2023), teams="NSH", disable_progress_bar=True)
         assert set(schedule["season"].unique().to_list()) == {20212022, 20222023}
@@ -250,6 +258,7 @@ class TestAddScheduleContext:
         result = add_schedule_context(schedule, backend="pandas")
         assert isinstance(result, pd.DataFrame)
 
+    @pytest.mark.nhl
     def test_real_schedule(self):
         schedule = Season(2023).schedule("NSH", disable_progress_bar=True)
         result = add_schedule_context(schedule)
@@ -360,6 +369,7 @@ class TestSeasonInit:
 
 
 class TestScheduleCaching:
+    @pytest.mark.nhl
     def test_cached_team_not_re_scraped(self):
         """Calling schedule() twice for the same team uses cached data."""
         season = Season(2023)
@@ -372,6 +382,7 @@ class TestScheduleCaching:
         assert len(schedule1) == len(schedule2)
         assert scraped_after_first == scraped_after_second
 
+    @pytest.mark.nhl
     def test_schedule_with_list_of_teams(self):
         """Passing teams as a list exercises the isinstance(teams, list) branch."""
         season = Season(2023)
@@ -381,6 +392,7 @@ class TestScheduleCaching:
         else:
             assert len(schedule) > 0
 
+    @pytest.mark.nhl
     def test_scrape_schedule_with_no_teams_arg(self):
         """Regression test: _scrape_schedule() with no args (its own documented usage)
         previously raised UnboundLocalError -- `teams=None` matched neither the
@@ -389,6 +401,7 @@ class TestScheduleCaching:
         season._scrape_schedule(disable_progress_bar=True)
         assert len(season._schedule) > 0
 
+    @pytest.mark.nhl
     def test_standings_second_call_uses_cache(self):
         """Second standings call hits the False branch of `if not self._standings:`."""
         season = Season(2023)

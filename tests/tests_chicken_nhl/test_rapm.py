@@ -11,7 +11,7 @@ from chickenstats.chicken_nhl.rapm import build_position_map, build_rapm_matrix
 
 @pytest.fixture(scope="module")
 def stints():
-    scraper = Scraper(game_ids=[2023020001, 2023020002], disable_progress_bar=True)
+    scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
     return prep_stints(scraper.play_by_play), scraper.play_by_play
 
 

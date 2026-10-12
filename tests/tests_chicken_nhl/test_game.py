@@ -75,6 +75,7 @@ class TestGame:
     # api_events + api_events_df
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_id,backend", _BEHAVIORAL)
     def test_api_events(self, game_id, backend):
         game = Game(game_id=game_id, backend=backend)
@@ -86,6 +87,7 @@ class TestGame:
         else:
             assert isinstance(df, pl.DataFrame) and len(df) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize(
         "game_id",
@@ -188,6 +190,7 @@ class TestGame:
     # api_rosters + api_rosters_df
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_id,backend", _BEHAVIORAL)
     def test_api_rosters(self, game_id, backend):
         game = Game(game_id=game_id, backend=backend)
@@ -199,6 +202,7 @@ class TestGame:
         else:
             assert isinstance(df, pl.DataFrame) and len(df) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize(
         "game_id",
@@ -224,6 +228,7 @@ class TestGame:
     # changes + changes_df
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_id,backend", _BEHAVIORAL)
     def test_changes(self, game_id, backend):
         game = Game(game_id=game_id, backend=backend)
@@ -235,6 +240,7 @@ class TestGame:
         else:
             assert isinstance(df, pl.DataFrame) and len(df) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize(
         "game_id",
@@ -259,6 +265,7 @@ class TestGame:
     # html_events + html_events_df
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_id,backend", _BEHAVIORAL)
     def test_html_events(self, game_id, backend):
         game = Game(game_id=game_id, backend=backend)
@@ -270,6 +277,7 @@ class TestGame:
         else:
             assert isinstance(df, pl.DataFrame) and len(df) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize(
         "game_id",
@@ -321,6 +329,7 @@ class TestGame:
     # html_rosters + html_rosters_df
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_id,backend", _BEHAVIORAL)
     def test_html_rosters(self, game_id, backend):
         game = Game(game_id=game_id, backend=backend)
@@ -332,6 +341,7 @@ class TestGame:
         else:
             assert isinstance(df, pl.DataFrame) and len(df) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize(
         "game_id",
@@ -356,6 +366,7 @@ class TestGame:
     # rosters + rosters_df
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_id,backend", _BEHAVIORAL)
     def test_rosters(self, game_id, backend):
         game = Game(game_id=game_id, backend=backend)
@@ -367,6 +378,7 @@ class TestGame:
         else:
             assert isinstance(df, pl.DataFrame) and len(df) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize(
         "game_id",
@@ -391,6 +403,7 @@ class TestGame:
     # shifts + shifts_df
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_id,backend", _BEHAVIORAL)
     def test_shifts(self, game_id, backend):
         game = Game(game_id=game_id, backend=backend)
@@ -402,6 +415,7 @@ class TestGame:
         else:
             assert isinstance(df, pl.DataFrame) and len(df) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize(
         "game_id",
@@ -428,6 +442,7 @@ class TestGame:
     # play_by_play + play_by_play_ext + play_by_play_df (merged)
     # -----------------------------------------------------------------------------
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("game_id,backend", _BEHAVIORAL)
     def test_play_by_play(self, game_id, backend):
         game = Game(game_id=game_id, backend=backend)
@@ -439,6 +454,7 @@ class TestGame:
         else:
             assert isinstance(df, pl.DataFrame) and len(df) > 0
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize(
         "game_id",
@@ -472,6 +488,7 @@ class TestGame:
             assert prop in game.__dict__
             assert isinstance(getattr(game, prop), list)
 
+    @pytest.mark.nhl
     @pytest.mark.regression
     @pytest.mark.parametrize("game_id", [2019020684, 2016020001])
     def test_prefetch_regression(self, game_id):

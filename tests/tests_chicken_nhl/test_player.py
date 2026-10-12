@@ -149,16 +149,19 @@ class TestPlayer:
         player = Player(player_id=8476887, backend=backend)
         assert player.player_id == 8476887
 
+    @pytest.mark.nhl
     def test_identity(self, forsberg):
         assert forsberg.first_name == "Filip"
         assert forsberg.last_name == "Forsberg"
         assert forsberg.player_name == "Filip Forsberg"
         assert repr(forsberg) == "Player(player_id=8476887, backend='polars')"
 
+    @pytest.mark.nhl
     def test_seasons(self, forsberg):
         assert isinstance(forsberg.active_seasons, list) and len(forsberg.active_seasons) > 0
         assert isinstance(forsberg.playoff_seasons, list) and len(forsberg.playoff_seasons) > 0
 
+    @pytest.mark.nhl
     def test_career_stats(self, forsberg):
         """_career_regular_season_stats is the raw NHL API payload (camelCase keys),
         matching this class's documented convention of exposing raw dicts via
@@ -167,9 +170,11 @@ class TestPlayer:
         for key in ("gamesPlayed", "goals", "assists", "points"):
             assert key in stats
 
+    @pytest.mark.nhl
     def test_player_info(self, forsberg):
         assert isinstance(forsberg.player_info, dict) and len(forsberg.player_info) > 0
 
+    @pytest.mark.nhl
     def test_current_team(self, forsberg):
         assert isinstance(forsberg.is_active, bool)
         assert isinstance(forsberg.current_team_id, int)
@@ -178,12 +183,14 @@ class TestPlayer:
         assert isinstance(forsberg.current_team_full_name, str)
         assert isinstance(forsberg.current_team_full_name_fr, str)
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("player_id", [8471675, 8478402])  # Crosby, McDavid
     def test_other_players(self, player_id):
         player = Player(player_id=player_id)
         assert player.player_id == player_id
         assert isinstance(player.first_name, str)
 
+    @pytest.mark.nhl
     def test_prefetch_populates_cache(self, forsberg):
         forsberg.prefetch()
         assert "_landing_info" in forsberg.__dict__
@@ -202,6 +209,7 @@ class TestPlayer:
             with pytest.raises(requests.exceptions.HTTPError):
                 _ = player._landing_info
 
+    @pytest.mark.nhl
     def test_prefetch_failure_logs_warning_not_raise(self, caplog):
         """A prefetch task failure must not raise out of prefetch(), and must be logged at
         WARNING (not DEBUG) so it's visible without enabling debug logging. Uses a standalone
@@ -221,6 +229,7 @@ class TestPlayer:
             for record in caplog.records
         )
 
+    @pytest.mark.nhl
     def test_private_properties(self, forsberg):
         """Lines 172, 177, 192, 197, 202, 211: private data properties."""
         _ = forsberg._featured_regular_season_stats
@@ -232,43 +241,52 @@ class TestPlayer:
 
 
 class TestSearchPlayers:
+    @pytest.mark.nhl
     def test_finds_expected_player(self):
         results = search_players("mcdavid")
         assert 8478402 in results["player_id"].to_list()
 
+    @pytest.mark.nhl
     def test_returns_player_name_column(self):
         results = search_players("mcdavid")
         row = results.filter(pl.col("player_id") == 8478402)
         assert row["player_name"][0] == "Connor McDavid"
 
+    @pytest.mark.nhl
     def test_no_match_returns_empty_frame_with_schema(self):
         results = search_players("zzzqqqxxnotarealplayer")
         assert results.shape[0] == 0
         assert "player_id" in results.columns
         assert "player_name" in results.columns
 
+    @pytest.mark.nhl
     def test_active_true_excludes_retired_players(self):
         results = search_players("gretzky", active=True)
         assert results.shape[0] == 0
 
+    @pytest.mark.nhl
     def test_active_false_includes_retired_players(self):
         results = search_players("gretzky", active=False)
         assert 8447400 in results["player_id"].to_list()  # Wayne Gretzky
 
+    @pytest.mark.nhl
     def test_active_none_includes_both(self):
         results = search_players("mcdavid", active=None)
         assert 8478402 in results["player_id"].to_list()
 
+    @pytest.mark.nhl
     def test_limit_respected(self):
         results = search_players("smith", limit=3)
         assert results.shape[0] <= 3
 
+    @pytest.mark.nhl
     def test_result_id_usable_with_player_class(self):
         results = search_players("mcdavid")
         player_id = results.filter(pl.col("player_id") == 8478402)["player_id"][0]
         player = Player(player_id=int(player_id))
         assert player.player_name == "Connor McDavid"
 
+    @pytest.mark.nhl
     @pytest.mark.parametrize("backend", ["polars", "pandas"])
     def test_backend_parameter(self, backend):
         results = search_players("mcdavid", backend=backend)
