@@ -1,3 +1,5 @@
+import gzip
+import json
 import os
 from unittest.mock import patch
 
@@ -46,42 +48,63 @@ requires_pil = pytest.mark.skipif(not HAS_PIL, reason="pillow not installed")
 MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "tests_chicken_nhl", "mock_data")
 FIXTURE_GAME_ID = 2023020001
 REPORT_FILES = {"PL": "events.html", "RO": "rosters.html", "TH": "shifts_home.html", "TV": "shifts_away.html"}
+SAVED_DIR = os.path.join(MOCK_DATA_DIR, "saved")
 
 # Tests with one of these markers are allowed to reach the network
 NETWORK_MARKERS = ("nhl", "live")
 
 _network = {"allowed": False}
 _blocked_urls: list[str] = []
+_saved_urls: dict[str, str] = {}
 _real_send = HTTPAdapter.send
 _real_get = requests.Session.get
 
 
-def saved_response(url: str) -> requests.Response | None:
-    """Return the saved NHL response for a game 2023020001 URL, or None for any other URL."""
-    filename = None
-    if f"gamecenter/{FIXTURE_GAME_ID}/play-by-play" in url:
+def _saved_index() -> dict[str, str]:
+    """Map each saved URL to its file under mock_data/saved (see scripts/capture_test_fixture.py)."""
+    if not _saved_urls:
+        with open(os.path.join(SAVED_DIR, "index.json")) as f:
+            _saved_urls.update(json.load(f))
+
+    return _saved_urls
+
+
+def saved_response(url: str, params: dict | None = None) -> requests.Response | None:
+    """Return the saved NHL response for a URL, or None when nothing is saved for it."""
+    full_url = str(requests.Request("GET", url, params=params).prepare().url)
+    content = None
+
+    if full_url in _saved_index():
+        with gzip.open(os.path.join(SAVED_DIR, _saved_index()[full_url]), "rb") as f:
+            content = f.read()
+
+    # Game 2023020001 predates the saved folder and is kept as plain files
+    elif f"gamecenter/{FIXTURE_GAME_ID}/play-by-play" in url:
         filename = "play_by_play.json"
     else:
+        filename = None
         for report, report_file in REPORT_FILES.items():
             if f"/{report}{str(FIXTURE_GAME_ID)[4:]}.HTM" in url:
                 filename = report_file
 
-    if filename is None:
-        return None
+    if content is None:
+        if filename is None:
+            return None
+        with open(os.path.join(MOCK_DATA_DIR, filename), "rb") as f:
+            content = f.read()
 
     response = requests.Response()
-    response.url = url
+    response.url = full_url
     response.status_code = 200
-    with open(os.path.join(MOCK_DATA_DIR, filename), "rb") as f:
-        response._content = f.read()
+    response._content = content
 
     return response
 
 
 def _guarded_get(self, url, *args, **kwargs):
-    """Serve game 2023020001 from disk; pass every other request on."""
+    """Serve a saved response from disk; pass every other request on."""
     if not _network["allowed"]:
-        response = saved_response(str(url))
+        response = saved_response(str(url), kwargs.get("params"))
         if response is not None:
             return response
 
