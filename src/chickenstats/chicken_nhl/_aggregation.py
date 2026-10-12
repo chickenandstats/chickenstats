@@ -127,6 +127,11 @@ def prep_oi_percent(df: pd.DataFrame | pl.DataFrame) -> pd.DataFrame | pl.DataFr
     return df
 
 
+def _sort_rows(df: pl.DataFrame, keys: list[str]) -> pl.DataFrame:
+    """Sort an aggregated frame by its grouping columns so the row order is the same on every call."""
+    return df.sort([x for x in keys if x in df.columns], nulls_last=True)
+
+
 def prep_ind(
     df: pl.DataFrame,
     level: AggLevel | Literal["period", "game", "session", "season"] = "game",
@@ -505,7 +510,7 @@ def prep_ind(
 
     ind_stats = validate_dataframe(ind_stats, ind_stats_pandera_polars)
 
-    return ind_stats
+    return _sort_rows(ind_stats, merge_list)
 
 
 def _normalize_lineup_cols(df: pl.DataFrame, cols: list[str]) -> pl.DataFrame:
@@ -967,7 +972,7 @@ def prep_oi(
 
     oi_stats = validate_dataframe(oi_stats, oi_stats_pandera_polars)
 
-    return oi_stats
+    return _sort_rows(oi_stats, merge_cols)
 
 
 def _merge_stats(ind_stats_df: pl.DataFrame, oi_stats_df: pl.DataFrame) -> pl.DataFrame:
@@ -1044,6 +1049,11 @@ def _merge_stats(ind_stats_df: pl.DataFrame, oi_stats_df: pl.DataFrame) -> pl.Da
 
     sort_list = [x for x in sort_stuff.keys() if x in stats.columns]
     descending_list = [v for k, v in sort_stuff.items() if k in stats.columns]
+
+    # The remaining grouping columns break ties, so the row order is the same on every call
+    tie_breakers = [x for x in merge_cols if x not in sort_list]
+    sort_list += tie_breakers
+    descending_list += [False] * len(tie_breakers)
 
     stats = stats.with_columns(integer_columns).sort(by=sort_list, descending=descending_list)
 
@@ -1563,7 +1573,7 @@ def prep_lines(
 
     lines = validate_dataframe(cast(pl.DataFrame, lines), line_stats_pandera_polars)
 
-    return lines
+    return _sort_rows(lines, merge_list)
 
 
 def prep_team_stats(
@@ -1826,7 +1836,7 @@ def prep_team_stats(
 
     team_stats = validate_dataframe(cast(pl.DataFrame, team_stats), team_stats_pandera_polars)
 
-    return team_stats
+    return _sort_rows(team_stats, merge_list)
 
 
 def prep_rolling_stats(
