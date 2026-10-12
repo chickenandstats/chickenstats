@@ -1,3 +1,4 @@
+import json
 from unittest.mock import MagicMock, patch
 
 import polars as pl
@@ -32,9 +33,29 @@ def _make_page(data, total, has_next):
     return page
 
 
-@pytest.fixture(scope="module")
-def cs():
-    """ChickenStats instance with all SDK network calls patched out."""
+API_ENV_VARS = [
+    "CHICKENSTATS_API_USERNAME",
+    "CHICKENSTATS_API_PASSWORD",
+    "CHICKENSTATS_API_HOST",
+    "CHICKENSTATS_API_CF_CLIENT_ID",
+    "CHICKENSTATS_API_CF_CLIENT_SECRET",
+]
+
+
+@pytest.fixture
+def credentials_path(tmp_path, monkeypatch):
+    """Point the cached login at an empty temporary folder and clear the API environment variables."""
+    path = tmp_path / "credentials"
+    monkeypatch.setattr("chickenstats.api._auth.CREDENTIALS_PATH", path)
+    for name in API_ENV_VARS:
+        monkeypatch.delenv(name, raising=False)
+
+    return path
+
+
+@pytest.fixture
+def login_api(credentials_path):
+    """The SDK with its network calls patched out; yields the mocked LoginApi class."""
     with (
         patch("chickenstats.api.api.chickenstats_api.Configuration"),
         patch("chickenstats.api.api.chickenstats_api.ApiClient"),
@@ -42,8 +63,38 @@ def cs():
     ):
         token = MagicMock()
         token.access_token = "test-token"
+        token.refresh_token = "test-refresh-token"
         MockLogin.return_value.login_firebase_token.return_value = token
-        yield ChickenStats()
+        yield MockLogin
+
+
+@pytest.fixture
+def cs(login_api):
+    """A new ChickenStats instance for each test, logged in with a test username and password."""
+    return ChickenStats(username="tester", password="secret")
+
+
+# -----------------------------------------------------------------------------
+# Where the login comes from
+# -----------------------------------------------------------------------------
+
+
+class TestLoginSource:
+    def test_username_and_password_are_posted(self, login_api):
+        cs = ChickenStats(username="tester", password="secret")
+
+        login_api.return_value.login_firebase_token.assert_called_once_with(username="tester", password="secret")
+        assert cs.user.access_token == "test-token"
+        assert cs.user.refresh_token == "test-refresh-token"
+
+    def test_cached_login_is_used_without_logging_in(self, login_api, credentials_path):
+        credentials_path.write_text(json.dumps({"access_token": "cached-token", "refresh_token": "cached-refresh"}))
+
+        cs = ChickenStats()
+
+        login_api.return_value.login_firebase_token.assert_not_called()
+        assert cs.user.access_token == "cached-token"
+        assert cs.user.refresh_token == "cached-refresh"
 
 
 # -----------------------------------------------------------------------------
