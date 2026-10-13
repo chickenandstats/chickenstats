@@ -62,7 +62,7 @@ uv run --isolated --no-dev --no-default-groups --with pytest --with pytest-cov -
 ```sh
 uv run ruff format .          # format
 uv run ruff check .           # lint
-uv run ty check src/          # type checking
+uv run ty check src/ tests/ scripts/   # type checking
 ```
 
 Docstrings follow [Google style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings). Ruff and ty run automatically on commit via pre-commit.
