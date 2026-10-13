@@ -1,7 +1,5 @@
 import importlib
-import os
 import sys
-from unittest.mock import patch
 
 import polars as pl
 import pytest
@@ -13,7 +11,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
-import requests
+import numpy as np
 
 pytest.importorskip("seaborn", reason="requires the 'plotting' extra")
 pytest.importorskip("hockey_rink", reason="requires the 'plotting' extra")
@@ -29,53 +27,10 @@ from chickenstats.chicken_nhl.viz import (
 )
 from chickenstats.exceptions import InvalidInputError
 
-MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "mock_data")
 
-
-def mock_session_get(self, url, *args, **kwargs):
-    """Custom mock for requests Session.get / ChickenSession.get."""
-    response = requests.Response()
-    response.url = url
-
-    if "api-web.nhle.com/v1/gamecenter/2023020001/play-by-play" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "play_by_play.json"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/RO020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "rosters.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/TH020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "shifts_home.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/TV020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "shifts_away.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/PL020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "events.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    response.status_code = 404
-    return response
-
-
-@pytest.fixture(autouse=True)
-def mock_requests():
-    """Fixture to intercept all HTTP GET requests made via requests.Session."""
-    with patch("requests.Session.get", mock_session_get):
-        yield
+def plotted_points(ax) -> list[int]:
+    """Return the number of points in each scatter drawn on the axes."""
+    return [len(collection.get_offsets()) for collection in ax.collections if len(collection.get_offsets())]
 
 
 @pytest.fixture(scope="module")
@@ -144,6 +99,7 @@ class TestPlotShotChart:
     def test_returns_axes(self):
         ax = plot_shot_chart(_make_pbp(), team="NSH")
         assert isinstance(ax, plt.Axes)
+        assert sum(plotted_points(ax)) == 4
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
     def test_works_without_pred_goal(self):
@@ -158,12 +114,12 @@ class TestPlotShotChart:
 
     def test_player_filter(self):
         ax = plot_shot_chart(_make_pbp(), team="NSH", player="A")
-        assert isinstance(ax, plt.Axes)
+        assert sum(plotted_points(ax)) == 2
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
     def test_strengths_filter(self):
         ax = plot_shot_chart(_make_pbp(), team="NSH", strengths=["5v4"])
-        assert isinstance(ax, plt.Axes)
+        assert sum(plotted_points(ax)) == 1
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
     def test_raises_on_empty_filter(self):
@@ -262,7 +218,7 @@ class TestPlotRollingStats:
 
     def test_team_filter(self):
         ax = plot_rolling_stats(_make_rolling_stats(), stat="cf_p60", team="NSH")
-        assert isinstance(ax, plt.Axes)
+        assert [np.asarray(line.get_ydata()).tolist() for line in ax.lines] == [[50.0, 55.0, 60.0]]
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
     def test_raises_on_missing_rolling_column(self):
@@ -283,11 +239,12 @@ class TestPlotStatComparison:
     def test_returns_axes(self):
         ax = plot_stat_comparison(_make_comparison_stats(), x="cf_p60", y="ff_p60")
         assert isinstance(ax, plt.Axes)
+        assert plotted_points(ax) == [5]
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
     def test_highlight_team(self):
         ax = plot_stat_comparison(_make_comparison_stats(), x="cf_p60", y="ff_p60", highlight_team="NSH")
-        assert isinstance(ax, plt.Axes)
+        assert plotted_points(ax) == [3, 2]
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
     def test_no_size_column(self):

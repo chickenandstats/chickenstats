@@ -1,7 +1,4 @@
-import os
 import pytest
-from unittest.mock import patch
-import requests
 import polars as pl
 
 try:
@@ -13,54 +10,6 @@ except ImportError:
     HAS_PANDAS = False
 
 from chickenstats.chicken_nhl.scraper import Scraper
-
-MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "mock_data")
-
-
-def mock_session_get(self, url, *args, **kwargs):
-    """Custom mock for requests Session.get / ChickenSession.get."""
-    response = requests.Response()
-    response.url = url
-
-    if "api-web.nhle.com/v1/gamecenter/2023020001/play-by-play" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "play_by_play.json"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/RO020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "rosters.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/TH020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "shifts_home.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/TV020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "shifts_away.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/PL020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "events.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    response.status_code = 404
-    return response
-
-
-@pytest.fixture(autouse=True)
-def mock_requests():
-    """Fixture to intercept all HTTP GET requests made via requests.Session."""
-    with patch("requests.Session.get", mock_session_get):
-        yield
 
 
 class TestMockScraper:
