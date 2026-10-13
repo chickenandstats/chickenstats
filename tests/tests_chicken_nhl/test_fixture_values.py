@@ -364,6 +364,33 @@ def test_shootout_rows(shootout_game):
     assert shootout["strength_state"].unique().to_list() == ["1v0"]
 
 
+def test_long_shootout_game(long_shootout_game, saved_api_response):
+    """A game with five shootout goals has the right shots through overtime and eight shootout attempts."""
+    api_response = saved_api_response(long_shootout_game.game_id)
+    play_by_play = long_shootout_game.play_by_play
+
+    assert long_shootout_game.failed_games == []
+    assert (play_by_play.height, long_shootout_game.shifts.height, long_shootout_game.changes.height) == (779, 742, 455)
+
+    through_overtime = play_by_play.filter(pl.col("period") <= 4)
+    totals = {
+        row["event_team"]: row
+        for row in through_overtime.group_by("event_team").agg(pl.col("goal", "shot").sum()).drop_nulls().to_dicts()
+    }
+    assert (totals["MTL"]["goal"], totals["BUF"]["goal"]) == (2, 2)
+    assert (totals["MTL"]["shot"], totals["BUF"]["shot"]) == (
+        api_response["awayTeam"]["sog"],
+        api_response["homeTeam"]["sog"],
+    )
+    assert (totals["MTL"]["shot"], totals["BUF"]["shot"]) == (31, 48)
+
+    shootout = dict(play_by_play.filter(pl.col("period") == 5)["event"].value_counts().rows())
+    assert (shootout["GOAL"], shootout["SHOT"]) == (5, 3)
+
+    # Buffalo had a two-man advantage in the first period
+    assert through_overtime.filter(pl.col("strength_state") == "5v3").height == 2
+
+
 @pytest.mark.parametrize(
     "game_id, period, period_type", [(2023020001, 3, "REG"), (2023020125, 5, "SO"), (2023030223, 4, "OT")]
 )

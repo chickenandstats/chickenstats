@@ -69,6 +69,32 @@ def test_team_shots_are_the_same_with_and_without_a_strength_split(shootout_game
     assert dict(split.group_by("team").agg(pl.col("sf").sum()).rows()) == dict(unsplit.select("team", "sf").rows())
 
 
+@known_bug("every shootout goal is added to the running score; the winner should get one goal")
+def test_final_score_of_a_shootout_with_several_goals(long_shootout_game, saved_api_response):
+    api_response = saved_api_response(long_shootout_game.game_id)
+    last_event = long_shootout_game.play_by_play.tail(1)
+
+    assert (api_response["awayTeam"]["score"], api_response["homeTeam"]["score"]) == (3, 2)
+    assert (last_event["away_score"].item(), last_event["home_score"].item()) == (3, 2)
+
+
+@known_bug("shootout goals are counted as team goals when stats are not split by strength state")
+def test_team_goals_leave_out_shootout_goals(long_shootout_game):
+    team_stats = prep_team_stats(
+        long_shootout_game.play_by_play, long_shootout_game.play_by_play_ext, level="game", strength_state=False
+    )
+
+    # Two goals each through overtime, and one more for Montreal for winning the shootout
+    assert dict(team_stats.select("team", "gf").rows()) == {"MTL": 3, "BUF": 2}
+
+
+@known_bug("a shootout goal is credited to the shooter as an individual goal")
+def test_individual_goals_leave_out_shootout_goals(long_shootout_game):
+    ind_stats = prep_ind(long_shootout_game.play_by_play, level="game", strength_state=False)
+
+    assert ind_stats["g"].sum() == 4
+
+
 # -----------------------------------------------------------------------------
 # Events lost or misplaced by a strength split
 # -----------------------------------------------------------------------------

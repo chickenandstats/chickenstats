@@ -15,6 +15,7 @@ FIXTURE_GAME_ID = 2023020001
 
 SHOOTOUT_GAME_ID = 2023020125
 PLAYOFF_OVERTIME_GAME_ID = 2023030223
+LONG_SHOOTOUT_GAME_ID = 2023020411
 
 
 def scrape_saved_game(game_id: int) -> SimpleNamespace:
@@ -58,6 +59,12 @@ def fixture_game():
 def shootout_game():
     """Every scraped frame for game 2023020125 (VGK at LAK, VGK won 4-3 in a shootout)."""
     return scrape_saved_game(SHOOTOUT_GAME_ID)
+
+
+@pytest.fixture(scope="session")
+def long_shootout_game():
+    """Every scraped frame for game 2023020411 (MTL at BUF, MTL won 3-2 in a shootout with five shootout goals)."""
+    return scrape_saved_game(LONG_SHOOTOUT_GAME_ID)
 
 
 @pytest.fixture(scope="session")

@@ -1,17 +1,22 @@
 {
   "https://api-web.nhle.com/v1/club-schedule-season/NSH/20232024": "club-schedule-season_NSH_20232024.gz",
   "https://api-web.nhle.com/v1/gamecenter/2023020125/play-by-play": "gamecenter_2023020125_play-by-play.gz",
+  "https://api-web.nhle.com/v1/gamecenter/2023020411/play-by-play": "gamecenter_2023020411_play-by-play.gz",
   "https://api-web.nhle.com/v1/gamecenter/2023030223/play-by-play": "gamecenter_2023030223_play-by-play.gz",
   "https://api-web.nhle.com/v1/player/8476887/game-log/now": "player_8476887_game-log_now.gz",
   "https://api-web.nhle.com/v1/player/8476887/landing": "player_8476887_landing.gz",
   "https://api-web.nhle.com/v1/standings/2024-04-18": "standings_2024-04-18.gz",
   "https://search.d3.nhle.com/api/v1/search/player?culture=en-us&limit=25&q=forsberg": "search_player_culture_en-us_limit_25_q_forsberg.gz",
   "https://www.nhl.com/scores/htmlreports/20232024/PL020125.HTM": "htmlreports_20232024_PL020125.HTM.gz",
+  "https://www.nhl.com/scores/htmlreports/20232024/PL020411.HTM": "htmlreports_20232024_PL020411.HTM.gz",
   "https://www.nhl.com/scores/htmlreports/20232024/PL030223.HTM": "htmlreports_20232024_PL030223.HTM.gz",
   "https://www.nhl.com/scores/htmlreports/20232024/RO020125.HTM": "htmlreports_20232024_RO020125.HTM.gz",
+  "https://www.nhl.com/scores/htmlreports/20232024/RO020411.HTM": "htmlreports_20232024_RO020411.HTM.gz",
   "https://www.nhl.com/scores/htmlreports/20232024/RO030223.HTM": "htmlreports_20232024_RO030223.HTM.gz",
   "https://www.nhl.com/scores/htmlreports/20232024/TH020125.HTM": "htmlreports_20232024_TH020125.HTM.gz",
+  "https://www.nhl.com/scores/htmlreports/20232024/TH020411.HTM": "htmlreports_20232024_TH020411.HTM.gz",
   "https://www.nhl.com/scores/htmlreports/20232024/TH030223.HTM": "htmlreports_20232024_TH030223.HTM.gz",
   "https://www.nhl.com/scores/htmlreports/20232024/TV020125.HTM": "htmlreports_20232024_TV020125.HTM.gz",
+  "https://www.nhl.com/scores/htmlreports/20232024/TV020411.HTM": "htmlreports_20232024_TV020411.HTM.gz",
   "https://www.nhl.com/scores/htmlreports/20232024/TV030223.HTM": "htmlreports_20232024_TV030223.HTM.gz"
 }
