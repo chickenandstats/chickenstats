@@ -66,7 +66,6 @@ def test_team_shots_are_the_same_with_and_without_a_strength_split(shootout_game
     assert dict(split.group_by("team").agg(pl.col("sf").sum()).rows()) == dict(unsplit.select("team", "sf").rows())
 
 
-@known_bug("every shootout goal is added to the running score; the winner should get one goal")
 def test_final_score_of_a_shootout_with_several_goals(long_shootout_game, saved_api_response):
     api_response = saved_api_response(long_shootout_game.game_id)
     last_event = long_shootout_game.play_by_play.tail(1)

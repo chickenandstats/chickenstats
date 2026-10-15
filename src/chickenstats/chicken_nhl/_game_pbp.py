@@ -260,6 +260,9 @@ class _GamePBPMixin(_GameBase):
         home_score, away_score = 0, 0
         home_on_ice, away_on_ice = {}, {}
         prev_event_type, prev_event_team = None, None
+        prev_shootout_goal = False
+        shootout_goals: dict[str, int] = {}
+        shootout_decided = False
         _last_fac_sec, _last_fac_x, _last_fac_y, _last_fac_zone, _last_fac_team = None, None, None, None, None
 
         # Player cache initialization
@@ -280,10 +283,19 @@ class _GamePBPMixin(_GameBase):
         }
 
         for idx, event in enumerate(merged_events):
-            if prev_event_type == "GOAL":
+            if prev_event_type == "GOAL" and not prev_shootout_goal:
                 if prev_event_team == event["home_team"]:
                     home_score += 1
                 elif prev_event_team == event["away_team"]:
+                    away_score += 1
+
+            # Shootout goals don't add to the score; the winner gets one goal when the shootout ends
+            if event["is_shootout"] and event["event"] in ["SOC", "GEND"] and not shootout_decided:
+                shootout_decided = True
+                home_so, away_so = shootout_goals.get(event["home_team"], 0), shootout_goals.get(event["away_team"], 0)
+                if home_so > away_so:
+                    home_score += 1
+                elif away_so > home_so:
                     away_score += 1
 
             event.update(
@@ -570,6 +582,9 @@ class _GamePBPMixin(_GameBase):
             event["id"] = int(f"{self.game_id}{event['event_idx']:04d}")
 
             prev_event_type, prev_event_team = event["event"], event["event_team"]
+            prev_shootout_goal = event["shootout_goal"] == 1
+            if prev_shootout_goal:
+                shootout_goals[event["event_team"]] = shootout_goals.get(event["event_team"], 0) + 1
 
         return merged_events
 
