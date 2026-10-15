@@ -411,6 +411,48 @@ def test_shootout_attempts_are_flagged_and_not_counted(request, fixture, saved_a
     assert attempts.join(game.xg_fields, on=["game_id", "event_idx"]).height == 0
 
 
+# The finest and coarsest levels, always split by score; each case takes about two seconds
+@pytest.mark.parametrize("level", ["period", "season"])
+@pytest.mark.parametrize("strength_state", [True, False])
+@pytest.mark.parametrize("with_others", [True, False])
+def test_shootout_game_totals_at_every_level(long_shootout_game, level, strength_state, with_others):
+    """Goals and shots through overtime are the same for every aggregation and argument combination."""
+    pbp, pbp_ext = long_shootout_game.play_by_play, long_shootout_game.play_by_play_ext
+    goals, shots = {"MTL": 2, "BUF": 2}, {"MTL": 31, "BUF": 48}
+    split = {"level": level, "strength_state": strength_state, "score": True}
+
+    stats = prep_stats(pbp, pbp_ext, teammates=with_others, opposition=with_others, **split)
+    team_stats = prep_team_stats(pbp, pbp_ext, opposition=with_others, **split)
+    lines = prep_lines(
+        pbp,
+        pbp_ext,
+        position="f",
+        level=level,
+        strength_state=strength_state,
+        score=True,
+        teammates=with_others,
+        opposition=with_others,
+    )
+
+    assert stats.select(pl.col("g", "isf").sum()).row(0) == (sum(goals.values()), sum(shots.values()))
+    assert dict(team_stats.group_by("team").agg(pl.col("gf").sum()).rows()) == goals
+    assert dict(team_stats.group_by("team").agg(pl.col("sf").sum()).rows()) == shots
+    assert dict(lines.group_by("team").agg(pl.col("gf").sum()).rows()) == goals
+    assert dict(lines.group_by("team").agg(pl.col("sf").sum()).rows()) == shots
+
+
+@pytest.mark.parametrize("fixture", ["shootout_game", "long_shootout_game"])
+def test_goalie_goals_against_equal_team_goals_against(request, fixture):
+    """In a game decided by a shootout, each team's goalies allowed the goals the team allowed."""
+    game = request.getfixturevalue(fixture)
+    stats = prep_stats(game.play_by_play, game.play_by_play_ext, level="game", strength_state=False)
+    team_stats = prep_team_stats(game.play_by_play, game.play_by_play_ext, level="game", strength_state=False)
+
+    goalies = stats.filter(pl.col("position") == "G").group_by("team").agg(pl.col("ga").sum())
+
+    assert dict(goalies.rows()) == dict(team_stats.select("team", "ga").rows())
+
+
 @pytest.mark.parametrize("fixture", ["fixture_game", "shootout_game", "long_shootout_game"])
 def test_one_on_one_rows_have_only_the_shooter_and_the_goalie(request, fixture):
     """A penalty shot or shootout attempt has the shooter on one side and the goalie in net on the other."""
