@@ -26,7 +26,7 @@ from chickenstats.chicken_nhl import (
 from test_live_games import LIVE_DATA_DIR, snapshot_session_get
 
 # How one team's strength state reads from the other bench
-MIRRORED_STATE = {"5v5": "5v5", "5v4": "4v5", "4v5": "5v4", "5vE": "Ev5", "Ev5": "5vE"}
+MIRRORED_STATE = {"5v5": "5v5", "5v4": "4v5", "4v5": "5v4", "5vE": "Ev5", "Ev5": "5vE", "1v0": "0v1", "0v1": "1v0"}
 
 
 # -----------------------------------------------------------------------------
@@ -203,9 +203,10 @@ def test_team_stats_by_strength_match_play_by_play(fixture_game):
         .to_dicts()
     }
 
-    assert team_stats.height == 8
+    # Includes Tampa Bay's 1v0 row and Nashville's 0v1 row from the penalty-shot goal
+    assert team_stats.height == 10
     for row in team_stats.to_dicts():
-        assert (row["gf"], row["sf"]) == direct[(row["team"], row["strength_state"])]
+        assert (row["gf"], row["sf"]) == direct.get((row["team"], row["strength_state"]), (0, 0))
 
     five_on_five = team_stats.filter(pl.col("team") == "TBL", pl.col("strength_state") == "5v5").to_dicts()[0]
     assert five_on_five["toi"] == pytest.approx(2478 / 60)

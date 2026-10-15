@@ -95,14 +95,12 @@ def test_individual_goals_leave_out_shootout_goals(long_shootout_game):
 
 
 @pytest.mark.parametrize("teammates", [False, True])
-@known_bug("a penalty-shot goal has no ice time, and rows with no ice time are dropped")
 def test_prep_stats_keeps_every_individual_event(fixture_game, teammates):
     stats = prep_stats(fixture_game.play_by_play, fixture_game.play_by_play_ext, level="game", teammates=teammates)
 
     assert stats.select(pl.col("g", "a1", "isf", "iff", "icf").sum()).row(0) == (8, 7, 65, 96, 126)
 
 
-@known_bug("the penalty-shot goal is dropped from team stats when they are split by strength state")
 def test_team_goals_by_strength_add_up_to_the_final_score(fixture_game):
     team_stats = prep_team_stats(fixture_game.play_by_play, fixture_game.play_by_play_ext)
 

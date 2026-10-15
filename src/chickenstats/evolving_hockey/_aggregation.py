@@ -15,7 +15,7 @@ from chickenstats.utilities.enums import AggLevel
 
 import polars as pl
 
-from chickenstats.chicken_nhl._aggregation import _prep_p60, _prep_oi_percent
+from chickenstats.chicken_nhl._aggregation import _drop_empty_rows, _prep_p60, _prep_oi_percent
 from chickenstats.exceptions import DataMismatchError
 from chickenstats.evolving_hockey._agg_constants import (
     build_group_list,
@@ -695,7 +695,7 @@ def prep_stats(
 
         zone_merge = [c for c in merge_cols if c in stats.columns and c in zones.columns]
         stats = stats.join(zones, on=zone_merge, how="left", coalesce=True).fill_null(0)
-        stats = stats.filter(pl.col("toi") > 0)
+        stats = _drop_empty_rows(stats, merge_cols)
 
         stats = _prep_p60(stats, P60_STATS)
         stats = _prep_oi_percent(stats, OI_PERCENT_STATS_FOR, OI_PERCENT_STATS_AGAINST)
@@ -996,7 +996,7 @@ def prep_lines(
             if wins in lines.columns and losses in lines.columns:
                 lines = lines.with_columns((pl.col(wins) + pl.col(losses)).alias(fo))
 
-        lines = lines.filter(pl.col("toi") > 0)
+        lines = _drop_empty_rows(lines, merge_list)
 
         lines = _prep_p60(lines, P60_STATS)
         lines = _prep_oi_percent(lines, OI_PERCENT_STATS_FOR, OI_PERCENT_STATS_AGAINST)
@@ -1232,7 +1232,7 @@ def prep_team_stats(
         if fo_exprs:
             team_stats = team_stats.with_columns(fo_exprs)
 
-        team_stats = team_stats.filter(pl.col("toi").is_not_null())
+        team_stats = _drop_empty_rows(team_stats, merge_list)
 
         team_stats = _prep_p60(team_stats, P60_STATS)
         team_stats = _prep_oi_percent(team_stats, OI_PERCENT_STATS_FOR, OI_PERCENT_STATS_AGAINST)

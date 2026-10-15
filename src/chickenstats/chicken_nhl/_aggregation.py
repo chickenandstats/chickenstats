@@ -132,6 +132,18 @@ def _sort_rows(df: pl.DataFrame, keys: list[str]) -> pl.DataFrame:
     return df.sort([x for x in keys if x in df.columns], nulls_last=True)
 
 
+def _drop_empty_rows(df: pl.DataFrame, keys: list[str]) -> pl.DataFrame:
+    """Drop rows with no ice time and no events.
+
+    A row with no ice time can still hold an event, e.g. a penalty-shot goal or a zone
+    start at a line change, so a row is kept when any of its counts is not zero.
+    """
+    counts = [c for c, dtype in df.schema.items() if c not in keys and not c.startswith("toi") and dtype.is_numeric()]
+    has_event = pl.any_horizontal([pl.col(c).fill_null(0) != 0 for c in counts]) if counts else pl.lit(False)
+
+    return df.filter((pl.col("toi").fill_null(0) > 0) | has_event)
+
+
 def prep_ind(
     df: pl.DataFrame,
     level: AggLevel | Literal["period", "game", "session", "season"] = "game",
@@ -1022,13 +1034,11 @@ def _merge_stats(ind_stats_df: pl.DataFrame, oi_stats_df: pl.DataFrame) -> pl.Da
 
     merge_cols = [x for x in merge_cols if x in ind_stats_df.columns and x in oi_stats_df.columns]
 
-    oi_stats_df = oi_stats_df.filter(pl.col("toi") > 0)
-
     stats = oi_stats_df.join(ind_stats_df, how="left", on=merge_cols, nulls_equal=True)
 
     null_columns = (pl.col(x).fill_null(0) for x in stats.columns if x not in merge_cols)
 
-    stats = stats.with_columns(null_columns)
+    stats = _drop_empty_rows(stats.with_columns(null_columns), merge_cols)
 
     integer_columns = ["api_id", "own_goalie_api_id", "opp_goalie_api_id"]
     integer_columns = (pl.col(x).cast(pl.Int64) for x in integer_columns if x in stats.columns)
@@ -1565,7 +1575,7 @@ def prep_lines(
         dzf=lines["dzfw"] + lines["dzfl"],
     )
 
-    lines = lines.filter(pl.col("toi") > 0)
+    lines = _drop_empty_rows(lines, merge_list)
 
     lines = prep_p60(lines)
 
@@ -1828,7 +1838,9 @@ def prep_team_stats(
         ozf=team_stats["ozfw"] + team_stats["ozfl"],
         nzf=team_stats["nzfw"] + team_stats["nzfl"],
         dzf=team_stats["dzfw"] + team_stats["dzfl"],
-    ).filter(pl.col("toi") > 0, pl.col("toi").is_not_null())
+    )
+
+    team_stats = _drop_empty_rows(team_stats, merge_list)
 
     team_stats = prep_p60(team_stats)
 
