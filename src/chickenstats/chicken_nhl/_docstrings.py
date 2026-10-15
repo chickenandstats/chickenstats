@@ -2197,8 +2197,9 @@ Note:
     slate reports ``False`` for a team whose previous game isn't in the set.
 
 Note:
-    Shootout attempts are not counted as shots or goals (see ``shootout_attempt`` in
-    play-by-play) and carry no on-ice lineup, so they're left out of stints.
+    Penalty shots and shootout attempts have one skater on ice, so they're left out of
+    stints. Stint totals fall short of ``team_stats`` by the penalty-shot goals and shots;
+    shootout attempts are not counted in either.
 
 {_build_returns(_STINTS_CONTEXT_FIELDS | _STINTS_PERSONNEL_FIELDS | _STINTS_STAT_FIELDS | _STINTS_MODEL_FIELDS)}
 

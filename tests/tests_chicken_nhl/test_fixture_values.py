@@ -178,13 +178,14 @@ def test_team_stats_game_rows(fixture_game):
 
 
 def test_stints_cover_the_game(fixture_game):
-    """Stints add up to 60 minutes and to the box score."""
+    """Stints add up to 60 minutes and to the box score, less the penalty-shot goal."""
     stints = prep_stints(fixture_game.play_by_play)
     columns = ["home_gf", "away_gf", "home_sf", "away_sf", "home_cf", "away_cf"]
 
     assert stints.height == 385
     assert stints["toi"].sum() == 3600
-    assert stints.select(pl.col(columns).sum()).row(0) == (5, 3, 34, 31, 61, 65)
+    # Tampa Bay's penalty-shot goal has one skater on ice, so it is not part of any stint
+    assert stints.select(pl.col(columns).sum()).row(0) == (4, 3, 33, 31, 60, 65)
 
 
 # -----------------------------------------------------------------------------
@@ -408,6 +409,22 @@ def test_shootout_attempts_are_flagged_and_not_counted(request, fixture, saved_a
     assert attempts["event"].is_in(["GOAL", "SHOT", "MISS"]).all()
     assert attempts.select(pl.col("goal", "shot", "miss", "fenwick", "corsi").sum()).row(0) == (0, 0, 0, 0, 0)
     assert attempts.join(game.xg_fields, on=["game_id", "event_idx"]).height == 0
+
+
+@pytest.mark.parametrize("fixture", ["fixture_game", "shootout_game", "long_shootout_game"])
+def test_one_on_one_rows_have_only_the_shooter_and_the_goalie(request, fixture):
+    """A penalty shot or shootout attempt has the shooter on one side and the goalie in net on the other."""
+    game = request.getfixturevalue(fixture)
+    one_on_one = game.play_by_play.filter(
+        pl.col("strength_state") == "1v0", pl.col("event").is_in(["GOAL", "SHOT", "MISS"])
+    )
+
+    assert one_on_one.height > 0
+    for row in one_on_one.to_dicts():
+        assert (row["event_team_skaters"], row["opp_team_skaters"]) == (1, 0)
+        assert (row["teammates"], row["own_goalie"]) == (row["player_1"], None)
+        assert row["opp_goalie"] is not None
+        assert row["opp_team_on"] == row["opp_goalie"]
 
 
 @pytest.mark.parametrize(

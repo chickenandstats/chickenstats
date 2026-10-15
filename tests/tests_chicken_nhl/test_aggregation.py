@@ -460,11 +460,12 @@ class TestPrepStints:
     def test_reconciles_with_prep_team_stats(self, game_pbp):
         """Stint totals must match team_stats over the same events.
 
-        Shootout attempts (period 5) are excluded from the comparison: they carry no
-        on-ice lineup, so prep_stints drops them while prep_team_stats counts them.
+        Penalty shots and shootout attempts (1v0) are excluded from the comparison: they
+        have one skater on ice, so prep_stints leaves them out while prep_team_stats counts
+        penalty shots.
         """
         pbp, pbp_ext = game_pbp
-        pbp = pbp.filter(pl.col("period") < 5)
+        pbp = pbp.filter(pl.col("strength_state") != "1v0")
         stints = prep_stints(pbp)
         team_stats = prep_team_stats(pbp, pbp_ext, level="game", strength_state=False)
 

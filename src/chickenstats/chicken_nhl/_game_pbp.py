@@ -269,6 +269,8 @@ class _GamePBPMixin(_GameBase):
         h_ice = aggregate_players([])
         a_ice = aggregate_players([])
         ice_changed = True
+        actives_by_eh_id = {player["eh_id"]: player for player in actives.values()}
+        goalie_in_net: dict[str, dict | None] = {"home": None, "away": None}
 
         # Mapping faceoff events to game seconds
         faceoff_events = {
@@ -372,6 +374,25 @@ class _GamePBPMixin(_GameBase):
                 h_ice = aggregate_players(list(home_on_ice.values()))
                 a_ice = aggregate_players(list(away_on_ice.values()))
                 ice_changed = False  # Flip flag back to False
+
+                # Nobody is on ice in the line changes during a shootout, so keep each team's last goalie
+                for venue, on_ice in (("home", home_on_ice), ("away", away_on_ice)):
+                    goalie = next((player for player in on_ice.values() if player.get("position") == "G"), None)
+                    if goalie is not None:
+                        goalie_in_net[venue] = goalie
+
+            # A penalty shot or shootout attempt has only the shooter and the goalie in net on the ice
+            is_one_on_one = event["event"] in ["GOAL", "SHOT", "MISS"] and (
+                event["is_shootout"] or "PENALTY SHOT" in str(event.get("description", ""))
+            )
+            if is_one_on_one:
+                shooter = actives_by_eh_id.get(event.get("player_1_eh_id"))
+                shooter_is_home = event["event_team"] == event["home_team"]
+                goalie = goalie_in_net["away" if shooter_is_home else "home"]
+                shooter_ice = aggregate_players([shooter] if shooter else [])
+                goalie_ice = aggregate_players([goalie] if goalie else [])
+                h_ice, a_ice = (shooter_ice, goalie_ice) if shooter_is_home else (goalie_ice, shooter_ice)
+                ice_changed = True  # The next event goes back to the players on ice from the line changes
 
             event.update(
                 {
