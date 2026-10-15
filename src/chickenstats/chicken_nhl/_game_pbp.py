@@ -434,6 +434,10 @@ class _GamePBPMixin(_GameBase):
             ):
                 event["strength_state"] = "ILLEGAL"
 
+            # A penalty shot or shootout attempt is 1v0 for the shooter's team and 0v1 for the other team
+            if event["strength_state"] in ["1v0", "ILLEGAL"]:
+                event["opp_strength_state"] = "0v1" if event["strength_state"] == "1v0" else "ILLEGAL"
+
             tm_pre, opp_pre = ("home", "away") if is_h_ev else ("away", "home")
 
             event.update(
@@ -474,8 +478,6 @@ class _GamePBPMixin(_GameBase):
                     "opp_goalie": event[f"{opp_pre}_goalie"],
                 }
             )
-            if event.get("opp_strength_state") is None and event["strength_state"] == "ILLEGAL":
-                event["opp_strength_state"] = "ILLEGAL"
 
             event["danger"], event["high_danger"] = 0, 0
             if event.get("coords_x") is not None and event.get("coords_y") is not None and event["coords_x"] != "":

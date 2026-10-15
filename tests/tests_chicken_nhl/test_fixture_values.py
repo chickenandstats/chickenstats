@@ -362,6 +362,7 @@ def test_shootout_rows(shootout_game):
     assert shootout["event_length"].sum() == 0
     assert shootout["game_seconds"].unique().to_list() == [3900]
     assert shootout["strength_state"].unique().to_list() == ["1v0"]
+    assert shootout["opp_strength_state"].unique().to_list() == ["0v1"]
 
 
 def test_long_shootout_game(long_shootout_game, saved_api_response):

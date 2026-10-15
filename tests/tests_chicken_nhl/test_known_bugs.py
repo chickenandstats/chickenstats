@@ -109,18 +109,16 @@ def test_team_goals_by_strength_add_up_to_the_final_score(fixture_game):
     assert dict(team_stats.group_by("team").agg(pl.col("gf").sum()).rows()) == {"TBL": 5, "NSH": 3}
 
 
-@known_bug("a penalty shot is 1v0 for the shooter's team but 5v5 for the other team")
 def test_penalty_shot_has_the_mirrored_state_for_the_other_team(fixture_game):
     penalty_shot = fixture_game.play_by_play.filter(pl.col("strength_state") == "1v0")
 
     assert penalty_shot["opp_strength_state"].to_list() == ["0v1"]
 
 
-@known_bug("the penalty-shot goal is counted against the other team at 5v5")
 def test_team_for_and_against_mirror_by_strength_state(fixture_game):
     team_stats = prep_team_stats(fixture_game.play_by_play, fixture_game.play_by_play_ext)
     rows = {(row["team"], row["strength_state"]): row for row in team_stats.to_dicts()}
-    mirrored_state = {"5v5": "5v5", "5v4": "4v5", "4v5": "5v4", "5vE": "Ev5", "Ev5": "5vE"}
+    mirrored_state = {"5v5": "5v5", "5v4": "4v5", "4v5": "5v4", "5vE": "Ev5", "Ev5": "5vE", "1v0": "0v1", "0v1": "1v0"}
     other_team = {"TBL": "NSH", "NSH": "TBL"}
 
     for (team, state), row in rows.items():
