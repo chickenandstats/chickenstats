@@ -216,6 +216,9 @@ class _GamePBPMixin(_GameBase):
             "GOFF": 16,
         }
 
+        # The API labels shootout periods, which covers regular season, preseason and 4 Nations games
+        shootout_periods = {api_ev["period"] for api_ev in api_events if api_ev.get("period_type") == "SO"}
+
         for event in game_list:
             event.update(
                 {
@@ -223,13 +226,10 @@ class _GamePBPMixin(_GameBase):
                     "home_team": self.home_team["abbrev"],
                     "away_team": self.away_team["abbrev"],
                     "version": event.get("version", 1),
+                    "is_shootout": event["period"] in shootout_periods,
                 }
             )
-            event["sort_value"] = (
-                event.get("event_idx")
-                if (event["period"] == 5 and self.session == "R")
-                else sort_dict.get(event["event"], 99)
-            )
+            event["sort_value"] = event.get("event_idx") if event["is_shootout"] else sort_dict.get(event["event"], 99)
 
         return sorted(game_list, key=lambda k: (k["period"], k["period_seconds"], k.get("sort_value", 99)))
 
@@ -251,7 +251,9 @@ class _GamePBPMixin(_GameBase):
           ``hit``, ``give``, ``take``, ``stop``, ``penl``, ``fac``, ``change``, ``chl``,
           ``hd_goal``, ``hd_shot``, ``hd_miss``, ``hd_fenwick``,
           ``ozf``, ``dzf``, ``nzf``, ``ozc``, ``dzc``, ``nzc``, ``otf``,
-          ``pen0``, ``pen2``, ``pen4``, ``pen5``, ``pen10``, ``teammate_block``
+          ``pen0``, ``pen2``, ``pen4``, ``pen5``, ``pen10``, ``teammate_block``,
+          ``shootout_attempt``, ``shootout_goal`` (shootout attempts get 0 for goal, shot,
+          miss, fenwick and corsi)
         - **Timing**: ``event_idx`` (sequential 1-based), ``event_length`` (seconds until
           the next event), ``id`` (composite game_id + event_idx key)
         """
@@ -413,7 +415,7 @@ class _GamePBPMixin(_GameBase):
             event["opp_strength_state"] = f"{h_str}v{a_str}" if not is_h_ev else f"{a_str}v{h_str}"
             if "PENALTY SHOT" in str(event.get("description", "")):
                 event["strength_state"] = "1v0"
-            if event["period"] == 5 and self.session == "R":
+            if event["is_shootout"]:
                 event["strength_state"] = "1v0"
             if (event["home_skaters"] > 5 and event["home_goalie"]) or (
                 event["away_skaters"] > 5 and event["away_goalie"]
@@ -529,6 +531,13 @@ class _GamePBPMixin(_GameBase):
             event["shot"] = 1 if event["event"] in ["GOAL", "SHOT"] else 0
             event["fenwick"] = 1 if event["event"] in ["GOAL", "SHOT", "MISS"] else 0
             event["corsi"] = 1 if event["event"] in ["GOAL", "SHOT", "MISS", "BLOCK"] else 0
+
+            # Shootout attempts stay in play-by-play but are not goals, shots or shot attempts
+            is_shootout_attempt = event["is_shootout"] and event["event"] in ["GOAL", "SHOT", "MISS"]
+            event["shootout_attempt"] = 1 if is_shootout_attempt else 0
+            event["shootout_goal"] = 1 if is_shootout_attempt and event["event"] == "GOAL" else 0
+            if is_shootout_attempt:
+                event["goal"], event["shot"], event["miss"], event["fenwick"], event["corsi"] = 0, 0, 0, 0, 0
 
             event["hd_goal"] = 1 if event["goal"] and event["high_danger"] else 0
             event["hd_shot"] = 1 if event["shot"] and event["high_danger"] else 0
@@ -723,7 +732,7 @@ class _GamePBPMixin(_GameBase):
 
             final_pbp.append(PBPEvent.model_validate(play).model_dump())
             final_ext.append(PBPEventExt.model_construct(**play).model_dump())
-            if play["event"] in fenwick_events:
+            if play["event"] in fenwick_events and not play["shootout_attempt"]:
                 xg_play = {
                     **play,
                     "position": _POSITION_COLLAPSE.get(play.get("player_1_position") or "", "F"),

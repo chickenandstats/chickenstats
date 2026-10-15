@@ -519,6 +519,8 @@ class PBPEvent(BaseModel):
     pen4: int = 0
     pen5: int = 0
     pen10: int = 0
+    shootout_attempt: int = 0
+    shootout_goal: int = 0
 
     @field_validator("*", mode="before")
     @classmethod
@@ -575,6 +577,8 @@ class PBPEvent(BaseModel):
         "pen4",
         "pen5",
         "pen10",
+        "shootout_attempt",
+        "shootout_goal",
         mode="before",
         check_fields=False,
     )

@@ -496,6 +496,12 @@ _PBP_FIELDS: dict[str, tuple[str, str]] = {
     "pen4": ("int", "Dummy indicator whether event is a double minor penalty, e.g., 0"),
     "pen5": ("int", "Dummy indicator whether event is a major penalty, e.g., 0"),
     "pen10": ("int", "Dummy indicator whether event is a game misconduct penalty, e.g., 0"),
+    "shootout_attempt": (
+        "int",
+        "Dummy indicator whether event is a shootout attempt, e.g., 0. Shootout attempts are not counted\n"
+        "as goals, shots, fenwick or corsi events",
+    ),
+    "shootout_goal": ("int", "Dummy indicator whether event is a shootout goal, e.g., 0"),
 }
 
 # -----------------------------------------------------------------------------
@@ -2191,8 +2197,8 @@ Note:
     slate reports ``False`` for a team whose previous game isn't in the set.
 
 Note:
-    Shootout attempts carry no on-ice lineup, so they're dropped rather than attributed
-    to a stint. Totals will fall short of ``team_stats`` by the shootout's shots and goals.
+    Shootout attempts are not counted as shots or goals (see ``shootout_attempt`` in
+    play-by-play) and carry no on-ice lineup, so they're left out of stints.
 
 {_build_returns(_STINTS_CONTEXT_FIELDS | _STINTS_PERSONNEL_FIELDS | _STINTS_STAT_FIELDS | _STINTS_MODEL_FIELDS)}
 

@@ -26,6 +26,7 @@ def scrape_saved_game(game_id: int) -> SimpleNamespace:
         game_id=game_id,
         play_by_play=scraper.play_by_play,
         play_by_play_ext=scraper.play_by_play_ext,
+        xg_fields=scraper.xg_fields,
         rosters=scraper.rosters,
         html_rosters=scraper.html_rosters,
         api_rosters=scraper.api_rosters,

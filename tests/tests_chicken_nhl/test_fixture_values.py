@@ -391,6 +391,24 @@ def test_long_shootout_game(long_shootout_game, saved_api_response):
     assert through_overtime.filter(pl.col("strength_state") == "5v3").height == 2
 
 
+@pytest.mark.parametrize("fixture", ["shootout_game", "long_shootout_game", "playoff_overtime_game"])
+def test_shootout_attempts_are_flagged_and_not_counted(request, fixture, saved_api_response):
+    """Shootout attempts have their own flags, are not shots or goals, and are not xG inputs."""
+    game = request.getfixturevalue(fixture)
+    api_plays = saved_api_response(game.game_id)["plays"]
+    api_shootout = [play for play in api_plays if play["periodDescriptor"]["periodType"] == "SO"]
+    api_goals = sum(play["typeDescKey"] == "goal" for play in api_shootout)
+    api_attempts = api_goals + sum(play["typeDescKey"] in ("shot-on-goal", "missed-shot") for play in api_shootout)
+
+    play_by_play = game.play_by_play
+    attempts = play_by_play.filter(pl.col("shootout_attempt") == 1)
+
+    assert (attempts.height, play_by_play["shootout_goal"].sum()) == (api_attempts, api_goals)
+    assert attempts["event"].is_in(["GOAL", "SHOT", "MISS"]).all()
+    assert attempts.select(pl.col("goal", "shot", "miss", "fenwick", "corsi").sum()).row(0) == (0, 0, 0, 0, 0)
+    assert attempts.join(game.xg_fields, on=["game_id", "event_idx"]).height == 0
+
+
 @pytest.mark.parametrize(
     "game_id, period, period_type", [(2023020001, 3, "REG"), (2023020125, 5, "SO"), (2023030223, 4, "OT")]
 )
