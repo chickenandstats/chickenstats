@@ -237,6 +237,19 @@ def test_rates_and_percentages_with_nothing_to_divide_by_are_null(fixture_game, 
     assert_rates_and_percentages_are_null_when_not_applicable(df)
 
 
+@pytest.mark.parametrize("opposition", [False, True])
+def test_team_and_line_counts_are_the_same_with_and_without_a_strength_split(fixture_game, opposition):
+    """Splitting by strength state moves events between rows but never drops one."""
+    pbp, pbp_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
+    counts = ["gf", "ga", "sf", "sa", "ff", "fa", "cf", "ca", "ozf", "nzf", "dzf", "hf", "ht"]
+
+    for prep in (prep_team_stats, prep_lines):
+        split = prep(pbp, pbp_ext, opposition=opposition)
+        unsplit = prep(pbp, pbp_ext, strength_state=False, opposition=opposition)
+
+        assert split.select(pl.col(counts).sum()).row(0) == unsplit.select(pl.col(counts).sum()).row(0), prep
+
+
 def test_team_toi_by_strength_mirrors(fixture_game):
     """A team's ice time in a strength state equals the other team's in the mirrored state."""
     team_stats = prep_team_stats(fixture_game.play_by_play, fixture_game.play_by_play_ext)

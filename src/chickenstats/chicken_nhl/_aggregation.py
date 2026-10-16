@@ -1828,14 +1828,16 @@ def prep_team_stats(
         stats_against, on=merge_list, how="full", nulls_equal=True, coalesce=True, suffix="_right"
     )
 
+    # A group where only one side has rows gets nulls on the other side, which are zeros
+    team_stats = team_stats.with_columns(pl.col(x).fill_null(0) for x in team_stats.columns if x not in merge_list)
+
     team_stats = team_stats.with_columns(
-        toi=(team_stats["toi"].fill_null(0) + team_stats["toi_right"].fill_null(0)) / 60,
+        toi=(team_stats["toi"] + team_stats["toi_right"]) / 60,
         cf=team_stats["ff"] + team_stats["bsf"] + team_stats["teammate_block"],
         cf_adj=team_stats["ff_adj"] + team_stats["bsf_adj"] + team_stats["teammate_block_adj"],
-        # opp_teammate_block keeps ca symmetric with the opponent's cf; filled so a team
-        # with no "against" rows keeps the existing null behavior on the fa/bsa terms.
-        ca=team_stats["fa"] + team_stats["bsa"] + team_stats["opp_teammate_block"].fill_null(0),
-        ca_adj=team_stats["fa_adj"] + team_stats["bsa_adj"] + team_stats["opp_teammate_block_adj"].fill_null(0),
+        # opp_teammate_block keeps ca symmetric with the opponent's cf.
+        ca=team_stats["fa"] + team_stats["bsa"] + team_stats["opp_teammate_block"],
+        ca_adj=team_stats["fa_adj"] + team_stats["bsa_adj"] + team_stats["opp_teammate_block_adj"],
         ozf=team_stats["ozfw"] + team_stats["ozfl"],
         nzf=team_stats["nzfw"] + team_stats["nzfl"],
         dzf=team_stats["dzfw"] + team_stats["dzfl"],
