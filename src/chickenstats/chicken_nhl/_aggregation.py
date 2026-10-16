@@ -1861,11 +1861,15 @@ def prep_rolling_stats(
     group_cols: list[str] | None = None,
     min_periods: int = 1,
 ) -> pl.DataFrame:
-    """Add trailing rolling-window averages for rate-stat columns.
+    """Add trailing rolling-window values for rate-stat columns.
 
     Operates on the output of ``prep_stats`` or ``prep_team_stats`` at ``level='game'``.
-    Sorts by game order within each ``group_cols`` group, then computes a trailing
-    ``window``-game rolling mean for each stat column, appending ``rolling_{stat}`` columns.
+    Sorts by game order within each ``group_cols`` group, then computes each stat over
+    the trailing ``window`` games, appending ``rolling_{stat}`` columns. A ``*_p60``
+    rate is the rolling sum of its count over the rolling sum of ``toi``, and a
+    ``*_percent`` column is the rolling sum of the for side over both sides, when those
+    columns are in ``df``; either is null when the window has nothing to divide by.
+    Any other column gets a rolling mean of its non-null values.
 
     Parameters:
         df (pl.DataFrame): Game-level stats DataFrame, e.g. from ``prep_stats`` or
@@ -1934,11 +1938,30 @@ def prep_rolling_stats(
 
     df = df.sort(sort_cols)
 
-    rolling_exprs = [
-        pl.col(stat).rolling_mean(window_size=window, min_samples=min_periods).over(group_cols).alias(f"rolling_{stat}")
-        for stat in stats
-        if stat in df.columns
-    ]
+    percent_pairs = dict(zip(OI_PERCENT_STATS_FOR, OI_PERCENT_STATS_AGAINST, strict=True))
+
+    def rolling_sum(column: str) -> pl.Expr:
+        return pl.col(column).rolling_sum(window_size=window, min_samples=min_periods).over(group_cols)
+
+    # Rates and percentages are recomputed from rolling sums, so a short game counts for less
+    rolling_exprs = []
+    for stat in stats:
+        if stat not in df.columns:
+            continue
+
+        count, stat_for = stat.removesuffix("_p60"), stat.removesuffix("_percent")
+        stat_against = percent_pairs.get(stat_for)
+
+        if stat.endswith("_p60") and count in df.columns and "toi" in df.columns:
+            toi = rolling_sum("toi")
+            expr = pl.when(toi > 0).then(rolling_sum(count) / toi * 60)
+        elif stat.endswith("_percent") and stat_for in df.columns and stat_against in df.columns:
+            total = rolling_sum(stat_for) + rolling_sum(stat_against)
+            expr = pl.when(total > 0).then(rolling_sum(stat_for) / total)
+        else:
+            expr = pl.col(stat).rolling_mean(window_size=window, min_samples=min_periods).over(group_cols)
+
+        rolling_exprs.append(expr.alias(f"rolling_{stat}"))
 
     if not rolling_exprs:
         return df

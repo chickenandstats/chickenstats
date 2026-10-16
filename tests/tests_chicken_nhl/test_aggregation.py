@@ -183,6 +183,33 @@ class TestPrepOiPercent:
 
 
 class TestPrepRollingStats:
+    def test_rates_and_percentages_come_from_rolling_sums(self):
+        """A rate is total count over total ice time, so a short game counts for less."""
+        df = pl.DataFrame(
+            {
+                "team": ["A", "A", "A"],
+                "game_id": [1, 2, 3],
+                "toi": [60.0, 0.0, 6.0],
+                "gf": [2, 0, 1],
+                "ga": [1, 0, 0],
+                "gf_p60": [2.0, None, 10.0],
+                "gf_percent": [2 / 3, None, 1.0],
+            }
+        )
+        result = prep_rolling_stats(df, window=3)
+
+        assert result["rolling_gf_p60"].to_list() == pytest.approx([2.0, 2.0, 3 / 66 * 60])
+        assert result["rolling_gf_percent"].to_list() == pytest.approx([2 / 3, 2 / 3, 3 / 4])
+
+    def test_nothing_to_divide_by_gives_null(self):
+        df = pl.DataFrame(
+            {"team": ["A"], "game_id": [1], "toi": [0.0], "gf": [0], "ga": [0], "gf_p60": [None], "gf_percent": [None]},
+            schema_overrides={"gf_p60": pl.Float64, "gf_percent": pl.Float64},
+        )
+        result = prep_rolling_stats(df, window=3)
+
+        assert result.select("rolling_gf_p60", "rolling_gf_percent").row(0) == (None, None)
+
     def test_defaults_to_p60_and_percent_columns(self):
         df = pl.DataFrame(
             {
