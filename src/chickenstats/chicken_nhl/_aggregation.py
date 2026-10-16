@@ -381,9 +381,10 @@ def prep_ind(
                 position: "position",
                 "fac": "ifol",
                 "hit": "iht",
-                "ozf": "iozfl",
+                # The zone is the winner's, so the loser's offensive zone is the winner's defensive zone
+                "ozf": "idzfl",
                 "nzf": "inzfl",
-                "dzf": "idzfl",
+                "dzf": "iozfl",
                 "block": "isb",
                 "block_adj": "isb_adj",
             }
@@ -1405,9 +1406,10 @@ def prep_lines(
         "hdmsa",
         "toi",
         "fol",
-        "ozfl",
-        "nzfl",
+        # The zone is the winner's, so the loser's offensive zone is the winner's defensive zone
         "dzfl",
+        "nzfl",
+        "ozfl",
         "ht",
         "pend0",
         "pend2",
@@ -1795,9 +1797,10 @@ def prep_team_stats(
         "pend5",
         "pend10",
         "fol",
-        "ozfl",
-        "nzfl",
+        # The zone is the winner's, so the loser's offensive zone is the winner's defensive zone
         "dzfl",
+        "nzfl",
+        "ozfl",
         "toi",
     ]
 

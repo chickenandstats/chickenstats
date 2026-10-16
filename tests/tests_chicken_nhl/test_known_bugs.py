@@ -142,7 +142,6 @@ def test_zone_starts_are_all_counted(fixture_game):
 # -----------------------------------------------------------------------------
 
 
-@known_bug("a lost faceoff is counted in the winner's zone, so offensive and defensive zone faceoffs are swapped")
 def test_zone_faceoffs_mirror_between_the_teams(fixture_game):
     team_stats = prep_team_stats(
         fixture_game.play_by_play, fixture_game.play_by_play_ext, level="game", strength_state=False
@@ -154,7 +153,6 @@ def test_zone_faceoffs_mirror_between_the_teams(fixture_game):
     assert (tbl["ozf"], tbl["dzf"]) == (24, 19)
 
 
-@known_bug("individual faceoff losses are counted in the winner's zone")
 def test_individual_zone_faceoff_losses(fixture_game):
     ind_stats = prep_ind(fixture_game.play_by_play, level="game", strength_state=False)
 

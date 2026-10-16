@@ -250,6 +250,29 @@ def test_team_and_line_counts_are_the_same_with_and_without_a_strength_split(fix
         assert split.select(pl.col(counts).sum()).row(0) == unsplit.select(pl.col(counts).sum()).row(0), prep
 
 
+def test_zone_faceoffs_mirror_between_the_teams_in_every_output(fixture_game):
+    """One team's offensive-zone faceoffs are the other team's defensive-zone faceoffs."""
+    pbp, pbp_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
+
+    def by_team(df, offensive, defensive):
+        totals = df.group_by("team").agg(pl.col(offensive).sum(), pl.col(defensive).sum())
+        return {row["team"]: (row[offensive], row[defensive]) for row in totals.to_dicts()}
+
+    ind = prep_ind(pbp, level="game", strength_state=False)
+    ind_totals = ind.with_columns(iozf=pl.col("iozfw") + pl.col("iozfl"), idzf=pl.col("idzfw") + pl.col("idzfl"))
+
+    for totals in (
+        by_team(prep_team_stats(pbp, pbp_ext, strength_state=False), "ozf", "dzf"),
+        by_team(prep_lines(pbp, pbp_ext, strength_state=False), "ozf", "dzf"),
+        by_team(ind_totals, "iozf", "idzf"),
+    ):
+        assert totals == {"TBL": (24, 19), "NSH": (19, 24)}
+
+    # A win in one zone is the other team's loss in the opposite zone
+    wins, losses = by_team(ind, "iozfw", "idzfw"), by_team(ind, "idzfl", "iozfl")
+    assert (wins["TBL"], wins["NSH"]) == (losses["NSH"], losses["TBL"])
+
+
 def test_team_toi_by_strength_mirrors(fixture_game):
     """A team's ice time in a strength state equals the other team's in the mirrored state."""
     team_stats = prep_team_stats(fixture_game.play_by_play, fixture_game.play_by_play_ext)
