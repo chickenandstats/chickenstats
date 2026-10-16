@@ -257,7 +257,6 @@ def prepare_for_validation(df: pl.DataFrame, schema: pa_pl.DataFrameSchema) -> p
     ]
     if nan_to_null_cols:
         df = df.with_columns([pl.col(c).fill_nan(None) for c in nan_to_null_cols])
-        df_cols -= set(nan_to_null_cols)
 
     exprs = []
     for col_name, col_obj in schema.columns.items():

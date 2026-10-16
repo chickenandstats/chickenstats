@@ -318,7 +318,6 @@ def test_blocked_power_play_shot_uses_the_shooting_teams_weight(fixture_game):
     assert block == pytest.approx(shot)
 
 
-@known_bug("count columns stored as floats are replaced with 0 during validation")
 def test_float_count_columns_give_the_same_totals(fixture_game):
     play_by_play = fixture_game.play_by_play.with_columns(pl.col("goal", "shot", "fenwick", "hit").cast(pl.Float64))
     ind_stats = prep_ind(play_by_play, level="game", strength_state=False)
