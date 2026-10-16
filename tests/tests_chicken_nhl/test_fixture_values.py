@@ -213,6 +213,30 @@ def test_team_stats_by_strength_match_play_by_play(fixture_game):
     assert [five_on_five[column] for column in ("gf", "ga", "sf", "sa", "cf", "ca")] == [1, 2, 22, 18, 42, 38]
 
 
+def assert_rates_and_percentages_are_null_when_not_applicable(df: pl.DataFrame) -> None:
+    """No float column holds an infinity or NaN; rates without ice time and empty percentages are null."""
+    floats = [c for c, dtype in df.schema.items() if dtype == pl.Float64]
+    assert df.select(pl.col(floats).is_infinite().any() | pl.col(floats).is_nan().any()).sum_horizontal().item() == 0
+
+    no_toi = df.filter(pl.col("toi") == 0)
+    rates = [c for c in df.columns if c.endswith("_p60")]
+    assert no_toi.select(pl.col(rates).is_not_null().sum()).sum_horizontal().item() == 0
+
+    if "cf_percent" in df.columns:
+        empty = df.filter(pl.col("cf") + pl.col("ca") == 0)
+        assert empty["cf_percent"].null_count() == empty.height
+
+
+@pytest.mark.parametrize("prep", [prep_stats, prep_lines, prep_team_stats])
+@pytest.mark.parametrize("level", ["period", "game"])
+def test_rates_and_percentages_with_nothing_to_divide_by_are_null(fixture_game, prep, level):
+    """Rows with no ice time have null rates, and percentages with nothing on either side are null."""
+    df = prep(fixture_game.play_by_play, fixture_game.play_by_play_ext, level=level)
+
+    assert df.filter(pl.col("toi") == 0).height > 0
+    assert_rates_and_percentages_are_null_when_not_applicable(df)
+
+
 def test_team_toi_by_strength_mirrors(fixture_game):
     """A team's ice time in a strength state equals the other team's in the mirrored state."""
     team_stats = prep_team_stats(fixture_game.play_by_play, fixture_game.play_by_play_ext)

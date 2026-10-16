@@ -265,6 +265,8 @@ def prepare_for_validation(df: pl.DataFrame, schema: pa_pl.DataFrameSchema) -> p
             default = col_obj.default
             if default is not None:
                 exprs.append(pl.lit(default).alias(col_name))
+            elif col_obj.nullable:
+                exprs.append(pl.lit(None, dtype=col_obj.dtype.type).alias(col_name))  # type: ignore[union-attr]
     if exprs:
         df = df.with_columns(exprs)
         df_cols = set(df.columns)

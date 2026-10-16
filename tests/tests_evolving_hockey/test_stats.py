@@ -445,6 +445,28 @@ class TestPrepLines:
 # -----------------------------------------------------------------------------
 
 
+def assert_rates_and_percentages_are_null_when_not_applicable(df: pl.DataFrame) -> None:
+    """No float column holds an infinity or NaN; rates without ice time and empty percentages are null."""
+    floats = [c for c, dtype in df.schema.items() if dtype == pl.Float64]
+    assert df.select(pl.col(floats).is_infinite().any() | pl.col(floats).is_nan().any()).sum_horizontal().item() == 0
+
+    no_toi = df.filter(pl.col("toi") == 0)
+    rates = [c for c in df.columns if c.endswith("_p60")]
+    assert no_toi.select(pl.col(rates).is_not_null().sum()).sum_horizontal().item() == 0
+
+    if "cf_percent" in df.columns:
+        empty = df.filter(pl.col("cf") + pl.col("ca") == 0)
+        assert empty["cf_percent"].null_count() == empty.height
+
+
+@pytest.mark.parametrize("prep", [prep_stats, prep_lines, prep_team_stats])
+def test_rates_and_percentages_with_nothing_to_divide_by_are_null(pbp_polars, prep):
+    """Rows with no ice time have null rates, and percentages with nothing on either side are null."""
+    df = prep(pbp_polars, level="period", disable_progress_bar=True)
+
+    assert_rates_and_percentages_are_null_when_not_applicable(df)
+
+
 class TestPrepTeamStats:
     @pytest.mark.parametrize("level", ["game", "season", "session", "period"])
     def test_polars_returns_polars(self, pbp_polars, level):

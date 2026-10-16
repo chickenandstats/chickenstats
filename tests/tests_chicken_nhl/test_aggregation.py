@@ -92,6 +92,12 @@ class TestPrepP60:
         result = _prep_p60(df, stats=["goal"])
         assert result["goal_p60"][0] == pytest.approx(2.0)  # (2/60)*60 = 2
 
+    def test_no_ice_time_gives_null(self):
+        """A row with an event but no ice time has a null rate, not an infinite one."""
+        df = pl.DataFrame({"toi": [0.0, 0.0], "goal": [1.0, 0.0]})
+        result = _prep_p60(df, stats=["goal"])
+        assert result["goal_p60"].to_list() == [None, None]
+
     @_skip_no_pandas
     def test_pandas_adds_p60_column(self):
         df = pd.DataFrame({"toi": [60.0], "goal": [1.0]})
@@ -143,19 +149,13 @@ class TestPrepOiPercent:
         assert "xgf_percent" in result.columns
         assert result["xgf_percent"].iloc[0] == pytest.approx(0.75)
 
-    def test_missing_stat_for_fills_zero(self):
-        """When stat_for is absent from the DataFrame the percent column is 0.0."""
-        df = pl.DataFrame({"xga": [2.0]})
+    @pytest.mark.parametrize("present", ["xgf", "xga"])
+    def test_missing_column_gives_null(self, present):
+        """When either side is absent from the DataFrame the percent column is null."""
+        df = pl.DataFrame({present: [2.0]})
         result = _prep_oi_percent(df, stats_for=["xgf"], stats_against=["xga"])
-        assert "xgf_percent" in result.columns
-        assert result["xgf_percent"][0] == pytest.approx(0.0)
-
-    def test_missing_stat_against_fills_one(self):
-        """When stat_against is absent the percent column is 1.0."""
-        df = pl.DataFrame({"xgf": [2.0]})
-        result = _prep_oi_percent(df, stats_for=["xgf"], stats_against=["xga"])
-        assert "xgf_percent" in result.columns
-        assert result["xgf_percent"][0] == pytest.approx(1.0)
+        assert result.schema["xgf_percent"] == pl.Float64
+        assert result["xgf_percent"].to_list() == [None]
 
     def test_multiple_stats(self):
         df = pl.DataFrame({"xgf": [1.0], "xga": [1.0], "cf": [3.0], "ca": [1.0]})
@@ -164,24 +164,17 @@ class TestPrepOiPercent:
         assert "cf_percent" in result.columns
         assert result["cf_percent"][0] == pytest.approx(0.75)
 
-    def test_zero_for_zero_fills_zero_not_nan(self):
-        """When both stat_for and stat_against are present but zero, the percent is 0.0, not NaN.
-
-        Regression test: 0/0 previously produced NaN, which is the common case for shifts
-        with no goals/shots either way and silently passed schema validation since NaN != null.
-        """
-        df = pl.DataFrame({"xgf": [0.0], "xga": [0.0]})
+    def test_zero_for_zero_gives_null(self):
+        """When both sides are zero the percent is null, not 0.0 or NaN."""
+        df = pl.DataFrame({"xgf": [0.0, 0.0], "xga": [0.0, 1.0]})
         result = _prep_oi_percent(df, stats_for=["xgf"], stats_against=["xga"])
-        assert "xgf_percent" in result.columns
-        assert result["xgf_percent"][0] == pytest.approx(0.0)
-        assert not result["xgf_percent"].is_nan()[0]
+        assert result["xgf_percent"].to_list() == [None, 0.0]
 
     @_skip_no_pandas
-    def test_zero_for_zero_fills_zero_not_nan_pandas(self):
+    def test_zero_for_zero_gives_null_pandas(self):
         df = pd.DataFrame({"xgf": [0.0], "xga": [0.0]})
         result = _prep_oi_percent(df, stats_for=["xgf"], stats_against=["xga"])
-        assert result["xgf_percent"].iloc[0] == pytest.approx(0.0)
-        assert not pd.isna(result["xgf_percent"].iloc[0])
+        assert pd.isna(result["xgf_percent"].iloc[0])
 
 
 # -----------------------------------------------------------------------------

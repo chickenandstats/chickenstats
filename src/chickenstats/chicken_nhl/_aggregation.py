@@ -60,14 +60,20 @@ def _prep_p60(df: IntoFrameT, stats: list) -> IntoFrameT:
             Statistics data from chickenstats.chicken_nhl.Scraper
     """
     existing = [s for s in stats if s in df.columns]
-    return df.with_columns([((nw.col(stat) / nw.col("toi")) * 60).alias(f"{stat}_p60") for stat in existing])  # ty: ignore[unresolved-attribute]
+
+    # A rate with no ice time is null, not infinite
+    has_toi = nw.col("toi") > 0
+
+    return df.with_columns(  # ty: ignore[unresolved-attribute]
+        [nw.when(has_toi).then((nw.col(stat) / nw.col("toi")) * 60).alias(f"{stat}_p60") for stat in existing]
+    )
 
 
 def prep_p60(df: pd.DataFrame | pl.DataFrame) -> pd.DataFrame | pl.DataFrame:
     """Add per-60 normalized columns to a stats DataFrame.
 
     Divides each stat in ``P60_STATS`` by ``toi / 60``, appending a ``_p60`` suffix.
-    Called by ``prep_stats``, ``prep_lines``, and ``prep_team_stats`` after the
+    A rate is null when ``toi`` is 0. Called by ``prep_stats``, ``prep_lines``, and ``prep_team_stats`` after the
     initial aggregation step.
 
     Parameters:
@@ -91,18 +97,13 @@ def _prep_oi_percent(df: IntoFrameT, stats_for: list, stats_against: list) -> In
     exprs = []
 
     for stat_for, stat_against in zip(stats_for, stats_against, strict=False):
-        if stat_for not in df.columns:
-            exprs.append(nw.lit(0.0).alias(f"{stat_for}_percent"))
-
-        elif stat_against not in df.columns:
-            exprs.append(nw.lit(1.0).alias(f"{stat_for}_percent"))
+        if stat_for not in df.columns or stat_against not in df.columns:
+            exprs.append(nw.lit(None, dtype=nw.Float64()).alias(f"{stat_for}_percent"))
 
         else:
-            exprs.append(
-                (nw.col(stat_for) / (nw.col(stat_for) + nw.col(stat_against)))
-                .fill_nan(0.0)
-                .alias(f"{stat_for}_percent")
-            )
+            # A percentage with nothing on either side is null, not 0
+            total = nw.col(stat_for) + nw.col(stat_against)
+            exprs.append(nw.when(total > 0).then(nw.col(stat_for) / total).alias(f"{stat_for}_percent"))
 
     return df.with_columns(exprs)  # ty: ignore[unresolved-attribute]
 
@@ -112,8 +113,8 @@ def prep_oi_percent(df: pd.DataFrame | pl.DataFrame) -> pd.DataFrame | pl.DataFr
 
     Pairs each stat in ``OI_PERCENT_STATS_FOR`` with its counterpart in
     ``OI_PERCENT_STATS_AGAINST`` and appends a ``_percent`` column
-    (e.g., ``xgf_percent = xgf / (xgf + xga)``). Missing numerator columns
-    produce ``0.0``; missing denominator columns produce ``1.0``.
+    (e.g., ``xgf_percent = xgf / (xgf + xga)``). A percentage is null when both
+    sides are 0 or when either column is missing.
 
     Parameters:
         df (pd.DataFrame | pl.DataFrame): Stats DataFrame containing for/against columns.
