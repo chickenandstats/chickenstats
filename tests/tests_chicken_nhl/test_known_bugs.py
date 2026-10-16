@@ -125,7 +125,7 @@ def test_team_for_and_against_mirror_by_strength_state(fixture_game):
             assert row[f"{stat}f"] == mirrored[f"{stat}a"], (team, state, stat)
 
 
-@known_bug("zone starts are dropped for players with no ice time in a split, and for some name spellings")
+@known_bug("prep_oi drops rows that have zone starts but no other counts when split by strength")
 def test_zone_starts_are_all_counted(fixture_game):
     play_by_play, play_by_play_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
     changes = play_by_play.filter(pl.col("event") == "CHANGE")
@@ -237,15 +237,23 @@ def test_a_failed_shift_report_fails_the_game():
 # -----------------------------------------------------------------------------
 
 
-@known_bug("API roster names skip a spelling correction that HTML names get, so one player has two names")
 def test_a_player_has_one_name_across_sources(fixture_game):
     alex_carrier = 8478851
     names = set(fixture_game.rosters.filter(pl.col("api_id") == alex_carrier)["player_name"]) | set(
         fixture_game.shifts.filter(pl.col("api_id") == alex_carrier)["player_name"]
     )
 
-    assert len(names) == 1
-    assert set(fixture_game.html_rosters["eh_id"]) == set(fixture_game.rosters["eh_id"])
+    assert names == {"ALEXANDRE CARRIER"}
+
+    names_by_id = pl.concat(
+        [fixture_game.rosters.select("api_id", "player_name"), fixture_game.shifts.select("api_id", "player_name")]
+    ).drop_nulls("api_id")
+    assert (
+        names_by_id.group_by("api_id")
+        .agg(pl.col("player_name").n_unique())
+        .filter(pl.col("player_name") > 1)
+        .is_empty()
+    )
 
 
 @known_bug("identity_columns for lines leaves out the line itself unless teammates is on")

@@ -32,7 +32,13 @@ class _GameHTMLShiftsMixin(_GameBase):
         """Parse shift data for a single team (HOME or AWAY) from an already-fetched response."""
         team_shifts = []
 
-        soup = BeautifulSoup(response.content.decode("ISO-8859-1"), "lxml", multi_valued_attributes=None)
+        # Shift reports are UTF-8; older ones that aren't fall back to Latin-1
+        try:
+            content = response.content.decode("utf-8")
+        except UnicodeDecodeError:
+            content = response.content.decode("ISO-8859-1")
+
+        soup = BeautifulSoup(content, "lxml", multi_valued_attributes=None)
 
         team_name_td = soup.find("td", {"align": "center", "class": "teamHeading + border"})
         if not team_name_td:
@@ -157,13 +163,17 @@ class _GameHTMLShiftsMixin(_GameBase):
             shift["is_home"] = 1 if shift.get("team_venue") == "HOME" else 0
             shift["is_away"] = 1 if shift.get("team_venue") == "AWAY" else 0
 
-            player_name = (
-                shift.get("player_name", "")
-                .replace("ALEXANDRE", "ALEX")
-                .replace("ALEXANDER", "ALEX")
-                .replace("CHRISTOPHER", "CHRIS")
-            )
-            shift["player_name"] = correct_names_dict.get(player_name, player_name)
+            # Use the roster's name so a player has one name across rosters, shifts and play-by-play
+            player_name = player_info.get("player_name")
+            if not player_name:
+                player_name = (
+                    shift.get("player_name", "")
+                    .replace("ALEXANDRE", "ALEX")
+                    .replace("ALEXANDER", "ALEX")
+                    .replace("CHRISTOPHER", "CHRIS")
+                )
+                player_name = correct_names_dict.get(player_name, player_name)
+            shift["player_name"] = player_name
 
             # Skip malformed time strings instead of raising
             for col in ["start_time", "end_time", "duration"]:
