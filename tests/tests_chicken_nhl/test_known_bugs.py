@@ -125,16 +125,19 @@ def test_team_for_and_against_mirror_by_strength_state(fixture_game):
             assert row[f"{stat}f"] == mirrored[f"{stat}a"], (team, state, stat)
 
 
-@known_bug("prep_oi drops rows that have zone starts but no other counts when split by strength")
 def test_zone_starts_are_all_counted(fixture_game):
     play_by_play, play_by_play_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
     changes = play_by_play.filter(pl.col("event") == "CHANGE")
     expected = dict(changes.group_by("zone_start").agg(pl.col("change_on_count").sum()).rows())
 
+    toi = {}
     for strength_state in (False, True):
         stats = prep_stats(play_by_play, play_by_play_ext, level="game", strength_state=strength_state)
         totals = stats.select(pl.col("ozs", "nzs", "dzs", "otf").sum()).row(0)
         assert totals == (expected["OFF"], expected["NEU"], expected["DEF"], expected["OTF"]), strength_state
+        toi[strength_state] = stats["toi"].sum()
+
+    assert toi[True] == pytest.approx(toi[False])
 
 
 # -----------------------------------------------------------------------------

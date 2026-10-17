@@ -919,70 +919,8 @@ def prep_oi(
 
     oi_stats = oi_stats.select(columns)
 
-    stats = [
-        "toi",
-        "gf",
-        "gf_adj",
-        "hdgf",
-        "sf",
-        "sf_adj",
-        "hdsf",
-        "ff",
-        "ff_adj",
-        "hdff",
-        "cf",
-        "cf_adj",
-        "xgf",
-        "xgf_adj",
-        "bsf",
-        "msf",
-        "hdmsf",
-        "ga",
-        "ga_adj",
-        "hdga",
-        "sa",
-        "sa_adj",
-        "hdsa",
-        "fa",
-        "fa_adj",
-        "hdfa",
-        "ca",
-        "ca_adj",
-        "xga",
-        "xga_adj",
-        "bsa",
-        "msa",
-        "hdmsa",
-        "hf",
-        "ht",
-        "ozf",
-        "nzf",
-        "dzf",
-        "fow",
-        "fol",
-        "ozfw",
-        "ozfl",
-        "nzfw",
-        "nzfl",
-        "dzfw",
-        "dzfl",
-        "pent0",
-        "pent2",
-        "pent4",
-        "pent5",
-        "pent10",
-        "pend0",
-        "pend2",
-        "pend4",
-        "pend5",
-        "pend10",
-        "give",
-        "take",
-    ]
-
-    stats = [x.lower() for x in stats if x.lower() in oi_stats.columns]
-
-    oi_stats = oi_stats.remove(pl.all_horizontal(pl.col(stats) == 0))
+    # The source flags are always 1, so they don't count as events
+    oi_stats = _drop_empty_rows(oi_stats, [*merge_cols, "event_df", "opp_df", "zones_df"])
 
     oi_stats = validate_dataframe(oi_stats, oi_stats_pandera_polars)
 
