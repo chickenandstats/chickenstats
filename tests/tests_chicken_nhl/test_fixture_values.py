@@ -172,7 +172,7 @@ def test_team_stats_game_rows(fixture_game):
     assert [tbl[column] for column in for_against] == [5, 3, 34, 31, 50, 46, 61, 65]
     assert [nsh[column] for column in for_against] == [3, 5, 31, 34, 46, 50, 65, 61]
 
-    assert [tbl[column] for column in ("bsf", "bsa", "hf", "ht", "fow", "fol")] == [10, 17, 22, 23, 34, 26]
+    assert [tbl[column] for column in ("bsf", "bsa", "hf", "ht", "fow", "fol")] == [11, 19, 22, 23, 34, 26]
     assert tbl["gf_percent"] == pytest.approx(5 / 8)
     assert tbl["cf_percent"] == pytest.approx(61 / 126)
 
@@ -271,6 +271,25 @@ def test_zone_faceoffs_mirror_between_the_teams_in_every_output(fixture_game):
     # A win in one zone is the other team's loss in the opposite zone
     wins, losses = by_team(ind, "iozfw", "idzfw"), by_team(ind, "idzfl", "iozfl")
     assert (wins["TBL"], wins["NSH"]) == (losses["NSH"], losses["TBL"])
+
+
+def test_blocked_shots_count_every_blocked_attempt(fixture_game):
+    """bsf and bsa include teammate blocks, so Corsi is Fenwick plus blocked attempts in every output."""
+    pbp, pbp_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
+    outputs = [
+        prep_stats(pbp, pbp_ext, level="game", strength_state=True),
+        prep_lines(pbp, pbp_ext, level="game", strength_state=True),
+        prep_team_stats(pbp, pbp_ext, level="game", strength_state=True),
+    ]
+
+    for df in outputs:
+        assert (df["cf"] == df["ff"] + df["bsf"]).all()
+        assert (df["ca"] == df["fa"] + df["bsa"]).all()
+        assert ((df["cf_adj"] - df["ff_adj"] - df["bsf_adj"]).abs() < 1e-9).all()
+        assert ((df["ca_adj"] - df["fa_adj"] - df["bsa_adj"]).abs() < 1e-9).all()
+
+    team_stats = outputs[2].group_by("team").agg(pl.col("bsf", "bsa", "teammate_block", "opp_teammate_block").sum())
+    assert dict((row[0], row[1:]) for row in team_stats.rows()) == {"NSH": (19, 11, 2, 1), "TBL": (11, 19, 1, 2)}
 
 
 def test_team_toi_by_strength_mirrors(fixture_game):

@@ -137,6 +137,7 @@ P60_STATS = [
     "hdmsf",
     "hdmsa",
     "teammate_block",
+    "opp_teammate_block",
     "hf",
     "ht",
     "give",

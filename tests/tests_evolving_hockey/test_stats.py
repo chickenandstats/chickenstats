@@ -467,6 +467,14 @@ def test_rates_and_percentages_with_nothing_to_divide_by_are_null(pbp_polars, pr
     assert_rates_and_percentages_are_null_when_not_applicable(df)
 
 
+def test_team_blocked_shots_are_attempts_for_and_against(pbp_polars):
+    """A team's bsf are its own attempts that were blocked, so Corsi is Fenwick plus blocked attempts."""
+    team_stats = prep_team_stats(pbp_polars, level="game", disable_progress_bar=True)
+
+    assert (team_stats["cf"] == team_stats["ff"] + team_stats["bsf"]).all()
+    assert (team_stats["ca"] == team_stats["fa"] + team_stats["bsa"]).all()
+
+
 class TestPrepTeamStats:
     @pytest.mark.parametrize("level", ["game", "season", "session", "period"])
     def test_polars_returns_polars(self, pbp_polars, level):

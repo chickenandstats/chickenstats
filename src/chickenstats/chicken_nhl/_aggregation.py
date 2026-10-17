@@ -698,8 +698,6 @@ def prep_oi(
                 "miss_adj": "msf_adj",
                 "block": "bsa",
                 "block_adj": "bsa_adj",
-                "teammate_block": "bsf",
-                "teammate_block_adj": "bsf_adj",
                 "pen0": "pent0",
                 "pen2": "pent2",
                 "pen4": "pent4",
@@ -739,6 +737,8 @@ def prep_oi(
                 position: "position",
                 "block": "bsf",
                 "block_adj": "bsf_adj",
+                "teammate_block": "opp_teammate_block",
+                "teammate_block_adj": "opp_teammate_block_adj",
                 "goal": "ga",
                 "goal_adj": "ga_adj",
                 "hit": "ht",
@@ -889,7 +889,7 @@ def prep_oi(
         x for x in merge_cols if x in event_stats.columns and x in opp_stats.columns and x in zones_stats.columns
     ]
 
-    # suffix="_right" explicit — toi/bsf/bsf_adj/cf_adj below reference those columns.
+    # suffix="_right" explicit — toi below references event_length_right.
     oi_stats = event_stats.join(
         opp_stats, on=merge_cols, how="full", coalesce=True, nulls_equal=True, suffix="_right"
     )  # .fill_null(0)
@@ -903,13 +903,16 @@ def prep_oi(
     oi_stats = oi_stats.with_columns(
         api_id=pl.col("api_id").cast(Int64),
         toi=(pl.col("event_length") + pl.col("event_length_right")) / 60,
-        bsf=pl.col("bsf") + pl.col("bsf_right"),
-        bsf_adj=pl.col("bsf_adj") + pl.col("bsf_adj_right"),
-        # bsf_right spelled out: with_columns reads the pre-sum bsf, not the line above.
-        cf=pl.col("ff") + pl.col("bsf") + pl.col("bsf_right"),
-        cf_adj=pl.col("ff_adj") + pl.col("bsf_adj") + pl.col("bsf_adj_right"),
-        ca=pl.col("fa") + pl.col("bsa") + pl.col("teammate_block"),
-        ca_adj=pl.col("fa_adj") + pl.col("bsa_adj") + pl.col("teammate_block_adj"),
+        # bsf and bsa count every blocked attempt, teammate blocks included, so cf = ff + bsf and ca = fa + bsa;
+        # with_columns reads the columns as they were, so the sums are spelled out
+        bsf=pl.col("bsf") + pl.col("teammate_block"),
+        bsf_adj=pl.col("bsf_adj") + pl.col("teammate_block_adj"),
+        bsa=pl.col("bsa") + pl.col("opp_teammate_block"),
+        bsa_adj=pl.col("bsa_adj") + pl.col("opp_teammate_block_adj"),
+        cf=pl.col("ff") + pl.col("bsf") + pl.col("teammate_block"),
+        cf_adj=pl.col("ff_adj") + pl.col("bsf_adj") + pl.col("teammate_block_adj"),
+        ca=pl.col("fa") + pl.col("bsa") + pl.col("opp_teammate_block"),
+        ca_adj=pl.col("fa_adj") + pl.col("bsa_adj") + pl.col("opp_teammate_block_adj"),
         ozf=pl.col("ozfw") + pl.col("ozfl"),
         nzf=pl.col("nzfw") + pl.col("nzfl"),
         dzf=pl.col("dzfw") + pl.col("dzfl"),
@@ -1511,9 +1514,13 @@ def prep_lines(
 
     lines = lines.with_columns(
         toi=(lines["toi"] + lines["toi_right"]) / 60,
+        # bsf and bsa count every blocked attempt, teammate blocks included, so cf = ff + bsf and ca = fa + bsa
+        bsf=lines["bsf"] + lines["teammate_block"],
+        bsf_adj=lines["bsf_adj"] + lines["teammate_block_adj"],
+        bsa=lines["bsa"] + lines["opp_teammate_block"],
+        bsa_adj=lines["bsa_adj"] + lines["opp_teammate_block_adj"],
         cf=lines["bsf"] + lines["teammate_block"] + lines["ff"],
         cf_adj=lines["bsf_adj"] + lines["teammate_block_adj"] + lines["ff_adj"],
-        # opp_teammate_block keeps ca symmetric with the opponent's cf.
         ca=lines["bsa"] + lines["fa"] + lines["opp_teammate_block"],
         ca_adj=lines["bsa_adj"] + lines["fa_adj"] + lines["opp_teammate_block_adj"],
         ozf=lines["ozfw"] + lines["ozfl"],
@@ -1779,9 +1786,13 @@ def prep_team_stats(
 
     team_stats = team_stats.with_columns(
         toi=(team_stats["toi"] + team_stats["toi_right"]) / 60,
+        # bsf and bsa count every blocked attempt, teammate blocks included, so cf = ff + bsf and ca = fa + bsa
+        bsf=team_stats["bsf"] + team_stats["teammate_block"],
+        bsf_adj=team_stats["bsf_adj"] + team_stats["teammate_block_adj"],
+        bsa=team_stats["bsa"] + team_stats["opp_teammate_block"],
+        bsa_adj=team_stats["bsa_adj"] + team_stats["opp_teammate_block_adj"],
         cf=team_stats["ff"] + team_stats["bsf"] + team_stats["teammate_block"],
         cf_adj=team_stats["ff_adj"] + team_stats["bsf_adj"] + team_stats["teammate_block_adj"],
-        # opp_teammate_block keeps ca symmetric with the opponent's cf.
         ca=team_stats["fa"] + team_stats["bsa"] + team_stats["opp_teammate_block"],
         ca_adj=team_stats["fa_adj"] + team_stats["bsa_adj"] + team_stats["opp_teammate_block_adj"],
         ozf=team_stats["ozfw"] + team_stats["ozfl"],
