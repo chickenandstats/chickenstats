@@ -41,9 +41,10 @@ LineupIds = Literal["name", "eh_id", "api_id"]
 # prep_team_stats rename event_team -> team before returning, so an identity
 # quoted in terms of event_team would not match the frame it describes.
 _BASE: dict[str, list[str]] = {
-    # A player: the row is that player's line in that game state.
-    "stats": ["season", "session", "team", "api_id"],
-    # A line: same, minus the individual player.
+    # A player: the row is that player's line in that game state. prep_stats also splits on
+    # position, so a player listed at two positions has a row for each.
+    "stats": ["season", "session", "team", "api_id", "position"],
+    # A line: the lineup column for the chosen position is added in identity_columns.
     "lines": ["season", "session", "team"],
     # A team: no on-ice detail at all, so the matchup is the whole key.
     "team_stats": ["season", "session", "team"],
@@ -70,6 +71,7 @@ def identity_columns(
     teammates: bool = True,
     opposition: bool = True,
     lineup_ids: LineupIds = "api_id",
+    position: Literal["f", "d"] = "f",
 ) -> list[str]:
     """Columns that together identify one row of an aggregated frame.
 
@@ -83,6 +85,9 @@ def identity_columns(
             for ``'team_stats'``, which has no lineup detail.
         opposition: Whether the frame was split by opposing on-ice lineup.
         lineup_ids: Which flavour of lineup column to identify players by.
+        position: For ``'lines'``, the position the lines were built for, as
+            passed to ``prep_lines``: ``'f'`` for forward lines, ``'d'`` for
+            defense pairs. Ignored for the other frames.
 
     Returns:
         Column names in canonical order.
@@ -95,8 +100,14 @@ def identity_columns(
 
     has_lineups = frame != "team_stats"
 
+    base = list(_BASE[frame])
+    if frame == "lines":
+        # The line itself is always grouped on, whatever the teammates flag
+        lineup = "forwards" if position == "f" else "defense"
+        base += _lineup_flavour([lineup, f"{lineup}_eh_id", f"{lineup}_api_id"], lineup_ids)
+
     columns = build_group_list(
-        _BASE[frame],
+        base,
         level=level,
         strength_state=strength_state,
         score=score,
@@ -104,10 +115,8 @@ def identity_columns(
         opposition=opposition and has_lineups,
         teammates_cols=_lineup_flavour(TEAMMATES_COLS, lineup_ids),
         opposition_cols=_lineup_flavour(OPPOSITION_COLS, lineup_ids),
-        # Without lineups there is no opposition split to imply the opponent,
-        # so the matchup has to be asserted or team_stats rows for the same
-        # team in the same game state would collapse together.
-        ensure_team=not has_lineups,
+        # The prep_* functions only add the opponent beyond what level adds when splitting by opposition
+        ensure_team=opposition,
     )
 
-    return [c for c in columns if c not in _FUNCTIONALLY_DEPENDENT]
+    return [c for c in dict.fromkeys(columns) if c not in _FUNCTIONALLY_DEPENDENT]

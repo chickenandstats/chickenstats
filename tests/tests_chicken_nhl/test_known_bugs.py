@@ -259,7 +259,6 @@ def test_a_player_has_one_name_across_sources(fixture_game):
     )
 
 
-@known_bug("identity_columns for lines leaves out the line itself unless teammates is on")
 def test_identity_columns_is_a_key_of_lines(fixture_game):
     lines = prep_lines(
         fixture_game.play_by_play,
@@ -276,7 +275,6 @@ def test_identity_columns_is_a_key_of_lines(fixture_game):
     assert lines.select(key).n_unique() == lines.height
 
 
-@known_bug("identity_columns for team stats names opp_team at season level, where the frame has no such column")
 def test_identity_columns_is_a_key_of_season_team_stats(fixture_game):
     team_stats = prep_team_stats(
         fixture_game.play_by_play,

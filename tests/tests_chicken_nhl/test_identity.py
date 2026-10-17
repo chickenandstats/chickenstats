@@ -1,5 +1,8 @@
+import itertools
+
 import pytest
 
+from chickenstats.chicken_nhl import prep_lines, prep_stats, prep_team_stats
 from chickenstats.chicken_nhl._agg_constants import build_group_list
 from chickenstats.chicken_nhl.identity import identity_columns
 
@@ -58,7 +61,7 @@ class TestTracksTheAggregation:
         prep_stats never produces.
         """
         grouped = build_group_list(
-            ["season", "session", "team", "api_id"],
+            ["season", "session", "team", "api_id", "position"],
             level="period",
             strength_state=True,
             score=True,
@@ -95,3 +98,70 @@ class TestDeterminism:
         """game_date is grouped on but adds nothing game_id has not already."""
         assert "game_date" not in identity_columns("stats", level="period")
         assert "game_id" in identity_columns("stats", level="period")
+
+
+# -----------------------------------------------------------------------------
+# Against real output
+# -----------------------------------------------------------------------------
+
+FLAGS = list(itertools.product(["season", "game", "period"], [False, True], [False, True]))
+
+
+@pytest.mark.parametrize("level, strength_state, score", FLAGS)
+def test_is_a_key_of_team_stats(fixture_game, level, strength_state, score):
+    pbp, pbp_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
+    for opposition in (False, True):
+        df = prep_team_stats(
+            pbp, pbp_ext, level=level, strength_state=strength_state, score=score, opposition=opposition
+        )
+        key = identity_columns(
+            "team_stats", level=level, strength_state=strength_state, score=score, opposition=opposition
+        )
+
+        assert set(key) <= set(df.columns), (opposition, key)
+        assert df.select(key).n_unique() == df.height, opposition
+
+
+# Each case builds stats and both kinds of lines four times, so only the coarsest and the finest splits are run
+@pytest.mark.parametrize("level, strength_state, score", [("season", True, False), ("period", True, True)])
+def test_is_a_key_of_lines_and_stats(fixture_game, level, strength_state, score):
+    pbp, pbp_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
+    for teammates, opposition in itertools.product((False, True), (False, True)):
+        flags = (level, strength_state, score, teammates, opposition)
+        stats = prep_stats(
+            pbp,
+            pbp_ext,
+            level=level,
+            strength_state=strength_state,
+            score=score,
+            teammates=teammates,
+            opposition=opposition,
+        )
+        key = identity_columns(
+            "stats", level=level, strength_state=strength_state, score=score, teammates=teammates, opposition=opposition
+        )
+        assert set(key) <= set(stats.columns), ("stats", flags)
+        assert stats.select(key).n_unique() == stats.height, ("stats", flags)
+
+        for position in ("f", "d"):
+            lines = prep_lines(
+                pbp,
+                pbp_ext,
+                position=position,
+                level=level,
+                strength_state=strength_state,
+                score=score,
+                teammates=teammates,
+                opposition=opposition,
+            )
+            key = identity_columns(
+                "lines",
+                position=position,
+                level=level,
+                strength_state=strength_state,
+                score=score,
+                teammates=teammates,
+                opposition=opposition,
+            )
+            assert set(key) <= set(lines.columns), ("lines", position, flags)
+            assert lines.select(key).n_unique() == lines.height, ("lines", position, flags)
