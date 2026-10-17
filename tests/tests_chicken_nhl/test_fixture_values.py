@@ -527,6 +527,20 @@ def test_penalties_drawn_are_credited_to_the_other_team(request, fixture):
     assert drawn.join(rosters, on=["team", "api_id"], how="anti").is_empty()
 
 
+@pytest.mark.parametrize("fixture", ["fixture_game", "shootout_game", "long_shootout_game", "playoff_overtime_game"])
+def test_only_penalty_rows_count_as_penalties(request, fixture):
+    """A delayed penalty is only a call, so penalty counts come from PENL rows alone."""
+    play_by_play = request.getfixturevalue(fixture).play_by_play
+    pen_columns = ["pen0", "pen2", "pen4", "pen5", "pen10"]
+    by_event = play_by_play.group_by(pl.col("event") == "PENL").agg(pl.sum_horizontal(pen_columns).sum())
+
+    assert dict(by_event.rows()).get(False, 0) == 0
+    assert (
+        play_by_play.select(pl.sum_horizontal(pen_columns).sum()).item()
+        == play_by_play.filter(pl.col("event") == "PENL", pl.col("penalty_length").is_in([0, 2, 4, 5, 10])).height
+    )
+
+
 @pytest.mark.parametrize("fixture", ["fixture_game", "shootout_game", "long_shootout_game"])
 def test_one_on_one_rows_have_only_the_shooter_and_the_goalie(request, fixture):
     """A penalty shot or shootout attempt has the shooter on one side and the goalie in net on the other."""

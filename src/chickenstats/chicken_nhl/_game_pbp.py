@@ -589,10 +589,9 @@ class _GamePBPMixin(_GameBase):
             event["nzc"] = 1 if event["event"] == "CHANGE" and z_start == "NEU" else 0
             event["otf"] = 1 if event["event"] == "CHANGE" and z_start == "OTF" else 0
 
+            # A delayed penalty is only a call; the penalty is counted from its PENL row, if one follows
             for p_len in [0, 2, 4, 5, 10]:
-                event[f"pen{p_len}"] = (
-                    1 if event["event"] in ["PENL", "DELPEN"] and event.get("penalty_length") == p_len else 0
-                )
+                event[f"pen{p_len}"] = 1 if event["event"] == "PENL" and event.get("penalty_length") == p_len else 0
 
             if event["event"] == "BLOCK" and "BLOCKED BY TEAMMATE" in str(event.get("description", "")):
                 event["teammate_block"], event["block"] = 1, 0

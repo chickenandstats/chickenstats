@@ -356,7 +356,7 @@ def prep_ind(
 
             agg_stats_1 = [pl.sum(x) for x in stats_1 if x.lower() in df.columns]
 
-            event_types = ["BLOCK", "FAC", "HIT", "PENL", "DELPEN"]
+            event_types = ["BLOCK", "FAC", "HIT", "PENL"]
 
             base_df = df.filter(~pl.col(player).is_in(["BENCH", "REFEREE"]))
 
