@@ -314,7 +314,6 @@ def test_stint_strength_state_is_relative_to_the_home_team(fixture_game):
     assert labels["strength_state"].max() == 1
 
 
-@known_bug("a blocked power-play shot is score-adjusted with the blocking team's weight")
 def test_blocked_power_play_shot_uses_the_shooting_teams_weight(fixture_game):
     play_by_play = fixture_game.play_by_play.filter(pl.col("home_score_diff") == 1)
     shot = play_by_play.filter(

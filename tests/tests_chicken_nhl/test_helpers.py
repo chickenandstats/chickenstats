@@ -100,6 +100,7 @@ def _base_play(**overrides) -> dict:
         "home_team": "NSH",
         "home_score_diff": 0,
         "strength_state": "5v5",
+        "opp_strength_state": "5v5",
         "teammate_block": 0,
         "goal": 0,
         "pred_goal": 0.1,
@@ -126,6 +127,26 @@ def test_calculate_score_adjustment_block_opponent(score_adjustments):
     play = _base_play(event="BLOCK", event_team="NSH", opp_team="CHI", teammate_block=0, block=1, corsi=1)
     result = calculate_score_adjustment(play, score_adjustments)
     assert "block_adj" in result
+
+
+def test_calculate_score_adjustment_blocked_power_play_shot(score_adjustments):
+    """A blocked power-play shot gets the shooting team's power-play weight, like the same shot unblocked."""
+    shot = _base_play(event="SHOT", event_team="NSH", opp_team="CHI", strength_state="5v4", opp_strength_state="4v5")
+    block = _base_play(
+        event="BLOCK",
+        event_team="CHI",
+        opp_team="NSH",
+        strength_state="4v5",
+        opp_strength_state="5v4",
+        shot=0,
+        fenwick=0,
+        block=1,
+    )
+
+    shot_adj = calculate_score_adjustment(shot, score_adjustments)["corsi_adj"]
+    block_adj = calculate_score_adjustment(block, score_adjustments)["corsi_adj"]
+
+    assert block_adj == pytest.approx(shot_adj)
 
 
 def test_calculate_score_adjustment_block_teammate(score_adjustments):

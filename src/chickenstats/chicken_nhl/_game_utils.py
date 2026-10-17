@@ -49,19 +49,22 @@ def calculate_score_adjustment(play: dict, score_adjustments: dict) -> dict:
         else:
             home_score_diff = play["home_score_diff"]
 
+        # A blocked shot's event team is the blocking team, so it is weighted from the shooting team's side
         if play["event"] == "BLOCK" and play["teammate_block"] == 0:
             event_team = play["opp_team"]
+            shooter_strength_state = play["opp_strength_state"]
         else:
             event_team = play["event_team"]
+            shooter_strength_state = play["strength_state"]
 
         is_home = 1 if event_team == play["home_team"] else 0
 
-        if play["strength_state"] in ["4v5", "3v5", "3v4"]:
+        if shooter_strength_state in ["4v5", "3v5", "3v4"]:
             is_home = 0 if is_home == 1 else 1
-            strength_state = play["strength_state"][::-1]
+            strength_state = shooter_strength_state[::-1]
 
         else:
-            strength_state = play["strength_state"]
+            strength_state = shooter_strength_state
 
         adjusted_columns = ["goal", "shot", "miss", "block", "teammate_block", "fenwick", "corsi"]
 
