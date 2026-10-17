@@ -514,6 +514,19 @@ def test_goalie_goals_against_equal_team_goals_against(request, fixture):
     assert dict(goalies.rows()) == dict(team_stats.select("team", "ga").rows())
 
 
+@pytest.mark.parametrize("fixture", ["shootout_game", "playoff_overtime_game"])
+def test_penalties_drawn_are_credited_to_the_other_team(request, fixture):
+    """The teammate serving a bench minor is not credited with drawing it, so every drawn penalty is the opponent's."""
+    game = request.getfixturevalue(fixture)
+    bench_minors = game.play_by_play.filter(pl.col("event") == "PENL", pl.col("player_1") == "BENCH")
+    ind_stats = prep_ind(game.play_by_play, level="game", strength_state=False)
+    drawn = ind_stats.filter(pl.sum_horizontal(pl.col("^ipend.*$")) > 0)
+    rosters = game.rosters.select("team", "api_id")
+
+    assert bench_minors.height == 1
+    assert drawn.join(rosters, on=["team", "api_id"], how="anti").is_empty()
+
+
 @pytest.mark.parametrize("fixture", ["fixture_game", "shootout_game", "long_shootout_game"])
 def test_one_on_one_rows_have_only_the_shooter_and_the_goalie(request, fixture):
     """A penalty shot or shootout attempt has the shooter on one side and the goalie in net on the other."""
