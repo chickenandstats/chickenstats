@@ -72,7 +72,6 @@ def test_add_games_clears_the_aggregated_stats():
     assert sorted(scraper.stats["game_id"].unique().to_list()) == [GAME_ID, 2023020125]
 
 
-@known_bug("building play_by_play changes the cached line changes")
 def test_changes_are_the_same_before_and_after_play_by_play():
     game = Game(GAME_ID)
     keys_before = len(game.changes[0])

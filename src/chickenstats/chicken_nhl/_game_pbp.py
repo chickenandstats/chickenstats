@@ -850,7 +850,8 @@ class _GamePBPMixin(_GameBase):
 
         api_events = self.api_events
         html_events = self.html_events
-        changes = self.changes
+        # Copies, because merging adds play-by-play fields to each change and Game.changes must not see them
+        changes = [dict(change) for change in self.changes]
         rosters = self.rosters
 
         actives = {p["team_jersey"]: p for p in self.rosters if p.get("team_jersey") and p.get("status") == "ACTIVE"}

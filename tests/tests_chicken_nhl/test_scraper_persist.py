@@ -49,8 +49,6 @@ class TestScraperPersist:
         ]
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
         originals = {name: getattr(scraper, name) for name in names}
-        # Building play_by_play rewrites the cached changes (R21), so they are read again after it
-        originals["changes"] = scraper.changes
         save_path = scraper.save(tmp_path / "cache")
 
         with patch("requests.Session.get", side_effect=AssertionError("should not hit the network")):
