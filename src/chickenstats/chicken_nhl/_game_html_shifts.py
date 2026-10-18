@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 from unidecode import unidecode
 
 from chickenstats.chicken_nhl._corrections import html_shifts_fixes, individual_shifts_fixes
-from chickenstats.chicken_nhl._game_utils import prefetch_concurrent
+from chickenstats.chicken_nhl._game_utils import decode_report, prefetch_concurrent
 from chickenstats.chicken_nhl._player_names import correct_player_name, correct_names_dict
 from chickenstats.chicken_nhl.team import team_codes
 from chickenstats.chicken_nhl.validation_pydantic import PlayerShift
@@ -32,13 +32,7 @@ class _GameHTMLShiftsMixin(_GameBase):
         """Parse shift data for a single team (HOME or AWAY) from an already-fetched response."""
         team_shifts = []
 
-        # Shift reports are UTF-8; older ones that aren't fall back to Latin-1
-        try:
-            content = response.content.decode("utf-8")
-        except UnicodeDecodeError:
-            content = response.content.decode("ISO-8859-1")
-
-        soup = BeautifulSoup(content, "lxml", multi_valued_attributes=None)
+        soup = BeautifulSoup(decode_report(response.content), "lxml", multi_valued_attributes=None)
 
         team_name_td = soup.find("td", {"align": "center", "class": "teamHeading + border"})
         if not team_name_td:

@@ -20,6 +20,7 @@ from chickenstats.chicken_nhl.validation_pydantic import HTMLRosterPlayer
 from chickenstats.chicken_nhl.validation_polars import html_rosters_polars_schema
 from chickenstats.chicken_nhl._docstrings import _GAME_HTML_ROSTERS_DF_DOC, _GAME_HTML_ROSTERS_DOC, shared_doc
 from chickenstats.chicken_nhl._game_core import _GameBase
+from chickenstats.chicken_nhl._game_utils import decode_report
 
 
 class _GameHTMLRostersMixin(_GameBase):
@@ -37,7 +38,7 @@ class _GameHTMLRostersMixin(_GameBase):
             if page.status_code == 404:
                 self._raw_html_rosters = []
                 return self._raw_html_rosters
-            soup = BeautifulSoup(page.content.decode("ISO-8859-1"), "lxml", multi_valued_attributes=None)
+            soup = BeautifulSoup(decode_report(page.content), "lxml", multi_valued_attributes=None)
         except RetryError:
             self._raw_html_rosters = []
             return self._raw_html_rosters
@@ -62,7 +63,7 @@ class _GameHTMLRostersMixin(_GameBase):
 
         # Extract team names
         for idx, venue in enumerate(team_list):
-            team_name = unidecode(teamsoup[idx].get_text().encode("latin-1").decode("utf-8")).upper()
+            team_name = unidecode(teamsoup[idx].get_text()).upper()
             team_names[venue] = "ARIZONA COYOTES" if team_name == "PHOENIX COYOTES" else team_name
 
         all_tables = soup.find_all("table", cast(dict, table_dict))
@@ -129,7 +130,7 @@ class _GameHTMLRostersMixin(_GameBase):
 
         # Remove Captain/Alternate (C)/(A) indicators
         clean_name = re.sub(r"\(\s?(.*)\)", "", raw_name)
-        clean_name = clean_name.strip().encode("latin-1").decode("utf-8")
+        clean_name = clean_name.strip()
         raw_player["player_name"] = unidecode(clean_name)
         raw_player["position"] = raw_player.get("position")
 

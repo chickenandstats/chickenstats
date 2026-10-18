@@ -164,6 +164,14 @@ def add_pred_goal_adj(df: pl.DataFrame) -> pl.DataFrame:
     return df.with_columns(pred_goal_adj=pl.col("pred_goal") * weight.fill_null(1.0))
 
 
+def decode_report(content: bytes) -> str:
+    """Decode an NHL HTML report. They are UTF-8; older ones that are not fall back to Latin-1."""
+    try:
+        return content.decode("utf-8")
+    except UnicodeDecodeError:
+        return content.decode("ISO-8859-1")
+
+
 def _return_name_html(info: str) -> str:
     """Fixes names from HTML endpoint. Method originally published by Harry Shomer.
 

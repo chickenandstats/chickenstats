@@ -14,7 +14,7 @@ from requests.exceptions import RetryError
 from unidecode import unidecode
 
 from chickenstats.chicken_nhl._corrections import html_events_fixes
-from chickenstats.chicken_nhl._game_utils import hs_strip_html, prefetch_concurrent
+from chickenstats.chicken_nhl._game_utils import decode_report, hs_strip_html, prefetch_concurrent
 from chickenstats.chicken_nhl.validation_pydantic import HTMLEvent
 from chickenstats.chicken_nhl.validation_polars import html_events_polars_schema
 from chickenstats.chicken_nhl._docstrings import _GAME_HTML_EVENTS_DF_DOC, _GAME_HTML_EVENTS_DOC, shared_doc
@@ -39,7 +39,7 @@ class _GameHTMLEventsMixin(_GameBase):
             self._raw_html_events = []
             return self._raw_html_events
 
-        soup = BeautifulSoup(response.content.decode("ISO-8859-1"), "lxml")
+        soup = BeautifulSoup(decode_report(response.content), "lxml")
         events = []
 
         if soup.find("html") is None:

@@ -647,6 +647,20 @@ def test_only_penalty_rows_count_as_penalties(request, fixture):
     )
 
 
+@pytest.mark.parametrize(
+    "fixture, garbled, name",
+    [("long_shootout_game", "LINDSTRAM", "LINDSTROM"), ("playoff_overtime_game", "LAFRENIARE", "LAFRENIERE")],
+)
+def test_accented_names_are_read_correctly(request, fixture, garbled, name):
+    """The event and roster reports are UTF-8, so accented names come through instead of garbled."""
+    game = request.getfixturevalue(fixture)
+    descriptions = game.play_by_play["description"].drop_nulls()
+
+    assert not descriptions.str.contains(garbled).any()
+    assert descriptions.str.contains(name).any()
+    assert game.html_rosters["player_name"].str.contains(name).any()
+
+
 @pytest.mark.parametrize("fixture", ["fixture_game", "shootout_game", "long_shootout_game"])
 def test_one_on_one_rows_have_only_the_shooter_and_the_goalie(request, fixture):
     """A penalty shot or shootout attempt has the shooter on one side and the goalie in net on the other."""
