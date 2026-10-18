@@ -99,3 +99,24 @@ def test_a_finished_game_whose_events_stop_before_the_game_end_fails(caplog):
 
     assert scraper.failed_games == [GAME_ID]
     assert any("no game end" in record.getMessage() for record in caplog.records)
+
+
+def test_a_defect_in_the_play_by_play_pipeline_reaches_the_error_log(caplog):
+    """A bug while building play-by-play is not relabeled as a data mismatch: it is logged as an unexpected error."""
+    from chickenstats.chicken_nhl import Game
+    from chickenstats.chicken_nhl._game_pbp import _GamePBPMixin
+
+    def broken(self, merged_events, actives):
+        raise ZeroDivisionError("a defect")
+
+    with patch.object(_GamePBPMixin, "_track_pbp_state", broken):
+        with pytest.raises(ZeroDivisionError):
+            _ = Game(GAME_ID).play_by_play
+
+        with warnings.catch_warnings(), caplog.at_level(logging.ERROR, logger="chickenstats"):
+            warnings.simplefilter("ignore")
+            scraper = Scraper([GAME_ID], disable_progress_bar=True)
+            _ = scraper.play_by_play
+
+    assert scraper.failed_games == [GAME_ID]
+    assert any("Unexpected error" in record.getMessage() for record in caplog.records)

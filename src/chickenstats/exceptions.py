@@ -52,10 +52,8 @@ class UnsupportedBackendError(ChickenstatsError):
 class DataMismatchError(ChickenstatsError):
     """Raised when input data fails a consistency check.
 
-    Covers both mismatched EvolvingHockey CSV exports (e.g. play-by-play and
-    shifts files with different row counts) and internal chicken_nhl
-    play-by-play merge/state-tracking/xG-calculation failures for a specific
-    game.
+    For example, EvolvingHockey CSV exports whose play-by-play and shifts files
+    do not match, or a season in an unexpected format.
     """
 
     def __init__(self, message: str, game_id: int | str | float | None = None):

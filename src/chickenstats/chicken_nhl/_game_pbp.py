@@ -27,7 +27,7 @@ from chickenstats.chicken_nhl._docstrings import (
     shared_doc,
 )
 from chickenstats.chicken_nhl._game_core import _GameBase
-from chickenstats.exceptions import DataMismatchError, GameNotStartedError
+from chickenstats.exceptions import GameNotStartedError
 
 # Collapse raw NHL position codes to the F/D/G encoding used in xG model training.
 # Forwards (C, L, R, LW, RW, W) → "F"; defensemen → "D"; goalies → "G".
@@ -824,23 +824,10 @@ class _GamePBPMixin(_GameBase):
         if not html_events or not api_events:
             return [], [], []
 
-        # Merge HTML events, API events, and line changes
-        try:
-            merged_events = self._merge_pbp_events(html_events, api_events, changes, rosters)
-        except Exception as exc:
-            raise DataMismatchError(f"Game {self.game_id}: failed to merge PBP events", game_id=self.game_id) from exc
-
-        # Track cumulative game state (score, on-ice, strength, flags)
-        try:
-            stateful_events = self._track_pbp_state(merged_events, actives)
-        except Exception as exc:
-            raise DataMismatchError(f"Game {self.game_id}: failed to track game state", game_id=self.game_id) from exc
-
-        # Add xG fields and validate final schema
-        try:
-            final_pbp, final_ext, final_xg = self._calculate_pbp_xg(stateful_events)
-        except Exception as exc:
-            raise DataMismatchError(f"Game {self.game_id}: failed to calculate xG", game_id=self.game_id) from exc
+        # Not wrapped: an error here is a defect, and it reaches the caller and the error log as itself
+        merged_events = self._merge_pbp_events(html_events, api_events, changes, rosters)
+        stateful_events = self._track_pbp_state(merged_events, actives)
+        final_pbp, final_ext, final_xg = self._calculate_pbp_xg(stateful_events)
 
         return final_pbp, final_ext, final_xg
 
