@@ -394,16 +394,17 @@ def _munge_pbp(raw_pbp: pl.DataFrame) -> pl.DataFrame:
         .with_columns(fenwick_expr, corsi_expr)
         # Join replaces 5×72 nested when/then/otherwise chains
         .join(_weights.get_adj_weights_lf(), on=["strength_state", "is_home", "score_bucket"], how="left")
-        # Pass 4: hd_exprs + adjusted stats (both need fenwick/high_danger from pass 3)
+        # Pass 4: hd_exprs + adjusted stats (both need fenwick/high_danger from pass 3).
+        # A state with no weights, such as a penalty shot or an empty net, keeps its raw value, as in chicken_nhl
         .with_columns(
             *hd_exprs,
-            (pl.col("goal") * pl.col("goal_w").fill_null(0.0)).alias("goal_adj"),
-            (pl.col("pred_goal") * pl.col("xg_w").fill_null(0.0)).alias("pred_goal_adj"),
-            (pl.col("shot") * pl.col("shot_w").fill_null(0.0)).alias("shot_adj"),
-            (pl.col("miss") * pl.col("fenwick_w").fill_null(0.0)).alias("miss_adj"),
-            (pl.col("fenwick") * pl.col("fenwick_w").fill_null(0.0)).alias("fenwick_adj"),
-            (pl.col("block") * pl.col("corsi_w").fill_null(0.0)).alias("block_adj"),
-            (pl.col("corsi") * pl.col("corsi_w").fill_null(0.0)).alias("corsi_adj"),
+            (pl.col("goal") * pl.col("goal_w").fill_null(1.0)).alias("goal_adj"),
+            (pl.col("pred_goal") * pl.col("xg_w").fill_null(1.0)).alias("pred_goal_adj"),
+            (pl.col("shot") * pl.col("shot_w").fill_null(1.0)).alias("shot_adj"),
+            (pl.col("miss") * pl.col("fenwick_w").fill_null(1.0)).alias("miss_adj"),
+            (pl.col("fenwick") * pl.col("fenwick_w").fill_null(1.0)).alias("fenwick_adj"),
+            (pl.col("block") * pl.col("corsi_w").fill_null(1.0)).alias("block_adj"),
+            (pl.col("corsi") * pl.col("corsi_w").fill_null(1.0)).alias("corsi_adj"),
         )
         .drop(["score_bucket", "goal_w", "xg_w", "shot_w", "fenwick_w", "corsi_w"])
         .collect()

@@ -16,7 +16,7 @@ def _load_score_adjustments() -> dict:
 
 
 def _build_adj_weights_lf():
-    """Builds a 72-row lookup LazyFrame mapping (strength_state, is_home, score_bucket) → weights.
+    """Builds a 66-row lookup LazyFrame mapping (strength_state, is_home, score_bucket) → weights.
 
     Derived from score_adjustments.pkl (chicken_nhl) so both modules share the same calibration.
 
@@ -26,7 +26,8 @@ def _build_adj_weights_lf():
     - 5v4, 4v5, 5v3, 3v5, 4v3, 3v4: 3 buckets (−1, 0, +1)
       Flipped states (4v5, 3v5, 3v4) are looked up via their mirror state with is_home reversed,
       matching the same logic used in chicken_nhl._game_utils.calculate_score_adjustment.
-    - 1v0: 3 buckets, goal weight only (xg/shot/fenwick/corsi zeroed — no model for empty net)
+    States not listed, such as a penalty shot (1v0) or an empty net, have no row, and their adjusted stats
+    keep the raw value.
     """
     import polars as pl
 
@@ -98,13 +99,6 @@ def _build_adj_weights_lf():
                         r[f"{h}_corsi_weight"],
                     )
                 )
-
-    # 1v0: goal weight from pkl; xg/shot/fenwick/corsi zeroed (no model applies to empty net)
-    for is_home in [1, 0]:
-        h = "home" if is_home else "away"
-        for bucket in [-1, 0, 1]:
-            r = sa["1v0"][bucket]
-            rows.append(("1v0", is_home, bucket, r[f"{h}_goal_weight"], 0.0, 0.0, 0.0, 0.0))
 
     states, homes, buckets, goal_w, xg_w, shot_w, fenwick_w, corsi_w = zip(*rows, strict=False)
 

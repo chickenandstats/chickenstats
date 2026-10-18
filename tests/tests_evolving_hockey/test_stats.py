@@ -467,6 +467,16 @@ def test_rates_and_percentages_with_nothing_to_divide_by_are_null(pbp_polars, pr
     assert_rates_and_percentages_are_null_when_not_applicable(df)
 
 
+def test_states_without_weights_keep_their_raw_values(pbp_polars):
+    """A penalty shot, an empty net or any other state outside the weights table is adjusted by 1.0, not 0."""
+    weighted = ["5v5", "4v4", "3v3", "5v4", "4v5", "5v3", "3v5", "4v3", "3v4"]
+    rows = pbp_polars.filter(~pl.col("strength_state").is_in(weighted), pl.col("corsi") == 1)
+
+    assert set(rows["strength_state"]) >= {"1v0", "5vE", "Ev5"}
+    for column in ("goal", "shot", "miss", "fenwick", "block", "corsi"):
+        assert (rows[f"{column}_adj"] == rows[column]).all(), column
+
+
 def test_team_blocked_shots_are_attempts_for_and_against(pbp_polars):
     """A team's bsf are its own attempts that were blocked, so Corsi is Fenwick plus blocked attempts."""
     team_stats = prep_team_stats(pbp_polars, level="game", disable_progress_bar=True)
