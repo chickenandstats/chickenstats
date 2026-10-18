@@ -23,6 +23,7 @@ except ImportError:
     _PA_TABLE = type(None)
 
 from chickenstats.chicken_nhl.scraper import Scraper
+from chickenstats.exceptions import InvalidGameIDError
 
 _skip_no_pandas = pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installed")
 _skip_no_pyarrow = pytest.mark.skipif(not HAS_PYARROW, reason="pyarrow not installed")
@@ -844,3 +845,37 @@ class TestScraper:
         team_stats = scraper.prep_team_stats(level="game", disable_progress_bar=True).team_stats
         assert isinstance(team_stats, pl.DataFrame)
         assert len(team_stats) > 0
+
+
+class TestGameIds:
+    """Game IDs are ints, in order, each once, in a list the Scraper owns."""
+
+    def test_floats_strings_and_repeats_become_one_int_each(self):
+        scraper = Scraper(
+            [2023020001, 2023020002.0, "2023020001", " 2023020003 ", 2023020002], disable_progress_bar=True
+        )
+
+        assert scraper.game_ids == [2023020001, 2023020002, 2023020003]
+
+    @pytest.mark.parametrize("game_id", ["FAIL", 2023020001.5, None])
+    def test_an_id_that_is_not_a_whole_number_raises(self, game_id):
+        with pytest.raises(InvalidGameIDError):
+            Scraper([2023020001, game_id], disable_progress_bar=True)
+
+    def test_add_games_does_not_change_the_callers_list(self):
+        game_ids: list[str | float | int] = [2023020001]
+        scraper = Scraper(game_ids, disable_progress_bar=True)
+
+        scraper.add_games(["2023020002", 2023020002.0, 2023020001])
+
+        assert scraper.game_ids == [2023020001, 2023020002]
+        assert game_ids == [2023020001]
+
+    def test_load_normalizes_the_game_ids_it_adds(self, tmp_path):
+        scraper = Scraper([2023020001], disable_progress_bar=True)
+        _ = scraper.play_by_play
+        path = scraper.save(tmp_path / "cache")
+
+        loaded = Scraper.load(path, game_ids=["2023020002", 2023020001.0], disable_progress_bar=True)
+
+        assert loaded.game_ids == [2023020001, 2023020002]

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Literal
 
 import polars as pl
 
-from chickenstats.chicken_nhl._scraper_core import _SCRAPE_REGISTRY, _ScraperBase
+from chickenstats.chicken_nhl._scraper_core import _SCRAPE_REGISTRY, _ScraperBase, normalize_game_ids
 from chickenstats.utilities.enums import Backend
 from chickenstats.utilities.utilities import data_directory
 
@@ -75,7 +75,7 @@ class _ScraperPersistMixin(_ScraperBase):
         if meta is None:
             meta = json.loads((path / "_meta.json").read_text())
 
-        cached_ids = meta["game_ids"]
+        cached_ids = normalize_game_ids(meta["game_ids"]) if meta["game_ids"] else []
         self.game_ids = list(dict.fromkeys([*cached_ids, *self.game_ids]))
         self._bad_games = list(dict.fromkeys([*self._bad_games, *meta.get("bad_games", [])]))
 
@@ -131,7 +131,7 @@ class _ScraperPersistMixin(_ScraperBase):
         source = Path(path)
         meta = json.loads((source / "_meta.json").read_text())
 
-        extra_ids = list(game_ids) if game_ids else []
+        extra_ids: list[str | float | int] = list(normalize_game_ids(game_ids)) if game_ids else []
 
         scraper = cls(
             extra_ids,

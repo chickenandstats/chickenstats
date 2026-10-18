@@ -55,7 +55,6 @@ def test_access_order_does_not_duplicate_rows():
     assert heights == (46, 331, 743, 450)
 
 
-@known_bug("game IDs are not normalized, so a repeated or string ID is scraped again")
 def test_repeated_and_string_game_ids_are_scraped_once():
     scraper = Scraper([GAME_ID, GAME_ID, str(GAME_ID)], disable_progress_bar=True)
 

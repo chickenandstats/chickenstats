@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 from chickenstats.chicken_nhl.game import Game
-from chickenstats.exceptions import ChickenstatsError
+from chickenstats.exceptions import ChickenstatsError, InvalidGameIDError
 from chickenstats.chicken_nhl.validation_polars import (
     api_events_polars_schema,
     api_rosters_polars_schema,
@@ -72,6 +72,29 @@ _LEAF_ATTRS: dict[str, tuple[str, str]] = {
 }
 
 logger = logging.getLogger(__name__)
+
+
+def normalize_game_ids(game_ids: list[str | float | int] | pd.Series | str | float | int) -> list[int]:
+    """Return the game IDs as a new list of ints, in order, each once.
+
+    A float or a string that holds a whole number is accepted, so ``2023020001.0`` and ``"2023020001"``
+    are the same game as ``2023020001`` and are scraped once (R5).
+
+    Raises:
+        InvalidGameIDError: If an ID is not a whole number.
+    """
+    normalized = []
+    for value in convert_to_list(game_ids, "game ID"):
+        try:
+            number = float(value.strip()) if isinstance(value, str) else value
+            game_id = int(number)
+        except (TypeError, ValueError):
+            game_id, number = None, None
+        if game_id is None or game_id != number:
+            raise InvalidGameIDError(f"Game ID {value!r} is not a whole number", game_id=value)
+        normalized.append(game_id)
+
+    return list(dict.fromkeys(normalized))
 
 
 class _ScraperBase:
@@ -171,7 +194,8 @@ class _ScraperCore(_ScraperBase):
         Parameters:
             game_ids (list[str | float | int] | pd.Series | str | float | int):
                 One or more 10-digit NHL game identifiers, e.g., ``2023020001`` or
-                ``[2023020001, 2023020002]``. Strings and floats are coerced to int.
+                ``[2023020001, 2023020002]``. Strings and floats holding a whole number
+                are converted to int, and each game is kept once, in order.
             disable_progress_bar (bool):
                 Suppress the Rich progress bar globally for this instance. Individual
                 method calls accept a ``disable_progress_bar`` argument to override this
@@ -190,15 +214,17 @@ class _ScraperCore(_ScraperBase):
             overwrite (bool):
                 Ignore an existing cache on construction and scrape fresh; the next
                 auto-save overwrites it. No effect when ``cache`` is falsy. Default ``False``.
-        """
-        game_ids = convert_to_list(game_ids, "game ID")
 
+        Raises:
+            InvalidGameIDError: If a game ID is not a whole number.
+        """
         self._backend: str = backend
 
         self.disable_progress_bar: bool = disable_progress_bar
         self.transient_progress_bar: bool = transient_progress_bar
 
-        self.game_ids: list = game_ids
+        # A new list, so the caller's list is never changed by add_games
+        self.game_ids: list[int] = normalize_game_ids(game_ids)
         self._bad_games: list = []
 
         self._requests_session: ChickenSession = ChickenSession()
@@ -473,9 +499,9 @@ class _ScraperCore(_ScraperBase):
 
         """
         existing = set(self.game_ids)
-        game_ids = [int(x) for x in convert_to_list(game_ids, "game ID") if int(x) not in existing]
+        new_ids = [x for x in normalize_game_ids(game_ids) if x not in existing]
 
-        self.game_ids.extend(game_ids)
+        self.game_ids.extend(new_ids)
 
         for prop in _SCRAPE_REGISTRY:
             self.__dict__.pop(prop, None)
