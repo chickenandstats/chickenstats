@@ -14,7 +14,7 @@ from requests.exceptions import RequestException
 from unidecode import unidecode
 
 from chickenstats.chicken_nhl._corrections import html_events_fixes
-from chickenstats.chicken_nhl._game_utils import decode_report, hs_strip_html, prefetch_concurrent
+from chickenstats.chicken_nhl._game_utils import decode_report, hs_strip_html, is_cut_off, prefetch_concurrent
 from chickenstats.chicken_nhl.validation_pydantic import HTMLEvent
 from chickenstats.chicken_nhl.validation_polars import html_events_polars_schema
 from chickenstats.chicken_nhl._docstrings import _GAME_HTML_EVENTS_DF_DOC, _GAME_HTML_EVENTS_DOC, shared_doc
@@ -44,6 +44,9 @@ class _GameHTMLEventsMixin(_GameBase):
             self._report_failures["PL"] = f"HTTP {response.status_code}"
             self._raw_html_events = []
             return self._raw_html_events
+
+        if is_cut_off(response.content):
+            self._report_failures["PL"] = "cut off before its end"
 
         soup = BeautifulSoup(decode_report(response.content), "lxml")
         events = []
@@ -400,6 +403,9 @@ class _GameHTMLEventsMixin(_GameBase):
             )
         )
         raw_events = self._fetch_html_events()
+        # A finished game's report ends with the game end; without it, the report stopped early (N47)
+        if raw_events and self.game_state in ("FINAL", "OFF") and all(e["event"] != "GEND" for e in raw_events):
+            self._report_failures.setdefault("PL", "no game end in the report")
         self._check_reports("PL")
         if not raw_events:
             return []

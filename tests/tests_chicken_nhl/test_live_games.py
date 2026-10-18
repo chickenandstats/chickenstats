@@ -5,6 +5,7 @@ one moment, named ``<game_id>_<state>``. No network access is needed.
 """
 
 import json
+import logging
 import os
 from unittest.mock import patch
 
@@ -362,3 +363,21 @@ def test_a_response_that_fails_to_parse_is_not_kept():
     assert game.api_response is None
     game._fetch_api_data()
     assert game.api_response is not None
+
+
+def test_a_cut_off_shift_report_keeps_its_whole_rows_while_the_game_is_in_progress(caplog):
+    """A home shift report cut off mid-row keeps the home team's whole shifts, and the cut is logged."""
+    served_get = requests.Session.get
+
+    def cut_home_shifts(self, url, *args, **kwargs):
+        response = served_get(self, url, *args, **kwargs)
+        if "/TH020001.HTM" in str(url):
+            response._content = response.content[: int(len(response.content) * 0.6)]
+        return response
+
+    with patch("requests.Session.get", in_progress(cut_home_shifts)), caplog.at_level(logging.WARNING):
+        shifts = Game(2023020001).shifts
+
+    home = [shift for shift in shifts if shift["team_venue"] == "HOME"]
+    assert 0 < len(home) < len([shift for shift in shifts if shift["team_venue"] == "AWAY"])
+    assert any("TH (cut off before its end)" in record.getMessage() for record in caplog.records)

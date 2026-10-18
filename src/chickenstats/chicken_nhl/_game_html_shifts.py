@@ -17,7 +17,7 @@ from requests.exceptions import RequestException
 from unidecode import unidecode
 
 from chickenstats.chicken_nhl._corrections import html_shifts_fixes, individual_shifts_fixes
-from chickenstats.chicken_nhl._game_utils import decode_report, prefetch_concurrent
+from chickenstats.chicken_nhl._game_utils import decode_report, is_cut_off, prefetch_concurrent
 from chickenstats.chicken_nhl._player_names import correct_player_name, correct_names_dict
 from chickenstats.chicken_nhl.team import team_codes
 from chickenstats.chicken_nhl.validation_pydantic import PlayerShift
@@ -69,7 +69,9 @@ class _GameHTMLShiftsMixin(_GameBase):
                     cast(list, players_dict[eh_id]["shifts"]).extend([data])
 
         for player, shifts in players_dict.items():
-            length = int(len(np.array(shifts["shifts"])) / 5)
+            # A report written while the game is played can end in the middle of a row; only whole rows are read
+            cells = cast(list, shifts["shifts"])
+            length = len(cells) // 5
             player_name = cast(str, shifts["player_name"])
             eh_id = shifts["eh_id"]
             team = team_codes.get(team_name, "")
@@ -77,9 +79,12 @@ class _GameHTMLShiftsMixin(_GameBase):
             team_jersey = f"{team}{shifts['jersey']}"
             jersey = cast(int, shifts["jersey"])
 
-            for _number, shift in enumerate(np.array(shifts["shifts"]).reshape(length, 5)):
+            for _number, shift in enumerate(np.array(cells[: length * 5]).reshape(length, 5)):
                 headers = ["shift_count", "period", "shift_start", "shift_end", "duration"]
                 shift_dict = dict(zip(headers, shift.flatten(), strict=True))
+                # A shift still being played can have no period or start in the report yet
+                if not str(shift_dict["period"]).strip() or not str(shift_dict["shift_start"]).strip():
+                    continue
                 shift_dict = individual_shifts_fixes(
                     game_id=self.game_id, player_name=player_name, shift_dict=shift_dict
                 )
@@ -131,6 +136,8 @@ class _GameHTMLShiftsMixin(_GameBase):
                 if response.status_code != 200:
                     self._report_failures[reports[venue]] = f"HTTP {response.status_code}"
                     continue
+                if is_cut_off(response.content):
+                    self._report_failures[reports[venue]] = "cut off before its end"
                 responses[venue] = response
 
         game_list = []

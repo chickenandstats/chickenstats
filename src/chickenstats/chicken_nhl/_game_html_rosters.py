@@ -20,7 +20,7 @@ from chickenstats.chicken_nhl.validation_pydantic import HTMLRosterPlayer
 from chickenstats.chicken_nhl.validation_polars import html_rosters_polars_schema
 from chickenstats.chicken_nhl._docstrings import _GAME_HTML_ROSTERS_DF_DOC, _GAME_HTML_ROSTERS_DOC, shared_doc
 from chickenstats.chicken_nhl._game_core import _GameBase
-from chickenstats.chicken_nhl._game_utils import decode_report
+from chickenstats.chicken_nhl._game_utils import decode_report, is_cut_off
 
 
 class _GameHTMLRostersMixin(_GameBase):
@@ -44,6 +44,9 @@ class _GameHTMLRostersMixin(_GameBase):
             self._report_failures["RO"] = f"HTTP {page.status_code}"
             self._raw_html_rosters = []
             return self._raw_html_rosters
+
+        if is_cut_off(page.content):
+            self._report_failures["RO"] = "cut off before its end"
 
         soup = BeautifulSoup(decode_report(page.content), "lxml", multi_valued_attributes=None)
 

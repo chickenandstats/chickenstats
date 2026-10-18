@@ -164,6 +164,14 @@ def prepare_xg(df: pl.DataFrame) -> pl.DataFrame:
     return df.with_columns((pl.col(c) * weight.fill_null(1.0)).alias(f"{c}_adj") for c in missing_adj)
 
 
+def is_cut_off(content: bytes) -> bool:
+    """Whether an NHL HTML report ended before its closing tag, as one cut off in transit does.
+
+    Older reports wrap the page in an XML element, so the tag is looked for anywhere, not only at the end.
+    """
+    return b"</html>" not in content.lower()
+
+
 def decode_report(content: bytes) -> str:
     """Decode an NHL HTML report. They are UTF-8; older ones that are not fall back to Latin-1."""
     try:

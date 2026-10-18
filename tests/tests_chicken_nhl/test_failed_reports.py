@@ -1,7 +1,8 @@
 """What a failed HTML report must do: record the game as failed, warn, and come back on a retry.
 
 Each report the scraper fetches for a game (play-by-play PL, the two shift reports TH and TV, and the
-rosters RO) is failed three ways through the shared network guard: a connection error, a 404 and a 500.
+rosters RO) is failed four ways through the shared network guard: a connection error, a 404, a 500, and
+a report cut off before its end.
 Each must record the game in failed_games with a warning that names the report. The retry through
 Scraper.refresh is a known bug until block 3.3 adds it.
 """
@@ -18,7 +19,7 @@ from test_known_bugs import known_bug
 
 GAME_ID = 2023020001
 REPORTS = ["PL", "TH", "TV", "RO"]
-FAILURES = ["connection error", 404, 500]
+FAILURES = ["connection error", 404, 500, "cut off"]
 
 
 def failing(report: str, failure: str | int):
@@ -29,6 +30,10 @@ def failing(report: str, failure: str | int):
         if f"/{report}020001.HTM" in str(url):
             if failure == "connection error":
                 raise requests.exceptions.ConnectionError("down")
+            if failure == "cut off":
+                response = served_get(self, url, *args, **kwargs)
+                response._content = response.content[: int(len(response.content) * 0.6)]
+                return response
             response = requests.Response()
             response.status_code = int(failure)
             response._content = b""
@@ -71,3 +76,26 @@ def test_a_retry_recovers_a_failed_game(caplog, report, failure):
 
     assert scraper.failed_games == []
     assert scraper.play_by_play.height == 781
+
+
+def test_a_finished_game_whose_events_stop_before_the_game_end_fails(caplog):
+    """An events report with status 200 that has no game end row stopped early, so the game is not complete."""
+    served_get = requests.Session.get
+
+    def without_game_end(self, url, *args, **kwargs):
+        response = served_get(self, url, *args, **kwargs)
+        if "/PL020001.HTM" in str(url):
+            html = response.content.decode("utf-8")
+            start = html.rfind("<tr", 0, html.find(">GEND<"))
+            end = html.find("</tr>", start) + len("</tr>")
+            response._content = (html[:start] + html[end:]).encode()
+        return response
+
+    with patch.object(requests.Session, "get", without_game_end), warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        with caplog.at_level(logging.WARNING, logger="chickenstats"):
+            scraper = Scraper([GAME_ID], disable_progress_bar=True)
+            _ = scraper.play_by_play
+
+    assert scraper.failed_games == [GAME_ID]
+    assert any("no game end" in record.getMessage() for record in caplog.records)
