@@ -402,12 +402,12 @@ def _player(api_id, position: str, name: str) -> dict:
 
 
 def test_aggregate_players_sorts_by_position_then_api_id():
-    """Defense, then goalies, then forwards, whose roster positions (C, L, R) are not in the order table."""
+    """Forwards (C, L and R alike), then defense, then goalies, each by API ID."""
     players = [_player(3, "C", "C3"), _player(1, "D", "D1"), _player(2, "G", "G2"), _player(4, "L", "L4")]
 
     agg = aggregate_players(players)
 
-    assert agg["ALL"]["names"] == ["D1", "G2", "C3", "L4"]
+    assert agg["ALL"]["names"] == ["C3", "L4", "D1", "G2"]
     assert (agg["F"]["count"], agg["D"]["count"], agg["G"]["count"]) == (2, 1, 1)
 
 
@@ -417,5 +417,5 @@ def test_aggregate_players_keeps_a_player_with_no_api_id():
 
     agg = aggregate_players(players)
 
-    assert agg["ALL"]["names"] == ["D2", "C5", "NOID"]
+    assert agg["ALL"]["names"] == ["C5", "NOID", "D2"]
     assert agg["F"]["names"] == ["C5", "NOID"]

@@ -431,8 +431,13 @@ def aggregate_players(players: list) -> dict:
         if api_ids:
             positions: list[str] = cast(list, bucket["positions"])
             if bucket_name == "ALL":
+                # Positions are C, L, R, D and G, so forwards are grouped as F before they are ordered
                 order = sorted(
-                    range(len(api_ids)), key=lambda i: (_POSITION_ORDER.get(positions[i], 3), *by_api_id(api_ids[i]))
+                    range(len(api_ids)),
+                    key=lambda i: (
+                        _POSITION_ORDER.get("F" if positions[i] in forwards_set else positions[i], 3),
+                        *by_api_id(api_ids[i]),
+                    ),
                 )
             else:
                 order = sorted(range(len(api_ids)), key=lambda i: by_api_id(api_ids[i]))
