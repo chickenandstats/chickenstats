@@ -766,3 +766,73 @@ def test_live_snapshot_values():
     assert (shots["LAK"], shots["FLA"]) == (api_response["homeTeam"]["sog"], api_response["awayTeam"]["sog"])
     assert (shots["LAK"], shots["FLA"]) == (18, 24)
     assert play_by_play["event_length"].sum() == 2797
+
+
+# -----------------------------------------------------------------------------
+# Every saved game against its boxscore, and a season across two games
+# -----------------------------------------------------------------------------
+
+SAVED_GAMES = [
+    "fixture_game",
+    "shootout_game",
+    "long_shootout_game",
+    "playoff_overtime_game",
+    "second_nashville_game",
+    "old_regular_season_game",
+    "old_playoff_game",
+]
+# The package names the Coyotes ARI in every season
+BOXSCORE_CODES = {"PHX": "ARI"}
+
+
+@pytest.mark.parametrize("fixture", SAVED_GAMES)
+def test_final_score_and_shots_match_the_boxscore(request, saved_boxscore, fixture):
+    """The last play-by-play row has the final score, and each team's shots on goal match the boxscore."""
+    game = request.getfixturevalue(fixture)
+    box = saved_boxscore(game.game_id)
+    team_stats = prep_team_stats(game.play_by_play, game.play_by_play_ext, level="game", strength_state=False)
+    teams = {
+        BOXSCORE_CODES.get(box[side]["abbrev"], box[side]["abbrev"]): box[side] for side in ("homeTeam", "awayTeam")
+    }
+
+    assert game.failed_games == []
+    assert game.play_by_play.select("home_score", "away_score").row(-1) == (
+        box["homeTeam"]["score"],
+        box["awayTeam"]["score"],
+    )
+    assert dict(team_stats.select("team", "sf").rows()) == {team: side["sog"] for team, side in teams.items()}
+
+
+@pytest.mark.parametrize(
+    "fixture, heights",
+    [
+        ("second_nashville_game", (792, 695, 463)),
+        ("old_regular_season_game", (620, 785, 287)),
+        ("old_playoff_game", (697, 862, 330)),
+    ],
+)
+def test_new_saved_game_heights(request, fixture, heights):
+    game = request.getfixturevalue(fixture)
+
+    assert (game.play_by_play.height, game.shifts.height, game.changes.height) == heights
+
+
+def test_a_season_across_two_games_is_the_sum_of_the_games():
+    """Nashville's first two games, scraped together, give season totals equal to the two game rows."""
+    scraper = Scraper([2023020001, 2023020015], disable_progress_bar=True)
+    pbp, ext = scraper.play_by_play, scraper.play_by_play_ext
+    counts = ["gf", "ga", "sf", "sa", "cf", "ca", "toi"]
+
+    by_game = prep_team_stats(pbp, ext, level="game", strength_state=False).filter(pl.col("team") == "NSH")
+    season = prep_team_stats(pbp, ext, level="season", strength_state=False).filter(pl.col("team") == "NSH")
+    assert by_game.height == 2
+    assert season.select(counts).row(0) == pytest.approx(by_game.select(pl.col(counts).sum()).row(0))
+
+    player_counts = ["g", "a1", "isf", "icf", "gf", "cf", "toi"]
+    games = prep_stats(pbp, ext, level="game", strength_state=False).filter(pl.col("team") == "NSH")
+    seasons = prep_stats(pbp, ext, level="season", strength_state=False).filter(pl.col("team") == "NSH")
+    summed = games.group_by("api_id").agg(pl.col(player_counts).sum(), pl.len().alias("games"))
+    joined = seasons.join(summed, on="api_id", suffix="_games")
+    assert joined.filter(pl.col("games") == 2).height >= 18
+    for column in player_counts:
+        assert ((joined[column] - joined[f"{column}_games"]).abs() < 1e-9).all(), column

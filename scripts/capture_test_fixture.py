@@ -5,6 +5,7 @@ downloads under tests/tests_chicken_nhl/mock_data/saved/, gzipped and byte-for-b
 received. index.json maps each URL to its file; tests/conftest.py serves them from there.
 
     uv run python scripts/capture_test_fixture.py game 2023020125
+    uv run python scripts/capture_test_fixture.py boxscore 2023020125
     uv run python scripts/capture_test_fixture.py schedule NSH 2023
     uv run python scripts/capture_test_fixture.py standings 2023
     uv run python scripts/capture_test_fixture.py player 8476887
@@ -69,6 +70,9 @@ def main(argv: list[str]) -> int:
     match argv:
         case ["game", game_id]:
             saved = record(lambda: Scraper([int(game_id)], disable_progress_bar=True).play_by_play)
+        case ["boxscore", game_id]:
+            url = f"https://api-web.nhle.com/v1/gamecenter/{int(game_id)}/boxscore"
+            saved = record(lambda: requests.Session().get(url, timeout=30))
         case ["schedule", team, year]:
             saved = record(lambda: Season(int(year)).schedule(team))
         case ["standings", year]:

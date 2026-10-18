@@ -16,6 +16,9 @@ FIXTURE_GAME_ID = 2023020001
 SHOOTOUT_GAME_ID = 2023020125
 PLAYOFF_OVERTIME_GAME_ID = 2023030223
 LONG_SHOOTOUT_GAME_ID = 2023020411
+SECOND_NASHVILLE_GAME_ID = 2023020015
+OLD_REGULAR_SEASON_GAME_ID = 2010020012
+OLD_PLAYOFF_GAME_ID = 2017030111
 
 
 def scrape_saved_game(game_id: int) -> SimpleNamespace:
@@ -72,6 +75,36 @@ def long_shootout_game():
 def playoff_overtime_game():
     """Every scraped frame for game 2023030223 (NYR at CAR, NYR won 3-2 in overtime)."""
     return scrape_saved_game(PLAYOFF_OVERTIME_GAME_ID)
+
+
+@pytest.fixture(scope="session")
+def second_nashville_game():
+    """Every scraped frame for game 2023020015 (SEA at NSH, NSH won 3-0), Nashville's game after the fixture game."""
+    return scrape_saved_game(SECOND_NASHVILLE_GAME_ID)
+
+
+@pytest.fixture(scope="session")
+def old_regular_season_game():
+    """Every scraped frame for game 2010020012 (PHX at BOS, PHX won 5-2), from the oldest reports the tests read."""
+    return scrape_saved_game(OLD_REGULAR_SEASON_GAME_ID)
+
+
+@pytest.fixture(scope="session")
+def old_playoff_game():
+    """Every scraped frame for game 2017030111 (NJD at TBL, TBL won 5-2), a playoff game from before 2019."""
+    return scrape_saved_game(OLD_PLAYOFF_GAME_ID)
+
+
+@pytest.fixture(scope="session")
+def saved_boxscore():
+    """A function that returns the NHL API boxscore saved for a game."""
+
+    def load(game_id: int) -> dict:
+        path = os.path.join(MOCK_DATA_DIR, "saved", f"gamecenter_{game_id}_boxscore.gz")
+        with gzip.open(path, "rb") as f:
+            return json.loads(f.read())
+
+    return load
 
 
 @pytest.fixture(scope="session")

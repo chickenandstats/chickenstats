@@ -5,7 +5,15 @@ import pytest
 from conftest import scrape_saved_game
 from invariants import INVARIANTS, REGRESSION_GAME_IDS
 
-SAVED_GAMES = ["fixture_game", "shootout_game", "long_shootout_game", "playoff_overtime_game"]
+SAVED_GAMES = [
+    "fixture_game",
+    "shootout_game",
+    "long_shootout_game",
+    "playoff_overtime_game",
+    "second_nashville_game",
+    "old_regular_season_game",
+    "old_playoff_game",
+]
 
 
 @pytest.mark.parametrize("check", INVARIANTS, ids=lambda check: check.__name__)
