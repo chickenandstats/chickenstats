@@ -7,54 +7,6 @@ import requests
 
 from chickenstats.chicken_nhl.scraper import Scraper
 
-MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "mock_data")
-
-
-def mock_session_get(self, url, *args, **kwargs):
-    """Custom mock for requests Session.get / ChickenSession.get."""
-    response = requests.Response()
-    response.url = url
-
-    if "api-web.nhle.com/v1/gamecenter/2023020001/play-by-play" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "play_by_play.json"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/RO020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "rosters.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/TH020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "shifts_home.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/TV020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "shifts_away.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    elif "scores/htmlreports/20232024/PL020001.HTM" in url:
-        response.status_code = 200
-        with open(os.path.join(MOCK_DATA_DIR, "events.html"), "rb") as f:
-            response._content = f.read()
-        return response
-
-    response.status_code = 404
-    return response
-
-
-@pytest.fixture(autouse=True)
-def mock_requests():
-    """Fixture to intercept all HTTP GET requests made via requests.Session."""
-    with patch("requests.Session.get", mock_session_get):
-        yield
-
 
 class TestScraperPersist:
     def test_save_creates_files(self, tmp_path):
@@ -80,6 +32,38 @@ class TestScraperPersist:
         assert isinstance(reloaded, pl.DataFrame)
         assert reloaded.shape == original.shape
         assert 2023020001 in loaded._scraped_play_by_play
+
+    def test_load_round_trips_every_frame(self, tmp_path):
+        """Every frame save() writes comes back from load() unchanged, with no network access."""
+        names = [
+            "api_events",
+            "api_rosters",
+            "changes",
+            "html_events",
+            "html_rosters",
+            "rosters",
+            "shifts",
+            "play_by_play",
+            "play_by_play_ext",
+            "xg_fields",
+        ]
+        # Each original comes from its own Scraper, because reading one frame after another duplicates rows (R3)
+        originals = {name: getattr(Scraper(game_ids=[2023020001], disable_progress_bar=True), name) for name in names}
+        scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
+        _ = scraper.play_by_play
+        save_path = scraper.save(tmp_path / "cache")
+        # Building play_by_play rewrites the cached changes (R21), and the saved Scraper built it
+        after_play_by_play = Scraper(game_ids=[2023020001], disable_progress_bar=True)
+        _ = after_play_by_play.play_by_play
+        originals["changes"] = after_play_by_play.changes
+
+        with patch("requests.Session.get", side_effect=AssertionError("should not hit the network")):
+            loaded = Scraper.load(save_path, disable_progress_bar=True)
+            reloaded = {name: getattr(loaded, name) for name in names}
+
+        for name in names:
+            assert reloaded[name].equals(originals[name]), name
+        assert loaded.failed_games == scraper.failed_games
 
     def test_load_extends_with_new_game_ids(self, tmp_path):
         """load(..., game_ids=[...]) merges new IDs in without touching cached ones."""
@@ -178,8 +162,8 @@ class TestScraperCacheArgument:
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True, cache=cache_dir)
         _ = scraper.play_by_play
 
-        with patch("requests.Session.get") as mock_get:
-            mock_get.side_effect = lambda url, *a, **kw: mock_session_get(None, url, *a, **kw)
+        served_get = requests.Session.get
+        with patch.object(requests.Session, "get", autospec=True, side_effect=served_get) as mock_get:
             scraper2 = Scraper(game_ids=[2023020001], disable_progress_bar=True, cache=cache_dir, overwrite=True)
             _ = scraper2.play_by_play
 
@@ -207,12 +191,12 @@ class TestScraperCrossFetchReuse:
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True, cache=cache_dir)
         _ = scraper.rosters
 
-        with patch("requests.Session.get") as mock_get:
-            mock_get.side_effect = lambda url, *a, **kw: mock_session_get(None, url, *a, **kw)
+        served_get = requests.Session.get
+        with patch.object(requests.Session, "get", autospec=True, side_effect=served_get) as mock_get:
             scraper2 = Scraper(game_ids=[2023020001], disable_progress_bar=True, cache=cache_dir)
             pbp = scraper2.play_by_play
 
-        requested_urls = [call.args[0] for call in mock_get.call_args_list]
+        requested_urls = [str(call.args[1]) for call in mock_get.call_args_list]
         assert not any("RO020001.HTM" in url for url in requested_urls)
 
         fresh_scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
