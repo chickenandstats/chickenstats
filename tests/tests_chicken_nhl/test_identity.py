@@ -19,8 +19,8 @@ class TestFrames:
             assert expected in cols
 
     def test_lines_is_stats_without_the_player(self):
-        stats = identity_columns("stats")
-        lines = identity_columns("lines")
+        stats = identity_columns("stats", teammates=True)
+        lines = identity_columns("lines", teammates=True)
         assert "api_id" in stats
         assert "api_id" not in lines
         assert set(lines) < set(stats)
@@ -76,7 +76,7 @@ class TestLineupIds:
         "flavour,expected", [("api_id", "forwards_api_id"), ("eh_id", "forwards_eh_id"), ("name", "forwards")]
     )
     def test_one_flavour_at_a_time(self, flavour, expected):
-        cols = identity_columns("stats", lineup_ids=flavour)
+        cols = identity_columns("stats", teammates=True, lineup_ids=flavour)
         forwards = [c for c in cols if c.startswith("forwards")]
         assert forwards == [expected], (
             "the three lineup flavours name the same skaters, so an identity using more than one is redundant"
@@ -165,3 +165,17 @@ def test_is_a_key_of_lines_and_stats(fixture_game, level, strength_state, score)
             )
             assert set(key) <= set(lines.columns), ("lines", position, flags)
             assert lines.select(key).n_unique() == lines.height, ("lines", position, flags)
+
+
+def test_the_defaults_name_a_key_of_each_default_output(fixture_game):
+    """With no flags, identity_columns describes what prep_stats, prep_lines and prep_team_stats return by default (R90)."""
+    pbp, pbp_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
+    outputs = [
+        (prep_stats(pbp, pbp_ext), identity_columns("stats")),
+        (prep_lines(pbp, pbp_ext), identity_columns("lines")),
+        (prep_team_stats(pbp, pbp_ext), identity_columns("team_stats")),
+    ]
+
+    for df, key in outputs:
+        assert set(key) <= set(df.columns), key
+        assert df.select(key).n_unique() == df.height, key

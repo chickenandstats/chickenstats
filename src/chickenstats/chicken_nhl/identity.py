@@ -15,9 +15,9 @@ copy that can silently disagree with the aggregation. Deriving it from
 
     >>> from chickenstats.chicken_nhl.identity import identity_columns
     >>> identity_columns("team_stats", level="period")
-    ['season', 'session', 'game_id', 'team', 'opp_team', 'period', 'strength_state', 'score_state']
+    ['season', 'session', 'game_id', 'team', 'opp_team', 'period', 'strength_state']
 
-The flags mirror the ``prep_*`` functions exactly, because the identity of a
+The flags, and their defaults, mirror the ``prep_*`` functions exactly, because the identity of a
 row depends on how it was aggregated: a frame built with ``teammates=False``
 has no on-ice detail to be identified by, and its rows are correspondingly
 coarser.
@@ -65,11 +65,11 @@ def _lineup_flavour(columns: list[str], lineup_ids: LineupIds) -> list[str]:
 def identity_columns(
     frame: Frame,
     *,
-    level: str = "period",
+    level: str = "game",
     strength_state: bool = True,
-    score: bool = True,
-    teammates: bool = True,
-    opposition: bool = True,
+    score: bool = False,
+    teammates: bool = False,
+    opposition: bool = False,
     lineup_ids: LineupIds = "api_id",
     position: Literal["f", "d"] = "f",
 ) -> list[str]:
