@@ -132,6 +132,7 @@ class _ScraperBase:
         _scraped_changes: set[int]
         _scraped_play_by_play: set[int]
         _bad_games: list
+        _failed_types: dict[int, set[str]]
 
         # Aggregated stat frames (from _ScraperCore)
         _ind_stats: pl.DataFrame
@@ -226,6 +227,8 @@ class _ScraperCore(_ScraperBase):
         # A new list, so the caller's list is never changed by add_games
         self.game_ids: list[int] = normalize_game_ids(game_ids)
         self._bad_games: list = []
+        # The data types that failed for each game in _bad_games; a game leaves the list when none are left
+        self._failed_types: dict[int, set[str]] = {}
 
         self._requests_session: ChickenSession = ChickenSession()
         self._games: dict[int, Game] = {}
@@ -292,8 +295,27 @@ class _ScraperCore(_ScraperBase):
 
     @property
     def failed_games(self) -> list:
-        """Game IDs that failed to scrape."""
-        return self._bad_games
+        """Game IDs that failed to scrape, each once, in the order they first failed.
+
+        A game stays listed until every data type that failed for it has been scraped. Returns a copy.
+        """
+        return list(self._bad_games)
+
+    def _record_failure(self, game_id: int, scrape_type: str) -> None:
+        """Note that scrape_type failed for game_id."""
+        self._failed_types.setdefault(game_id, set()).add(scrape_type)
+        if game_id not in self._bad_games:
+            self._bad_games.append(game_id)
+
+    def _record_success(self, game_id: int, scraped_types: set[str]) -> None:
+        """Clear the types a successful scrape covered, and the game once none of its failures are left."""
+        failed = self._failed_types.get(game_id)
+        if failed is None:
+            return
+        failed -= scraped_types
+        if not failed:
+            del self._failed_types[game_id]
+            self._bad_games.remove(game_id)
 
     def _is_empty(self, df) -> bool:
         """Return True if df has no rows."""
@@ -430,7 +452,7 @@ class _ScraperCore(_ScraperBase):
             for key, spec in _SCRAPE_REGISTRY.items()
         }
 
-        prev_failed = set(self._bad_games)
+        failed_now: list[int] = []
 
         # Not wrapped in `with self._requests_session:` — the session is shared for the
         # Scraper's whole lifetime, not just this call.
@@ -442,15 +464,17 @@ class _ScraperCore(_ScraperBase):
                 result = self._scrape_single_game(game_id, scrape_type)
                 frames = self._game_frames(game_id, result, result_targets) if result is not None else None
 
-                if frames is not None:
+                if frames is not None and result is not None:
                     # Committed together, so a game is either stored for every type it returned or for none
                     for key, frame in frames.items():
                         data_list, scraped_list = result_targets[key]
                         if frame is not None:
                             data_list.append(frame)
                         scraped_list.add(game_id)
+                    self._record_success(game_id, {scrape_type, *result} - {"game_id"})
                 else:
-                    self._bad_games.append(game_id)
+                    self._record_failure(game_id, scrape_type)
+                    failed_now.append(game_id)
 
                 if idx + 1 < len(unscraped):
                     next_message = f"Downloading {pbar_stub} for {unscraped[idx + 1]}..."
@@ -459,10 +483,10 @@ class _ScraperCore(_ScraperBase):
 
                 progress.update(game_task, description=next_message, advance=1, refresh=True)
 
-        newly_failed = [g for g in self._bad_games if g not in prev_failed]
-        if newly_failed:
+        # Every failure in this scrape warns, a game that failed before included
+        if failed_now:
             warnings.warn(
-                f"Failed to scrape {len(newly_failed)} game(s): {newly_failed}. "
+                f"Failed to scrape {len(failed_now)} game(s): {failed_now}. "
                 "Access scraper.failed_games for the full list.",
                 UserWarning,
                 stacklevel=2,

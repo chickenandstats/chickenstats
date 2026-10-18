@@ -3,6 +3,7 @@ from unittest.mock import patch
 import polars as pl
 import narwhals as nw
 import pytest
+import requests
 
 try:
     import pandas as pd
@@ -926,3 +927,51 @@ def test_add_games_rebuilds_every_result_with_its_last_arguments():
         assert getattr(scraper, name)["toi"].sum() > first[name], name
     assert scraper.stints.height > first["stints"]
     assert "game_id" not in scraper.stats.columns
+
+
+class TestFailedGames:
+    """failed_games lists each game once, until every type that failed for it has been scraped."""
+
+    @staticmethod
+    def failing_play_by_play():
+        from test_failed_reports import failing
+
+        return patch.object(requests.Session, "get", failing("PL", 404))
+
+    def test_a_game_is_listed_once_and_the_list_is_a_copy(self):
+        with self.failing_play_by_play(), pytest.warns(UserWarning):
+            scraper = Scraper([2023020001], disable_progress_bar=True)
+            _ = scraper.play_by_play
+            _ = scraper.html_events
+
+        listed = scraper.failed_games
+        listed.append(1)
+        assert scraper.failed_games == [2023020001]
+
+    def test_a_repeat_failure_warns_again(self):
+        with self.failing_play_by_play():
+            scraper = Scraper([2023020001], disable_progress_bar=True)
+            with pytest.warns(UserWarning, match="Failed to scrape 1 game"):
+                _ = scraper.play_by_play
+            with pytest.warns(UserWarning, match="Failed to scrape 1 game"):
+                _ = scraper.html_events
+
+    def test_another_type_that_succeeds_does_not_clear_the_failure(self):
+        with self.failing_play_by_play(), pytest.warns(UserWarning):
+            scraper = Scraper([2023020001], disable_progress_bar=True)
+            _ = scraper.play_by_play
+        _ = scraper.rosters
+
+        assert scraper.failed_games == [2023020001]
+
+    def test_a_cached_failure_is_cleared_when_the_game_scrapes(self, tmp_path):
+        with self.failing_play_by_play(), pytest.warns(UserWarning):
+            scraper = Scraper([2023020001], disable_progress_bar=True)
+            _ = scraper.play_by_play
+        path = scraper.save(tmp_path / "cache")
+
+        loaded = Scraper.load(path, disable_progress_bar=True)
+        assert loaded.failed_games == [2023020001]
+
+        assert loaded.play_by_play.height == 781
+        assert loaded.failed_games == []

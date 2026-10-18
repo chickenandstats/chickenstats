@@ -77,7 +77,12 @@ class _ScraperPersistMixin(_ScraperBase):
 
         cached_ids = normalize_game_ids(meta["game_ids"]) if meta["game_ids"] else []
         self.game_ids = list(dict.fromkeys([*cached_ids, *self.game_ids]))
-        self._bad_games = list(dict.fromkeys([*self._bad_games, *meta.get("bad_games", [])]))
+        # A game that failed when the cache was saved is failed for every type until it is scraped again
+        for game_id in normalize_game_ids(meta.get("bad_games") or []):
+            if game_id in self.game_ids:
+                self._failed_types.setdefault(game_id, set()).update(_SCRAPE_REGISTRY)
+                if game_id not in self._bad_games:
+                    self._bad_games.append(game_id)
 
         for key, attr in _RAW_DATA_ATTRS.items():
             file = path / f"{key}.parquet"
