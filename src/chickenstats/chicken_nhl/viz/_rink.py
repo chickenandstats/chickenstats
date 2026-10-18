@@ -22,6 +22,10 @@ _SIZE_MULTIPLIER = 500
 def _filter_shots(pbp: pl.DataFrame, team: str, player: str | None, strengths: list[str] | None) -> pl.DataFrame:
     df = pbp.filter(pl.col("event").is_in(_SHOT_EVENTS), pl.col("event_team") == team)
 
+    # Shootout attempts are not shots or goals, so they are not drawn
+    if "shootout_attempt" in df.columns:
+        df = df.filter(pl.col("shootout_attempt") != 1)
+
     if player is not None:
         df = df.filter(pl.col("player_1") == player)
 
@@ -51,8 +55,8 @@ def plot_shot_chart(
 ) -> plt.Axes:
     """Scatter shot chart on an NHL rink, colored by event type.
 
-    Filters ``pbp`` to shot events (MISS/SHOT/GOAL), normalizes coordinates so shots
-    point toward the same end. Markers are sized by ``pred_goal`` if present, else uniform.
+    Filters ``pbp`` to shot events (MISS/SHOT/GOAL), leaving out shootout attempts, and normalizes coordinates
+    so shots point toward the same end. Markers are sized by ``pred_goal`` if present, else uniform.
 
     Parameters:
         pbp (pl.DataFrame | pd.DataFrame): Play-by-play data, e.g. from ``Scraper.play_by_play``.
@@ -132,7 +136,8 @@ def plot_density_heatmap(
 ) -> plt.Axes:
     """KDE shot-density map on an NHL rink.
 
-    Filters ``pbp`` to shot events and draws a filled kernel-density map with a contour outline.
+    Filters ``pbp`` to shot events, leaving out shootout attempts, and draws a filled kernel-density map with a
+    contour outline.
 
     Parameters:
         pbp (pl.DataFrame | pd.DataFrame): Play-by-play data, e.g. from ``Scraper.play_by_play``.

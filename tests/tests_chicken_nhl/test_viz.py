@@ -18,6 +18,7 @@ pytest.importorskip("hockey_rink", reason="requires the 'plotting' extra")
 pytest.importorskip("networkx", reason="requires the 'plotting' extra")
 
 from chickenstats.chicken_nhl import Scraper
+from chickenstats.chicken_nhl.viz._rink import _filter_shots
 from chickenstats.chicken_nhl.viz import (
     plot_density_heatmap,
     plot_line_network,
@@ -271,3 +272,20 @@ class TestGuardedImport:
 
         monkeypatch.undo()
         importlib.reload(viz_module)
+
+
+# -----------------------------------------------------------------------------
+# Shootouts
+# -----------------------------------------------------------------------------
+
+
+def test_charts_leave_out_shootout_attempts(long_shootout_game):
+    """In 2023020411 Montreal scored 2 goals; its 4 shootout attempts are not drawn as shots or goals."""
+    play_by_play = long_shootout_game.play_by_play
+    shots = _filter_shots(play_by_play, "MTL", None, None)
+
+    assert shots["shootout_attempt"].sum() == 0
+    assert shots.filter(pl.col("event") == "GOAL").height == 2
+    plot_shot_chart(play_by_play, team="MTL")
+    plot_density_heatmap(play_by_play, team="MTL")
+    plt.close("all")
