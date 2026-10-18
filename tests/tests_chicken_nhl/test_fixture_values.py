@@ -23,6 +23,7 @@ from chickenstats.chicken_nhl import (
     prep_team_stats,
 )
 
+from chickenstats.chicken_nhl._game_utils import add_pred_goal_adj
 from test_live_games import LIVE_DATA_DIR, snapshot_session_get
 
 # How one team's strength state reads from the other bench
@@ -519,6 +520,64 @@ def test_shootout_game_totals_at_every_level(long_shootout_game, level, strength
     assert dict(team_stats.group_by("team").agg(pl.col("sf").sum()).rows()) == shots
     assert dict(lines.group_by("team").agg(pl.col("gf").sum()).rows()) == goals
     assert dict(lines.group_by("team").agg(pl.col("sf").sum()).rows()) == shots
+
+
+def with_known_xg(play_by_play: pl.DataFrame) -> pl.DataFrame:
+    """Give every goal, shot and miss, shootout attempts included, a different known xG value."""
+    is_attempt = pl.col("event").is_in(["GOAL", "SHOT", "MISS"])
+    return play_by_play.with_columns(
+        pred_goal=pl.when(is_attempt).then((pl.int_range(pl.len()) % 7 + 1) / 100).otherwise(0.0)
+    )
+
+
+def sums_by(df: pl.DataFrame, key: str, column: str) -> dict:
+    return {team: pytest.approx(total) for team, total in df.group_by(key).agg(pl.col(column).sum()).rows()}
+
+
+def test_xg_totals_equal_a_direct_sum_in_every_output(fixture_game):
+    """Supplied xG, raw and score-adjusted, adds up the same in individual, on-ice, team and stint output."""
+    pbp = with_known_xg(fixture_game.play_by_play)
+    pbp_ext = fixture_game.play_by_play_ext
+    direct = add_pred_goal_adj(pbp)
+
+    for raw, adjusted in (("ixg", "pred_goal"), ("ixg_adj", "pred_goal_adj")):
+        ind = prep_ind(pbp, level="game", strength_state=False)
+        assert sums_by(ind, "team", raw) == sums_by(direct, "event_team", adjusted)
+
+    team_stats = prep_team_stats(pbp, pbp_ext, level="game", strength_state=False)
+    for raw, adjusted in (("xgf", "pred_goal"), ("xgf_adj", "pred_goal_adj")):
+        assert sums_by(team_stats, "team", raw) == sums_by(direct, "event_team", adjusted)
+    assert sums_by(team_stats, "team", "xga") == sums_by(direct, "opp_team", "pred_goal")
+
+    oi = prep_oi(pbp, pbp_ext, level="game", strength_state=False).filter(pl.col("position") == "G")
+    with_goalie = direct.filter(pl.col("own_goalie").is_not_null())
+    assert sums_by(oi, "team", "xgf") == sums_by(with_goalie, "event_team", "pred_goal")
+    assert sums_by(oi, "team", "xgf_adj") == sums_by(with_goalie, "event_team", "pred_goal_adj")
+
+    stints = prep_stints(pbp)
+    in_stints = direct.filter(pl.col("strength_state") != "1v0")
+    home = in_stints.filter(pl.col("event_team") == pl.col("home_team"))["pred_goal"].sum()
+    away = in_stints.filter(pl.col("event_team") == pl.col("away_team"))["pred_goal"].sum()
+    assert (stints["home_xgf"].sum(), stints["away_xgf"].sum()) == (pytest.approx(home), pytest.approx(away))
+
+
+@pytest.mark.parametrize("fixture", ["shootout_game", "long_shootout_game"])
+def test_shootout_attempts_carry_no_xg(request, fixture):
+    """In a game decided by a shootout, shootout attempts add no xG, and goalies are charged with the rest."""
+    game = request.getfixturevalue(fixture)
+    pbp = with_known_xg(game.play_by_play)
+    stats = prep_stats(pbp, game.play_by_play_ext, level="game", strength_state=False)
+    team_stats = prep_team_stats(pbp, game.play_by_play_ext, level="game", strength_state=False)
+    goalies = stats.filter(pl.col("position") == "G")
+    outside_shootout = add_pred_goal_adj(pbp).filter(pl.col("shootout_attempt") == 0)
+    # An attempt at an empty net counts for the team but not against a goalie
+    on_a_goalie = outside_shootout.filter(pl.col("opp_goalie").is_not_null())
+
+    assert pbp.filter(pl.col("shootout_attempt") == 1)["pred_goal"].sum() > 0
+    assert sums_by(team_stats, "team", "xgf") == sums_by(outside_shootout, "event_team", "pred_goal")
+    assert sums_by(team_stats, "team", "xga_adj") == sums_by(outside_shootout, "opp_team", "pred_goal_adj")
+    assert sums_by(goalies, "team", "xga") == sums_by(on_a_goalie, "opp_team", "pred_goal")
+    assert sums_by(goalies, "team", "xga_adj") == sums_by(on_a_goalie, "opp_team", "pred_goal_adj")
 
 
 @pytest.mark.parametrize("fixture", ["shootout_game", "long_shootout_game"])
