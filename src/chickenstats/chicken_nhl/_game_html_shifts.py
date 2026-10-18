@@ -13,6 +13,7 @@ import polars as pl
 if TYPE_CHECKING:
     import pandas as pd
 from bs4 import BeautifulSoup
+from requests.exceptions import RequestException
 from unidecode import unidecode
 
 from chickenstats.chicken_nhl._corrections import html_shifts_fixes, individual_shifts_fixes
@@ -116,23 +117,33 @@ class _GameHTMLShiftsMixin(_GameBase):
 
         endpoints = {"HOME": self.home_shifts_endpoint, "AWAY": self.away_shifts_endpoint}
 
+        reports = {"HOME": "TH", "AWAY": "TV"}
         responses: dict = {}
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures = {executor.submit(self._requests_session.get, url): venue for venue, url in endpoints.items()}
             for future in as_completed(futures):
                 venue = futures[future]
                 try:
-                    responses[venue] = future.result()
-                except Exception:  # noqa: BLE001  # pyright: ignore[reportBroadExceptionCaught]
-                    logger.debug("Failed to fetch shifts for %s venue", venue, exc_info=True)
+                    response = future.result()
+                except RequestException as exc:
+                    self._report_failures[reports[venue]] = f"request failed: {type(exc).__name__}"
+                    continue
+                if response.status_code != 200:
+                    self._report_failures[reports[venue]] = f"HTTP {response.status_code}"
+                    continue
+                responses[venue] = response
 
         game_list = []
         for venue, response in responses.items():
             try:
-                game_list.extend(self._parse_team_shifts(venue, response))
-            except Exception:  # noqa: BLE001  # pyright: ignore[reportBroadExceptionCaught]
+                team_shifts = self._parse_team_shifts(venue, response)
+            except Exception as exc:  # noqa: BLE001  # pyright: ignore[reportBroadExceptionCaught]
                 logger.debug("Failed to parse shifts for %s venue", venue, exc_info=True)
+                self._report_failures[reports[venue]] = f"could not be read: {type(exc).__name__}"
                 continue
+            if not team_shifts:
+                self._report_failures[reports[venue]] = "no shifts in the report"
+            game_list.extend(team_shifts)
 
         self._raw_shifts = game_list
         return self._raw_shifts
@@ -362,6 +373,7 @@ class _GameHTMLShiftsMixin(_GameBase):
             )
         )
         raw_shifts = self._fetch_shifts()
+        self._check_reports("TH", "TV")
         if not raw_shifts:
             return []
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from datetime import datetime as dt, timezone
 from typing import TYPE_CHECKING, Literal
@@ -7,10 +8,12 @@ from zoneinfo import ZoneInfo
 
 import polars as pl
 
-from chickenstats.exceptions import InvalidGameIDError
+from chickenstats.exceptions import InvalidGameIDError, ReportUnavailableError
 from chickenstats.utilities.enums import Backend
 from chickenstats.utilities.utilities import ChickenSession, _to_backend
 from chickenstats.chicken_nhl._game_utils import prefetch_concurrent, _get_score_adjustments
+
+logger = logging.getLogger(__name__)
 
 
 class _GameBase:
@@ -35,6 +38,7 @@ class _GameBase:
         away_shifts_endpoint: str
         html_events_endpoint: str
         _requests_session: ChickenSession
+        _report_failures: dict[str, str]
 
         # Score-adjustment state (from _GameCore.__init__)
         _score_adjustments: dict
@@ -51,6 +55,7 @@ class _GameBase:
 
         # Methods called across mixin boundaries
         def _fetch_api_data(self) -> None: ...
+        def _check_reports(self, *reports: str) -> None: ...
         def _fetch_html_events(self) -> list: ...
         def _fetch_html_rosters(self) -> list: ...
         def _fetch_shifts(self) -> list: ...
@@ -145,6 +150,8 @@ class _GameCore(_GameBase):
         self._raw_html_events: list | None = None
         self._raw_html_rosters: list | None = None
         self._raw_shifts: list | None = None
+        # Each HTML report that could not be fetched or read (PL, RO, TH, TV), with the reason
+        self._report_failures: dict[str, str] = {}
 
     def __repr__(self) -> str:
         """Return a string representation of the Game object."""
@@ -219,6 +226,27 @@ class _GameCore(_GameBase):
 
         # Stored last, so a response that fails to parse is fetched again instead of read half-set
         self.api_response = response
+
+    def _check_reports(self, *reports: str) -> None:
+        """Raise for a finished game with a failed report; warn for a game still in progress.
+
+        A report can be missing or behind while a game is being played, so a game in progress returns what
+        the reports have. Once the game is final, a missing report means the data would be incomplete.
+        """
+        failed = {report: self._report_failures[report] for report in reports if report in self._report_failures}
+        if not failed:
+            return
+
+        self._fetch_api_data()
+        details = ", ".join(f"{report} ({reason})" for report, reason in failed.items())
+        if self.game_state in ("FINAL", "OFF"):
+            raise ReportUnavailableError(
+                f"Game {self.game_id}: the {details} report could not be read for a finished game",
+                game_id=self.game_id,
+                reports=failed,
+            )
+
+        logger.warning("Game %s: %s report unavailable while the game is in progress", self.game_id, details)
 
     def _prefetch_needed(self, *tasks: tuple[Callable[[], object], tuple[str, ...]]) -> list[Callable[[], object]]:
         """Filter fetch tasks to only those whose targets aren't already cached.

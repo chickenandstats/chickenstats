@@ -10,7 +10,7 @@ import polars as pl
 if TYPE_CHECKING:
     import pandas as pd
 from bs4 import BeautifulSoup
-from requests.exceptions import RetryError
+from requests.exceptions import RequestException
 from unidecode import unidecode
 
 from chickenstats.chicken_nhl._corrections import html_events_fixes
@@ -35,7 +35,13 @@ class _GameHTMLEventsMixin(_GameBase):
 
         try:
             response = s.get(url)
-        except RetryError:
+        except RequestException as exc:
+            self._report_failures["PL"] = f"request failed: {type(exc).__name__}"
+            self._raw_html_events = []
+            return self._raw_html_events
+
+        if response.status_code != 200:
+            self._report_failures["PL"] = f"HTTP {response.status_code}"
             self._raw_html_events = []
             return self._raw_html_events
 
@@ -43,6 +49,7 @@ class _GameHTMLEventsMixin(_GameBase):
         events = []
 
         if soup.find("html") is None:
+            self._report_failures["PL"] = "empty report"
             self._raw_html_events = []
             return self._raw_html_events
 
@@ -393,6 +400,7 @@ class _GameHTMLEventsMixin(_GameBase):
             )
         )
         raw_events = self._fetch_html_events()
+        self._check_reports("PL")
         if not raw_events:
             return []
 

@@ -80,6 +80,7 @@ class _GameRostersMixin(_GameBase):
         prefetch_concurrent(
             *self._prefetch_needed((self._fetch_api_data, ()), (self._fetch_html_rosters, ("html_rosters",)))
         )
+        self._check_reports("RO")
         combined_and_fixed = self._combine_rosters()
 
         # Pydantic validation

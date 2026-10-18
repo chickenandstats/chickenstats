@@ -8,6 +8,7 @@ __all__ = [
     "UnsupportedBackendError",
     "DataMismatchError",
     "GameNotStartedError",
+    "ReportUnavailableError",
     "InvalidInputError",
 ]
 
@@ -71,6 +72,16 @@ class GameNotStartedError(ChickenstatsError):
         super().__init__(message)
         self.game_id = game_id
         self.game_state = game_state
+
+
+class ReportUnavailableError(ChickenstatsError):
+    """Raised when one of a finished game's NHL reports could not be fetched or read."""
+
+    def __init__(self, message: str, game_id: int | str | float | None = None, reports: dict | None = None):
+        """Store the game ID and each failed report's reason alongside the error message."""
+        super().__init__(message)
+        self.game_id = game_id
+        self.reports = reports or {}
 
 
 class InvalidInputError(ChickenstatsError):

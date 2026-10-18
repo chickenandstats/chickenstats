@@ -12,7 +12,7 @@ import pytest
 import requests
 
 from chickenstats.chicken_nhl import Game, Scraper
-from chickenstats.exceptions import GameNotStartedError
+from chickenstats.exceptions import GameNotStartedError, ReportUnavailableError
 
 MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "mock_data")
 LIVE_DATA_DIR = os.path.join(MOCK_DATA_DIR, "live")
@@ -149,9 +149,30 @@ def test_shot_missing_from_api_feed():
     assert game.xg_fields_df.height == len(xg_fields)
 
 
-def test_roster_report_missing():
-    """Without the HTML roster report, the API roster alone identifies the players."""
+def in_progress(get):
+    """Wrap a Session.get so the saved game's API response reads as a game in its third period."""
+
+    def wrapped(self, url, *args, **kwargs):
+        response = get(self, url, *args, **kwargs)
+        if "gamecenter/2023020001/play-by-play" in str(url):
+            body = json.loads(response.content)
+            body["gameState"] = "LIVE"
+            response._content = json.dumps(body).encode()
+        return response
+
+    return wrapped
+
+
+def test_a_finished_game_without_its_roster_report_fails():
     with patch("requests.Session.get", snapshot_session_get(MOCK_DATA_DIR, missing_reports=("RO",))):
+        game = Game(2023020001)
+        with pytest.raises(ReportUnavailableError, match="RO"):
+            _ = game.play_by_play
+
+
+def test_roster_report_missing():
+    """While a game is in progress, the API roster alone identifies the players until the roster report is posted."""
+    with patch("requests.Session.get", in_progress(snapshot_session_get(MOCK_DATA_DIR, missing_reports=("RO",)))):
         game = Game(2023020001)
         rosters = game.rosters
         shifts = game.shifts

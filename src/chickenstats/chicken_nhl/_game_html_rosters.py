@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
-from requests.exceptions import RetryError
+from requests.exceptions import RequestException
 from unidecode import unidecode
 
 from chickenstats.chicken_nhl._corrections import html_rosters_fixes
@@ -35,13 +35,17 @@ class _GameHTMLRostersMixin(_GameBase):
 
         try:
             page = self._requests_session.get(self.html_rosters_endpoint)
-            if page.status_code == 404:
-                self._raw_html_rosters = []
-                return self._raw_html_rosters
-            soup = BeautifulSoup(decode_report(page.content), "lxml", multi_valued_attributes=None)
-        except RetryError:
+        except RequestException as exc:
+            self._report_failures["RO"] = f"request failed: {type(exc).__name__}"
             self._raw_html_rosters = []
             return self._raw_html_rosters
+
+        if page.status_code != 200:
+            self._report_failures["RO"] = f"HTTP {page.status_code}"
+            self._raw_html_rosters = []
+            return self._raw_html_rosters
+
+        soup = BeautifulSoup(decode_report(page.content), "lxml", multi_valued_attributes=None)
 
         td_dict: dict = {"align": "center", "class": ["teamHeading + border", "teamHeading + border "], "width": "50%"}
         teamsoup = soup.find_all("td", cast(dict, td_dict))
@@ -156,6 +160,7 @@ class _GameHTMLRostersMixin(_GameBase):
     def html_rosters(self) -> list:
         """html_rosters — docstring lives in _docstrings._GAME_HTML_ROSTERS_DOC."""
         raw_players = self._fetch_html_rosters()
+        self._check_reports("RO")
         if not raw_players:
             return []
 

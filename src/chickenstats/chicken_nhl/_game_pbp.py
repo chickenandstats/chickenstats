@@ -812,6 +812,7 @@ class _GamePBPMixin(_GameBase):
                 game_id=self.game_id,
                 game_state=self.game_state,
             )
+        self._check_reports("PL", "RO", "TH", "TV")
 
         api_events = self.api_events
         html_events = self.html_events

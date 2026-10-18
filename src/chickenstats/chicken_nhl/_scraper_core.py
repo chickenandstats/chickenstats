@@ -340,9 +340,9 @@ class _ScraperCore(_ScraperBase):
                         result["html_rosters"] = game.html_rosters
                     return result
 
-        except (ChickenstatsError, RequestException, ValidationError):
+        except (ChickenstatsError, RequestException, ValidationError) as exc:
             # Expected per-game failures: data-quality issues, network errors, bad payloads.
-            logger.warning("Failed to scrape game %s", game_id, exc_info=True)
+            logger.warning("Failed to scrape game %s: %s", game_id, exc, exc_info=True)
             return None
         except Exception:  # noqa: BLE001
             # Unexpected error — likely a real bug; log louder but don't crash the batch.
