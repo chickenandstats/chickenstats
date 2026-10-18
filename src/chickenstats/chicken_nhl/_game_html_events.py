@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import cached_property
+import logging
 import re
 from typing import TYPE_CHECKING
 
@@ -19,6 +20,8 @@ from chickenstats.chicken_nhl.validation_pydantic import HTMLEvent
 from chickenstats.chicken_nhl.validation_polars import html_events_polars_schema
 from chickenstats.chicken_nhl._docstrings import _GAME_HTML_EVENTS_DF_DOC, _GAME_HTML_EVENTS_DOC, shared_doc
 from chickenstats.chicken_nhl._game_core import _GameBase
+
+logger = logging.getLogger(__name__)
 
 
 class _GameHTMLEventsMixin(_GameBase):
@@ -424,6 +427,16 @@ class _GameHTMLEventsMixin(_GameBase):
         }
 
         final_events = self._munge_html_events(raw_events, actives, scratches)
+
+        # While a game is played the report can list a faceoff before its winner; once it is final it should not
+        if self.game_state in ("FINAL", "OFF"):
+            no_winner = sum(1 for event in final_events if event["event"] == "FAC" and not event.get("event_team"))
+            if no_winner:
+                logger.warning(
+                    "Game %s is final but its HTML events report has %s faceoff(s) with no winner",
+                    self.game_id,
+                    no_winner,
+                )
 
         return sorted(final_events, key=lambda k: k["event_idx"])
 

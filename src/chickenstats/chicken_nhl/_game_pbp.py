@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from functools import cached_property
 
@@ -28,6 +29,39 @@ from chickenstats.chicken_nhl._docstrings import (
 )
 from chickenstats.chicken_nhl._game_core import _GameBase
 from chickenstats.exceptions import GameNotStartedError
+
+logger = logging.getLogger(__name__)
+
+# Events that happen in play, so a side always has between one and six skaters on the ice
+_PLAY_EVENTS = {"GOAL", "SHOT", "MISS", "BLOCK", "FAC", "HIT", "GIVE", "TAKE", "PENL"}
+
+
+def finished_game_anomalies(events: list[dict]) -> list[str]:
+    """Describe what a finished game's play-by-play should not have: each item is one kind, with its count.
+
+    A faceoff with no winning team is right while a game is in progress, when the report can list a faceoff
+    before its winner. Once the game is final it means a report is wrong, as do on-ice counts outside one to
+    six skaters on a side and an ILLEGAL strength state. Penalty shots and shootout attempts are left out of
+    the skater check, since they have one skater by design.
+    """
+    no_winner = sum(1 for e in events if e["event"] == "FAC" and not e.get("event_team"))
+    odd_skaters = sum(
+        1
+        for e in events
+        if e["event"] in _PLAY_EVENTS
+        and e.get("strength_state") not in ("1v0", "0v1")
+        and not e.get("is_shootout")
+        and not (0 < e.get("home_skaters", 0) <= 6 and 0 < e.get("away_skaters", 0) <= 6)
+    )
+    illegal = sum(1 for e in events if e.get("strength_state") == "ILLEGAL")
+
+    found = [
+        (no_winner, "faceoff(s) with no winning team"),
+        (odd_skaters, "play(s) with no skaters or more than six on a side"),
+        (illegal, "event(s) in an ILLEGAL strength state"),
+    ]
+    return [f"{count} {what}" for count, what in found if count]
+
 
 # Collapse raw NHL position codes to the F/D/G encoding used in xG model training.
 # Forwards (C, L, R, LW, RW, W) → "F"; defensemen → "D"; goalies → "G".
@@ -828,6 +862,10 @@ class _GamePBPMixin(_GameBase):
         merged_events = self._merge_pbp_events(html_events, api_events, changes, rosters)
         stateful_events = self._track_pbp_state(merged_events, actives)
         final_pbp, final_ext, final_xg = self._calculate_pbp_xg(stateful_events)
+
+        if self.game_state in ("FINAL", "OFF"):
+            for anomaly in finished_game_anomalies(final_pbp):
+                logger.warning("Game %s is final but its play-by-play has %s", self.game_id, anomaly)
 
         return final_pbp, final_ext, final_xg
 

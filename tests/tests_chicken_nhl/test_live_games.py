@@ -13,6 +13,7 @@ import pytest
 import requests
 
 from chickenstats.chicken_nhl import Game, Scraper
+from chickenstats.chicken_nhl._game_pbp import finished_game_anomalies
 from chickenstats.exceptions import GameNotStartedError, ReportUnavailableError
 
 MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "mock_data")
@@ -381,3 +382,53 @@ def test_a_cut_off_shift_report_keeps_its_whole_rows_while_the_game_is_in_progre
     home = [shift for shift in shifts if shift["team_venue"] == "HOME"]
     assert 0 < len(home) < len([shift for shift in shifts if shift["team_venue"] == "AWAY"])
     assert any("TH (cut off before its end)" in record.getMessage() for record in caplog.records)
+
+
+# -----------------------------------------------------------------------------
+# What a finished game should not have
+# -----------------------------------------------------------------------------
+
+
+def test_finished_game_anomalies_are_counted():
+    play = {"event": "SHOT", "event_team": "NSH", "strength_state": "5v5", "home_skaters": 5, "away_skaters": 5}
+    events = [
+        play,
+        {**play, "event": "FAC", "event_team": None},
+        {**play, "home_skaters": 0},
+        {**play, "away_skaters": 7, "strength_state": "ILLEGAL"},
+        {**play, "home_skaters": 1, "away_skaters": 0, "strength_state": "1v0"},
+    ]
+
+    assert finished_game_anomalies(events) == [
+        "1 faceoff(s) with no winning team",
+        "2 play(s) with no skaters or more than six on a side",
+        "1 event(s) in an ILLEGAL strength state",
+    ]
+
+
+@pytest.mark.parametrize(
+    "fixture",
+    [
+        "fixture_game",
+        "shootout_game",
+        "long_shootout_game",
+        "playoff_overtime_game",
+        "second_nashville_game",
+        "old_regular_season_game",
+        "old_playoff_game",
+    ],
+)
+def test_saved_games_have_no_finished_game_anomalies(request, fixture):
+    assert finished_game_anomalies(request.getfixturevalue(fixture).play_by_play.to_dicts()) == []
+
+
+def test_a_finished_game_whose_html_report_has_a_faceoff_with_no_winner_is_logged(caplog):
+    """The API still names the winner, so play-by-play has one, but the report itself is logged as wrong."""
+    complete = "TBL won Def. Zone - NSH #10 SISSONS vs TBL #71 CIRELLI"
+    partial = "NSH #10 SISSONS vs TBL #71 CIRELLI"
+
+    with patch("requests.Session.get", snapshot_session_get(MOCK_DATA_DIR, report_edit=("PL", complete, partial))):
+        with caplog.at_level(logging.WARNING):
+            _ = Game(2023020001).play_by_play
+
+    assert any("HTML events report has 1 faceoff(s) with no winner" in record.getMessage() for record in caplog.records)
