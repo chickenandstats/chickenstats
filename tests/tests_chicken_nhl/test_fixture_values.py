@@ -610,6 +610,9 @@ def test_xg_totals_equal_a_direct_sum_in_every_output(fixture_game):
         assert sums_by(team_stats, "team", raw) == sums_by(direct, "event_team", adjusted)
     assert sums_by(team_stats, "team", "xga") == sums_by(direct, "opp_team", "pred_goal")
 
+    with_base = prep_team_stats(pbp.with_columns(base_xg="pred_goal"), pbp_ext, level="game", strength_state=False)
+    assert sums_by(with_base, "team", "base_xgf_adj") == sums_by(direct, "event_team", "pred_goal_adj")
+
     oi = prep_oi(pbp, pbp_ext, level="game", strength_state=False).filter(pl.col("position") == "G")
     with_goalie = direct.filter(pl.col("own_goalie").is_not_null())
     assert sums_by(oi, "team", "xgf") == sums_by(with_goalie, "event_team", "pred_goal")

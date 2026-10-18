@@ -190,6 +190,18 @@ def test_prepare_xg_uses_the_score_adjustment_rules(score_adjustments):
     assert result["pred_goal_adj"].to_list() == pytest.approx([0.2 * weight for weight in expected])
 
 
+def test_prepare_xg_adjusts_every_xg_column(score_adjustments):
+    """base_xg and context_xg get adjusted columns with the same weight as pred_goal."""
+    df = _xg_rows({"event_team": "CHI", "opp_team": "NSH"}).with_columns(base_xg=pl.lit(0.3), context_xg=pl.lit(0.4))
+    weight = score_adjustments["5v5"][0]["away_pred_goal_weight"]
+
+    result = prepare_xg(df)
+
+    assert result.select("pred_goal_adj", "base_xg_adj", "context_xg_adj").row(0) == pytest.approx(
+        (0.2 * weight, 0.3 * weight, 0.4 * weight)
+    )
+
+
 def test_prepare_xg_counts_xg_only_on_goals_shots_and_misses():
     """xG on a blocked shot or any other event is null, and so is a NaN."""
     df = _xg_rows({"event": "BLOCK"}, {"event": "PENL"}, {"pred_goal": float("nan")}, {"event": "MISS"})
