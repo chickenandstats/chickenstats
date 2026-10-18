@@ -95,6 +95,18 @@ def score_adjustments():
     return load_score_adjustments()
 
 
+@pytest.mark.parametrize("stat", ["goal", "pred_goal", "shot", "fenwick", "corsi"])
+def test_score_adjustments_keep_the_total_weight_of_events(score_adjustments, stat):
+    """In each strength and score state, the weighted home and away events add up to the raw total (McCurdy)."""
+    assert sorted(score_adjustments) == ["3v3", "4v3", "4v4", "5v3", "5v4", "5v5"]
+    for state, by_diff in score_adjustments.items():
+        assert sorted(by_diff) == [-3, -2, -1, 0, 1, 2, 3], state
+        for diff, row in by_diff.items():
+            home, away = row[f"home_{stat}"], row[f"away_{stat}"]
+            weighted = row[f"home_{stat}_weight"] * home + row[f"away_{stat}_weight"] * away
+            assert weighted == pytest.approx(home + away), (state, diff)
+
+
 def _base_play(**overrides) -> dict:
     """Minimal play dict with all keys required by calculate_score_adjustment."""
     play = {
