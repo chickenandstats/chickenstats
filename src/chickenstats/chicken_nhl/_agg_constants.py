@@ -288,6 +288,10 @@ STINT_COLUMN_ORDER: list[str] = [
     "ozs",
     "nzs",
     "dzs",
+    "home_ozs",
+    "home_dzs",
+    "away_ozs",
+    "away_dzs",
 ]
 
 # prep_stints counting stats, cast to Int64 before returning.

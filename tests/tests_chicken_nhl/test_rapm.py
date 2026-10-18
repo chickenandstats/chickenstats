@@ -32,7 +32,8 @@ class TestBuildRapmMatrix:
         matrix = build_rapm_matrix(stints_df, metric="cf", situation="EV")
 
         ev = stints_df.filter(pl.col("home_skater_count") == pl.col("away_skater_count"))
-        strengths = ev["strength_state"].drop_nulls().n_unique()
+        # Strength state is each row's own skater counts, so at even strength one per count.
+        strengths = ev["home_skater_count"].n_unique()
         # metric="cf" is a shot-volume metric, so score state uses six buckets.
         assert matrix.x.shape[1] == len(matrix.players) * 2 + strengths + 5 + 6
 
@@ -107,6 +108,69 @@ class TestBuildRapmMatrix:
         stints_df, _ = stints
         with pytest.raises(InvalidInputError, match="aren't in the stints"):
             build_rapm_matrix(stints_df, metric="context_xgf")
+
+
+class TestPerspectives:
+    """Each team's rows carry its own zone starts and its own strength state."""
+
+    @staticmethod
+    def _one(stints_df: pl.DataFrame, **values) -> pl.DataFrame:
+        row = stints_df.head(1)
+        return row.with_columns(**{k: pl.lit(v) for k, v in values.items()})
+
+    @staticmethod
+    def _flag_columns(matrix) -> tuple[int, int, int]:
+        """Indices of OZS, NZS, DZS: after the skaters and the strength dummies."""
+        strengths = 2  # one row per perspective, each with its own strength state
+        start = len(matrix.players) * 2 + strengths
+        return start, start + 1, start + 2
+
+    def test_an_offensive_zone_start_gives_the_teams_opposite_flags(self, stints):
+        stints_df, _ = stints
+        one = self._one(
+            stints_df,
+            home_ozs=True,
+            home_dzs=False,
+            away_ozs=False,
+            away_dzs=True,
+            ozs=True,
+            dzs=True,
+            home_skater_count=5,
+            away_skater_count=4,
+        )
+        matrix = build_rapm_matrix(one, metric="cf", situation="all", min_toi=0)
+        ozs, _, dzs = self._flag_columns(matrix)
+        home, away = matrix.x.toarray()
+        assert (home[ozs], home[dzs]) == (1.0, 0.0)
+        assert (away[ozs], away[dzs]) == (0.0, 1.0)
+
+    def test_power_play_and_shorthanded_rows_get_their_own_strength(self, stints):
+        stints_df, _ = stints
+        one = self._one(stints_df, home_skater_count=5, away_skater_count=4, strength_state="5v4")
+        matrix = build_rapm_matrix(one, metric="cf", situation="all", min_toi=0)
+        home, away = matrix.x.toarray()
+        start = len(matrix.players) * 2
+        # Two strength dummies, sorted: "4v5" then "5v4". The home team had the extra skater.
+        assert (home[start], home[start + 1]) == (0.0, 1.0)
+        assert (away[start], away[start + 1]) == (1.0, 0.0)
+
+    def test_prep_stints_zone_starts_follow_the_home_team(self, stints):
+        stints_df, _ = stints
+        flagged = stints_df.filter(pl.col("home_ozs") | pl.col("home_dzs"))
+        assert flagged.height > 0
+        # A home offensive- or defensive-zone start is a zone start for somebody.
+        assert flagged.filter(~(pl.col("ozs") | pl.col("dzs"))).is_empty()
+        # A neutral-zone-only stint gives the home team neither.
+        neutral = stints_df.filter(pl.col("nzs") & ~pl.col("ozs") & ~pl.col("dzs"))
+        assert neutral.filter(pl.col("home_ozs") | pl.col("home_dzs")).is_empty()
+        # One team's offensive-zone start is the other's defensive-zone start.
+        assert stints_df["away_ozs"].equals(stints_df["home_dzs"])
+        assert stints_df["away_dzs"].equals(stints_df["home_ozs"])
+
+    def test_stints_from_an_older_prep_stints_are_refused(self, stints):
+        stints_df, _ = stints
+        with pytest.raises(InvalidInputError, match="home_ozs"):
+            build_rapm_matrix(stints_df.drop("home_ozs", "home_dzs", "away_ozs", "away_dzs"), metric="cf")
 
 
 class TestBuildPositionMap:

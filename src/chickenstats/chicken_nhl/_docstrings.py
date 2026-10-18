@@ -1756,6 +1756,10 @@ _STINTS_MODEL_FIELDS: dict[str, tuple[str, str]] = {
     "ozs": ("bool", "Whether either team started the stint in the offensive zone, e.g., True"),
     "nzs": ("bool", "Whether either team started in the neutral zone, e.g., False"),
     "dzs": ("bool", "Whether either team started in the defensive zone, e.g., False"),
+    "home_ozs": ("bool", "Whether the home team started the stint in its offensive zone, e.g., True"),
+    "home_dzs": ("bool", "Whether the home team started the stint in its defensive zone, e.g., False"),
+    "away_ozs": ("bool", "Whether the away team started the stint in its offensive zone, e.g., False"),
+    "away_dzs": ("bool", "Whether the away team started the stint in its defensive zone, e.g., True"),
 }
 
 _OI_STATS_COUNTING_FIELDS: dict[str, tuple[str, str]] = {

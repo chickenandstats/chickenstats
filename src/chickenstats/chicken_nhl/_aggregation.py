@@ -2110,6 +2110,15 @@ def prep_stints(df: pl.DataFrame, min_skaters: int = 3) -> pl.DataFrame:
         (pl.col("zone_start") == "OFF").any().alias("ozs"),
         (pl.col("zone_start") == "NEU").any().alias("nzs"),
         (pl.col("zone_start") == "DEF").any().alias("dzs"),
+        # The same zone starts for each team: a change by the away team into its defensive
+        # zone is a home offensive-zone start. build_rapm_matrix reads these, so each team's
+        # rows carry its own zone start.
+        (((pl.col("zone_start") == "OFF") & (is_home == 1)) | ((pl.col("zone_start") == "DEF") & (is_away == 1)))
+        .any()
+        .alias("home_ozs"),
+        (((pl.col("zone_start") == "DEF") & (is_home == 1)) | ((pl.col("zone_start") == "OFF") & (is_away == 1)))
+        .any()
+        .alias("home_dzs"),
     ]
 
     agg_stats += [
@@ -2129,6 +2138,8 @@ def prep_stints(df: pl.DataFrame, min_skaters: int = 3) -> pl.DataFrame:
         )
 
     stints = stints.filter(pl.col("toi") > 0)
+    # One team's offensive-zone start is the other's defensive-zone start.
+    stints = stints.with_columns(away_ozs=pl.col("home_dzs"), away_dzs=pl.col("home_ozs"))
 
     # Null lineup columns become empty lists so set_difference and list.len() stay defined.
     stints = (
@@ -2152,7 +2163,9 @@ def prep_stints(df: pl.DataFrame, min_skaters: int = 3) -> pl.DataFrame:
         pl.col("toi").cast(pl.Int64),
         pl.col("stint_id").cast(pl.Int64),
         pl.col([col for col in STINT_COUNT_COLS if col in stints.columns]).cast(pl.Int64),
-        pl.col(["home_b2b", "away_b2b", "ozs", "nzs", "dzs"]).cast(pl.Boolean),
+        pl.col(["home_b2b", "away_b2b", "ozs", "nzs", "dzs", "home_ozs", "home_dzs", "away_ozs", "away_dzs"]).cast(
+            pl.Boolean
+        ),
     )
 
     stints = stints.select([col for col in STINT_COLUMN_ORDER if col in stints.columns])

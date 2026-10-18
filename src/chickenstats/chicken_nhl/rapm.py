@@ -99,6 +99,11 @@ def build_rapm_matrix(
     ``metric='gf'``), strength state, OZS, NZS, DZS, home advantage, back-to-back, score
     state.
 
+    The strength state and the zone starts are each row's own. Strength state is built
+    from that row's skater counts (``5v4`` for the team with the extra skater, ``4v5`` for
+    the other), and OZS and DZS are that row's team's offensive and defensive zone starts,
+    ``prep_stints``' ``home_ozs`` and ``home_dzs`` or ``away_ozs`` and ``away_dzs``.
+
     Parameters:
         stints (pl.DataFrame): Output of ``prep_stints``.
         metric (str): Target stat — one of ``RAPM_METRICS``. Default ``'xgf'``.
@@ -113,7 +118,8 @@ def build_rapm_matrix(
         per-player metric totals.
 
     Raises:
-        InvalidInputError: If ``metric`` is unknown or its columns aren't in ``stints``.
+        InvalidInputError: If ``metric`` is unknown or its columns aren't in ``stints``, or if
+            ``stints`` lacks the per-team zone starts (from a ``prep_stints`` before 1.9).
 
     Examples:
         >>> from chickenstats.chicken_nhl import Scraper, prep_stints
@@ -131,6 +137,14 @@ def build_rapm_matrix(
             f"metric={metric!r} needs columns {missing}, which aren't in the stints "
             "DataFrame. The xG metrics are only built when the matching xG column was "
             "present in the play-by-play passed to prep_stints.",
+            obj=stints,
+        )
+
+    lacking = [col for col in ("home_ozs", "home_dzs", "away_ozs", "away_dzs") if col not in stints.columns]
+    if lacking:
+        raise InvalidInputError(
+            f"stints need {lacking} for each team's own zone starts. They come from "
+            "prep_stints since 1.9; rebuild the stints with it.",
             obj=stints,
         )
 
@@ -154,10 +168,12 @@ def build_rapm_matrix(
                 pl.col(f"{opponent}_goalies").alias("goalie_def"),
                 pl.col(f"{venue}_team").alias("off_team"),
                 pl.col(f"{opponent}_team").alias("def_team"),
-                pl.col("strength_state"),
-                pl.col("ozs"),
+                pl.format("{}v{}", pl.col(f"{venue}_skater_count"), pl.col(f"{opponent}_skater_count")).alias(
+                    "strength_state"
+                ),
+                pl.col(f"{venue}_ozs").alias("ozs"),
                 pl.col("nzs"),
-                pl.col("dzs"),
+                pl.col(f"{venue}_dzs").alias("dzs"),
                 pl.col(f"{venue}_b2b").alias("b2b"),
                 pl.col(f"{venue}_{score_col}").alias("score_state"),
                 pl.lit(home_adv).alias("home_adv"),
