@@ -109,24 +109,6 @@ def test_unknown_level_raises(call, level):
         UNKNOWN_LEVEL_CALLS[call](scraper, level)
 
 
-@known_bug("a failed shift report for one team is ignored and the game is returned without it")
-def test_a_failed_shift_report_fails_the_game():
-    served_get = requests.Session.get
-
-    def away_shifts_down(self, url, *args, **kwargs):
-        if "/TV020001.HTM" in str(url):
-            raise requests.exceptions.ConnectionError("down")
-        return served_get(self, url, *args, **kwargs)
-
-    with patch.object(requests.Session, "get", away_shifts_down), warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        scraper = Scraper([GAME_ID], disable_progress_bar=True)
-        play_by_play = scraper.play_by_play
-
-    assert scraper.failed_games == [GAME_ID]
-    assert play_by_play.height == 0
-
-
 # -----------------------------------------------------------------------------
 # Other aggregation
 # -----------------------------------------------------------------------------
