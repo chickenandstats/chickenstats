@@ -321,6 +321,23 @@ def test_stats_keep_every_individual_event_in_other_games(request, fixture):
     assert_individual_sums_match(request.getfixturevalue(fixture), True, True, True, True)
 
 
+@pytest.mark.parametrize("fixture", ["fixture_game", "shootout_game", "long_shootout_game", "playoff_overtime_game"])
+def test_zone_starts_have_their_faceoffs_strength_state(request, fixture):
+    """A zone start is filed under the state the faceoff is played at, not one team's change alone."""
+    play_by_play = request.getfixturevalue(fixture).play_by_play
+    zone_starts = play_by_play.filter(pl.col("event") == "CHANGE", pl.col("zone_start").is_in(["OFF", "DEF", "NEU"]))
+    faceoffs = play_by_play.filter(pl.col("event") == "FAC").unique(["period", "game_seconds"], keep="first")
+    joined = zone_starts.join(
+        faceoffs.select("period", "game_seconds", fac_team="event_team", fac_state="strength_state"),
+        on=["period", "game_seconds"],
+    )
+    mirrored = pl.col("fac_state").str.split("v").list.reverse().list.join("v")
+    expected = pl.when(pl.col("event_team") == pl.col("fac_team")).then(pl.col("fac_state")).otherwise(mirrored)
+
+    assert joined.height > 0
+    assert joined.filter(pl.col("strength_state") != expected).is_empty()
+
+
 def test_team_toi_by_strength_mirrors(fixture_game):
     """A team's ice time in a strength state equals the other team's in the mirrored state."""
     team_stats = prep_team_stats(fixture_game.play_by_play, fixture_game.play_by_play_ext)
@@ -450,7 +467,7 @@ def test_regular_season_overtime_is_three_on_three(shootout_game):
     overtime = shootout_game.play_by_play.filter(pl.col("period") == 4)
     states = dict(overtime["strength_state"].value_counts().rows())
 
-    assert states["3v3"] == 28
+    assert states["3v3"] == 29
     assert states["4v3"] == 7
 
 
@@ -458,7 +475,7 @@ def test_playoff_overtime_is_five_on_five(playoff_overtime_game):
     """Playoff overtime is played 5v5 and ends on the goal."""
     overtime = playoff_overtime_game.play_by_play.filter(pl.col("period") == 4)
 
-    assert dict(overtime["strength_state"].value_counts().rows())["5v5"] == 20
+    assert dict(overtime["strength_state"].value_counts().rows())["5v5"] == 21
     assert overtime.filter(pl.col("event") == "GOAL").height == 1
     assert 5 not in playoff_overtime_game.play_by_play["period"].unique().to_list()
 
@@ -499,7 +516,7 @@ def test_long_shootout_game(long_shootout_game, saved_api_response):
     assert (shootout["GOAL"], shootout["SHOT"]) == (5, 3)
 
     # Buffalo had a two-man advantage in the first period
-    assert through_overtime.filter(pl.col("strength_state") == "5v3").height == 2
+    assert through_overtime.filter(pl.col("strength_state") == "5v3").height == 3
 
 
 @pytest.mark.parametrize("fixture", ["shootout_game", "long_shootout_game", "playoff_overtime_game"])

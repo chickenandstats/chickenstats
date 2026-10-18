@@ -271,6 +271,7 @@ class _GamePBPMixin(_GameBase):
         ice_changed = True
         actives_by_eh_id = {player["eh_id"]: player for player in actives.values()}
         goalie_in_net: dict[str, dict | None] = {"home": None, "away": None}
+        applied_changes: set[int] = set()
 
         # Mapping faceoff events to game seconds
         faceoff_events = {
@@ -347,27 +348,36 @@ class _GamePBPMixin(_GameBase):
                     }
                 )
 
-            # Only re-aggregate player cache if a change happens
-            if event["event"] == "CHANGE":
-                on_jerseys = set(str(event["change_on_jersey"]).split(", ")) if event.get("change_on_jersey") else set()
-                off_jerseys = (
-                    set(str(event["change_off_jersey"]).split(", ")) if event.get("change_off_jersey") else set()
-                )
-                duplicate_jerseys = on_jerseys & off_jerseys
+            # Every change at one game second is applied at its first, so each of those rows, and the zone start
+            # on it, carries the state the faceoff is played at rather than one team's change alone
+            if event["event"] == "CHANGE" and idx not in applied_changes:
+                group_end = idx
+                while (
+                    group_end + 1 < len(merged_events)
+                    and merged_events[group_end + 1]["event"] == "CHANGE"
+                    and merged_events[group_end + 1]["period"] == event["period"]
+                    and merged_events[group_end + 1]["game_seconds"] == event["game_seconds"]
+                ):
+                    group_end += 1
 
-                # Set deduplication logic
-                for tj in on_jerseys - duplicate_jerseys:
-                    if tj in actives:
-                        if event["team_venue"] == "HOME":
-                            home_on_ice[tj] = actives[tj]
-                        else:
-                            away_on_ice[tj] = actives[tj]
-                for tj in off_jerseys - duplicate_jerseys:
-                    if event["team_venue"] == "HOME":
-                        home_on_ice.pop(tj, None)
-                    else:
-                        away_on_ice.pop(tj, None)
-                ice_changed = True  # Flip flag to True
+                for change_idx in range(idx, group_end + 1):
+                    change = merged_events[change_idx]
+                    applied_changes.add(change_idx)
+                    on_jerseys = (
+                        set(str(change["change_on_jersey"]).split(", ")) if change.get("change_on_jersey") else set()
+                    )
+                    off_jerseys = (
+                        set(str(change["change_off_jersey"]).split(", ")) if change.get("change_off_jersey") else set()
+                    )
+                    duplicate_jerseys = on_jerseys & off_jerseys
+                    on_ice = home_on_ice if change["team_venue"] == "HOME" else away_on_ice
+
+                    for tj in on_jerseys - duplicate_jerseys:
+                        if tj in actives:
+                            on_ice[tj] = actives[tj]
+                    for tj in off_jerseys - duplicate_jerseys:
+                        on_ice.pop(tj, None)
+                ice_changed = True
 
             # Re-cache the players if the on-ice composition changes
             if ice_changed:
