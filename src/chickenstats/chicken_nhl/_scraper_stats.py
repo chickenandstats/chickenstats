@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import TYPE_CHECKING, Literal
+from dataclasses import asdict
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -33,6 +34,14 @@ from chickenstats.chicken_nhl._scraper_core import _ScraperBase
 from chickenstats.utilities.enums import AggLevel
 from chickenstats.utilities.types import DataFrameT
 from chickenstats.utilities.utilities import ChickenProgressIndeterminate, _to_polars, _to_backend
+
+
+def _last_arguments(levels: object) -> dict[str, Any]:
+    """The arguments a result was last built with, so rebuilding it after add_games keeps them.
+
+    Empty until the matching prep_* has run, so the first build uses that function's defaults.
+    """
+    return {name: value for name, value in asdict(levels).items() if value is not None}  # ty: ignore[invalid-argument-type]
 
 
 class _ScraperStatsMixin(_ScraperBase):
@@ -74,7 +83,7 @@ class _ScraperStatsMixin(_ScraperBase):
     def ind_stats(self) -> DataFrameT:
         """ind_stats — docstring lives in _docstrings._IND_STATS_DOC."""
         if self._is_empty(self._ind_stats):
-            self._prep_ind()
+            self._prep_ind(**_last_arguments(self._stats_levels))
 
         return _to_backend(self._ind_stats, self._backend)
 
@@ -119,7 +128,7 @@ class _ScraperStatsMixin(_ScraperBase):
     def oi_stats(self) -> DataFrameT:
         """oi_stats — docstring lives in _docstrings._OI_STATS_DOC."""
         if self._is_empty(self._oi_stats):
-            self._prep_oi()
+            self._prep_oi(**_last_arguments(self._stats_levels))
 
         return _to_backend(self._oi_stats, self._backend)
 
@@ -243,7 +252,7 @@ class _ScraperStatsMixin(_ScraperBase):
     def stats(self) -> DataFrameT:
         """Stats — docstring lives in _docstrings._STATS_DOC."""
         if self._is_empty(self._stats):
-            self.prep_stats()
+            self.prep_stats(**_last_arguments(self._stats_levels))
 
         return _to_backend(self._stats, self._backend)
 
@@ -358,7 +367,7 @@ class _ScraperStatsMixin(_ScraperBase):
     def lines(self) -> DataFrameT:
         """Lines — docstring lives in _docstrings._LINES_DOC."""
         if self._is_empty(self._lines):
-            self.prep_lines()
+            self.prep_lines(**_last_arguments(self._lines_levels))
 
         return _to_backend(self._lines, self._backend)
 
@@ -443,7 +452,7 @@ class _ScraperStatsMixin(_ScraperBase):
     def team_stats(self) -> DataFrameT:
         """team_stats — docstring lives in _docstrings._TEAM_STATS_DOC."""
         if self._is_empty(self._team_stats):
-            self.prep_team_stats()
+            self.prep_team_stats(**_last_arguments(self._team_stats_levels))
 
         return _to_backend(self._team_stats, self._backend)
 
@@ -499,6 +508,6 @@ class _ScraperStatsMixin(_ScraperBase):
     def stints(self) -> DataFrameT:
         """Stints — docstring lives in _docstrings._STINTS_DOC."""
         if self._is_empty(self._stints):
-            self.prep_stints()
+            self.prep_stints(**_last_arguments(self._stints_levels))
 
         return _to_backend(self._stints, self._backend)

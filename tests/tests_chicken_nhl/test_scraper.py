@@ -903,3 +903,26 @@ def test_a_frame_that_cannot_be_built_fails_its_game_without_storing_the_rest():
     assert scraper.failed_games == [2023020001]
     assert play_by_play.height == 0
     assert 2023020001 not in scraper._scraped_api_events | scraper._scraped_rosters | scraper._scraped_play_by_play
+
+
+def test_add_games_rebuilds_every_result_with_its_last_arguments():
+    """After add_games, each result covers the new games too, built with the arguments it was last built with."""
+    scraper = Scraper([2023020001], disable_progress_bar=True)
+    scraper.prep_stats(level="season", strength_state=False, disable_progress_bar=True)
+    scraper.prep_team_stats(level="season", strength_state=False, disable_progress_bar=True)
+    scraper.prep_lines(level="season", strength_state=False, disable_progress_bar=True)
+    first = {"stats": scraper.stats["toi"].sum(), "team_stats": scraper.team_stats["toi"].sum()}
+    first["lines"], first["stints"] = scraper.lines["toi"].sum(), scraper.stints.height
+
+    scraper.add_games([2023020015])
+
+    both = Scraper([2023020001, 2023020015], disable_progress_bar=True)
+    both.prep_stats(level="season", strength_state=False, disable_progress_bar=True)
+    both.prep_team_stats(level="season", strength_state=False, disable_progress_bar=True)
+    both.prep_lines(level="season", strength_state=False, disable_progress_bar=True)
+
+    for name in ("stats", "team_stats", "lines"):
+        assert getattr(scraper, name).equals(getattr(both, name)), name
+        assert getattr(scraper, name)["toi"].sum() > first[name], name
+    assert scraper.stints.height > first["stints"]
+    assert "game_id" not in scraper.stats.columns

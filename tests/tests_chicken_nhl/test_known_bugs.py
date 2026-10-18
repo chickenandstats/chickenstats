@@ -61,7 +61,6 @@ def test_repeated_and_string_game_ids_are_scraped_once():
     assert scraper.play_by_play.height == 781
 
 
-@known_bug("add_games leaves the aggregated stats from before the new games")
 def test_add_games_clears_the_aggregated_stats():
     scraper = Scraper([GAME_ID], disable_progress_bar=True)
     scraper.prep_stats(level="game", disable_progress_bar=True)

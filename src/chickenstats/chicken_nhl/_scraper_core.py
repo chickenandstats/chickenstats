@@ -521,3 +521,9 @@ class _ScraperCore(_ScraperBase):
 
         for prop in _SCRAPE_REGISTRY:
             self.__dict__.pop(prop, None)
+
+        # The aggregated results were built from the old games; each is rebuilt on its next access, with the
+        # arguments it was last built with (R6)
+        empty = pl.DataFrame()
+        self._ind_stats, self._oi_stats, self._stats = empty, empty, empty
+        self._lines, self._team_stats, self._stints = empty, empty, empty
