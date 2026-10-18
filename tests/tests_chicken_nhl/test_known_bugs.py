@@ -295,13 +295,13 @@ def test_identity_columns_is_a_key_of_season_team_stats(fixture_game):
 # -----------------------------------------------------------------------------
 
 
-@known_bug("xG columns are reported as 0.0 when the play-by-play has no predicted goals")
 def test_no_xg_columns_without_predicted_goals(fixture_game):
     assert "pred_goal" not in fixture_game.play_by_play.columns
 
-    stats = prep_stats(fixture_game.play_by_play, fixture_game.play_by_play_ext)
+    pbp, pbp_ext = fixture_game.play_by_play, fixture_game.play_by_play_ext
 
-    assert [column for column in stats.columns if "xg" in column] == []
+    for df in (prep_stats(pbp, pbp_ext), prep_lines(pbp, pbp_ext), prep_team_stats(pbp, pbp_ext)):
+        assert [column for column in df.columns if "xg" in column] == []
 
 
 @known_bug("a stint takes its strength state from its first event, which is relative to that event's team")

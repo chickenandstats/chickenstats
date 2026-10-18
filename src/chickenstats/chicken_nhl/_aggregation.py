@@ -97,15 +97,15 @@ def _prep_oi_percent(df: IntoFrameT, stats_for: list, stats_against: list) -> In
     exprs = []
 
     for stat_for, stat_against in zip(stats_for, stats_against, strict=False):
+        # A pair with a missing side, such as xG without a model, gets no percentage column
         if stat_for not in df.columns or stat_against not in df.columns:
-            exprs.append(nw.lit(None, dtype=nw.Float64()).alias(f"{stat_for}_percent"))
+            continue
 
-        else:
-            # A percentage with nothing on either side is null, not 0
-            total = nw.col(stat_for) + nw.col(stat_against)
-            exprs.append(nw.when(total > 0).then(nw.col(stat_for) / total).alias(f"{stat_for}_percent"))
+        # A percentage with nothing on either side is null, not 0
+        total = nw.col(stat_for) + nw.col(stat_against)
+        exprs.append(nw.when(total > 0).then(nw.col(stat_for) / total).alias(f"{stat_for}_percent"))
 
-    return df.with_columns(exprs)  # ty: ignore[unresolved-attribute]
+    return df.with_columns(exprs) if exprs else df  # ty: ignore[unresolved-attribute]
 
 
 def prep_oi_percent(df: pd.DataFrame | pl.DataFrame) -> pd.DataFrame | pl.DataFrame:
@@ -114,7 +114,7 @@ def prep_oi_percent(df: pd.DataFrame | pl.DataFrame) -> pd.DataFrame | pl.DataFr
     Pairs each stat in ``OI_PERCENT_STATS_FOR`` with its counterpart in
     ``OI_PERCENT_STATS_AGAINST`` and appends a ``_percent`` column
     (e.g., ``xgf_percent = xgf / (xgf + xga)``). A percentage is null when both
-    sides are 0 or when either column is missing.
+    sides are 0, and left out when either column is missing.
 
     Parameters:
         df (pd.DataFrame | pl.DataFrame): Stats DataFrame containing for/against columns.

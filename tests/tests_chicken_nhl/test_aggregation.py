@@ -150,12 +150,11 @@ class TestPrepOiPercent:
         assert result["xgf_percent"].iloc[0] == pytest.approx(0.75)
 
     @pytest.mark.parametrize("present", ["xgf", "xga"])
-    def test_missing_column_gives_null(self, present):
-        """When either side is absent from the DataFrame the percent column is null."""
+    def test_missing_column_gives_no_percent(self, present):
+        """When either side is absent from the DataFrame there is no percent column."""
         df = pl.DataFrame({present: [2.0]})
         result = _prep_oi_percent(df, stats_for=["xgf"], stats_against=["xga"])
-        assert result.schema["xgf_percent"] == pl.Float64
-        assert result["xgf_percent"].to_list() == [None]
+        assert result.columns == [present]
 
     def test_multiple_stats(self):
         df = pl.DataFrame({"xgf": [1.0], "xga": [1.0], "cf": [3.0], "ca": [1.0]})
