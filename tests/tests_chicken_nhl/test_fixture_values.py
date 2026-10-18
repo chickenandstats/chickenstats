@@ -24,7 +24,7 @@ from chickenstats.chicken_nhl import (
     prep_team_stats,
 )
 
-from chickenstats.chicken_nhl._game_utils import add_pred_goal_adj
+from chickenstats.chicken_nhl._game_utils import prepare_xg
 from test_live_games import LIVE_DATA_DIR, snapshot_session_get
 
 # How one team's strength state reads from the other bench
@@ -568,10 +568,19 @@ def test_shootout_game_totals_at_every_level(long_shootout_game, level, strength
 
 
 def with_known_xg(play_by_play: pl.DataFrame) -> pl.DataFrame:
-    """Give every goal, shot and miss, shootout attempts included, a different known xG value."""
-    is_attempt = pl.col("event").is_in(["GOAL", "SHOT", "MISS"])
+    """Give every row a different known xG value, blocked shots and shootout attempts included, and one shot NaN."""
+    first_shot = (pl.col("event") == "SHOT").arg_true().first()
     return play_by_play.with_columns(
-        pred_goal=pl.when(is_attempt).then((pl.int_range(pl.len()) % 7 + 1) / 100).otherwise(0.0)
+        pred_goal=pl.when(pl.int_range(pl.len()) == first_shot)
+        .then(float("nan"))
+        .otherwise((pl.int_range(pl.len()) % 7 + 1) / 100)
+    )
+
+
+def counted_xg(play_by_play: pl.DataFrame) -> pl.DataFrame:
+    """The rows whose xG counts: goals, shots and misses outside the shootout, with a number for xG."""
+    return play_by_play.filter(
+        pl.col("event").is_in(["GOAL", "SHOT", "MISS"]), pl.col("shootout_attempt") == 0, ~pl.col("pred_goal").is_nan()
     )
 
 
@@ -583,11 +592,18 @@ def test_xg_totals_equal_a_direct_sum_in_every_output(fixture_game):
     """Supplied xG, raw and score-adjusted, adds up the same in individual, on-ice, team and stint output."""
     pbp = with_known_xg(fixture_game.play_by_play)
     pbp_ext = fixture_game.play_by_play_ext
-    direct = add_pred_goal_adj(pbp)
+    direct = prepare_xg(pbp)
 
-    for raw, adjusted in (("ixg", "pred_goal"), ("ixg_adj", "pred_goal_adj")):
-        ind = prep_ind(pbp, level="game", strength_state=False)
-        assert sums_by(ind, "team", raw) == sums_by(direct, "event_team", adjusted)
+    # xG on blocked shots, penalties and other rows, and the NaN, count nowhere
+    assert direct.filter(pl.col("pred_goal").is_not_null())["pred_goal"].sum() == pytest.approx(
+        counted_xg(pbp)["pred_goal"].sum()
+    )
+
+    ind = prep_ind(pbp, level="game", strength_state=False)
+    assert sums_by(ind, "team", "ixg") == sums_by(counted_xg(pbp), "event_team", "pred_goal")
+    assert sums_by(ind, "team", "ixg_adj") == sums_by(direct, "event_team", "pred_goal_adj")
+    assists = counted_xg(pbp).filter(pl.col("event") == "GOAL", pl.col("player_2").is_not_null())
+    assert ind["a1_xg"].sum() == pytest.approx(assists["pred_goal"].sum())
 
     team_stats = prep_team_stats(pbp, pbp_ext, level="game", strength_state=False)
     for raw, adjusted in (("xgf", "pred_goal"), ("xgf_adj", "pred_goal_adj")):
@@ -614,7 +630,7 @@ def test_shootout_attempts_carry_no_xg(request, fixture):
     stats = prep_stats(pbp, game.play_by_play_ext, level="game", strength_state=False)
     team_stats = prep_team_stats(pbp, game.play_by_play_ext, level="game", strength_state=False)
     goalies = stats.filter(pl.col("position") == "G")
-    outside_shootout = add_pred_goal_adj(pbp).filter(pl.col("shootout_attempt") == 0)
+    outside_shootout = prepare_xg(pbp).filter(pl.col("shootout_attempt") == 0)
     # An attempt at an empty net counts for the team but not against a goalie
     on_a_goalie = outside_shootout.filter(pl.col("opp_goalie").is_not_null())
 

@@ -33,7 +33,7 @@ from chickenstats.chicken_nhl.validation_polars import (
     line_stats_pandera_polars,
     team_stats_pandera_polars,
 )
-from chickenstats.chicken_nhl._game_utils import add_pred_goal_adj
+from chickenstats.chicken_nhl._game_utils import prepare_xg
 from chickenstats.chicken_nhl._validation_utils import validate_dataframe
 from chickenstats.exceptions import InvalidInputError
 
@@ -171,7 +171,7 @@ def prep_ind(
 
     df = _cast_api_id_columns(df)
 
-    df = add_pred_goal_adj(df)
+    df = prepare_xg(df)
 
     players = ["player_1", "player_2", "player_3"]
 
@@ -622,7 +622,7 @@ def prep_oi(
     if df_ext is None:
         df_ext = build_play_by_play_ext(df)
 
-    df = add_pred_goal_adj(df)
+    df = prepare_xg(df)
 
     merge_cols = ["id", "event_idx"]
 
@@ -1105,7 +1105,7 @@ def prep_lines(
     if df_ext is None:
         df_ext = build_play_by_play_ext(df)
 
-    df = add_pred_goal_adj(df)
+    df = prepare_xg(df)
 
     merge_cols = ["id", "event_idx"]
 
@@ -1578,7 +1578,7 @@ def prep_team_stats(
     if df_ext is None:
         df_ext = build_play_by_play_ext(df)
 
-    df = add_pred_goal_adj(df)
+    df = prepare_xg(df)
 
     merge_cols = ["id", "event_idx"]
 
@@ -2032,7 +2032,7 @@ def prep_stints(df: pl.DataFrame, min_skaters: int = 3) -> pl.DataFrame:
             obj=df,
         )
 
-    df = add_pred_goal_adj(df)
+    df = prepare_xg(df)
     df = _normalize_lineup_cols(df, STINT_LINEUP_COLS)
 
     df = df.join(_build_b2b_lookup(df), on="game_id", how="left")

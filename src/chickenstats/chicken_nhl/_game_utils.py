@@ -98,16 +98,8 @@ def calculate_score_adjustment(play: dict, score_adjustments: dict) -> dict:
 
 _ELIGIBLE_STRENGTH_STATES = ("5v5", "4v4", "3v3", "5v4", "5v3", "4v3")
 _DISADVANTAGE_STATES = {"4v5": "5v4", "3v5": "5v3", "3v4": "4v3"}
-_PRED_GOAL_ADJ_COLS = (
-    "event",
-    "event_team",
-    "opp_team",
-    "home_team",
-    "home_score_diff",
-    "strength_state",
-    "opp_strength_state",
-    "teammate_block",
-)
+_XG_COLS = ("pred_goal", "base_xg", "context_xg")
+_XG_ADJ_KEY_COLS = ("event_team", "home_team", "home_score_diff", "strength_state")
 
 
 @lru_cache(maxsize=1)
@@ -127,35 +119,43 @@ def _pred_goal_weights() -> pl.DataFrame:
     )
 
 
-def add_pred_goal_adj(df: pl.DataFrame) -> pl.DataFrame:
-    """Prepare supplied xG for aggregation: no xG on shootout attempts, and pred_goal_adj when it is missing.
+def prepare_xg(df: pl.DataFrame) -> pl.DataFrame:
+    """Prepare supplied xG for aggregation, and fill in pred_goal_adj when it is missing.
 
-    pred_goal comes from the user's model after scraping, so the score adjustment never saw it. The weight follows
-    the same rules as ``calculate_score_adjustment``: the shooting team's side, with disadvantage states looked up
-    through their mirror, and 1.0 for states the table does not cover.
+    xG comes from the user's model after scraping. It counts only on goals, shots and misses: on any other row,
+    a blocked shot included, it is null, and so is a NaN. A shootout attempt is not a shot, so its xG is 0.
+    The scraper's score adjustment never saw pred_goal, so pred_goal_adj is weighted here by the same rules as
+    ``calculate_score_adjustment``: the shooting team's side, disadvantage states looked up through their
+    mirror, and 1.0 for states the table does not cover.
     """
-    if "pred_goal" not in df.columns:
+    xg_cols = [c for c in (*_XG_COLS, *(f"{c}_adj" for c in _XG_COLS)) if c in df.columns]
+    if not xg_cols:
         return df
 
-    xg_cols = [c for c in ("pred_goal", "pred_goal_adj") if c in df.columns]
-    if "shootout_attempt" in df.columns:
-        df = df.with_columns(
-            pl.when(pl.col("shootout_attempt") == 1).then(0.0).otherwise(pl.col(c)).alias(c) for c in xg_cols
-        )
+    is_attempt = pl.col("event").is_in(["GOAL", "SHOT", "MISS"])
+    is_shootout = pl.col("shootout_attempt") == 1 if "shootout_attempt" in df.columns else pl.lit(False)
+    df = df.with_columns(
+        pl.when(is_shootout)
+        .then(0.0)
+        .when(is_attempt)
+        .then(pl.col(c).cast(pl.Float64).fill_nan(None))
+        .otherwise(None)
+        .alias(c)
+        for c in xg_cols
+    )
 
-    if "pred_goal_adj" in df.columns or any(c not in df.columns for c in _PRED_GOAL_ADJ_COLS):
+    if "pred_goal" not in df.columns or "pred_goal_adj" in df.columns:
+        return df
+    if any(c not in df.columns for c in _XG_ADJ_KEY_COLS):
         return df
 
-    # A blocked shot's event team is the blocking team, so it is weighted from the shooting team's side
-    is_block = (pl.col("event") == "BLOCK") & (pl.col("teammate_block") == 0)
-    shooter = pl.when(is_block).then(pl.col("opp_team")).otherwise(pl.col("event_team"))
-    shooter_state = pl.when(is_block).then(pl.col("opp_strength_state")).otherwise(pl.col("strength_state"))
-    disadvantage = shooter_state.is_in(list(_DISADVANTAGE_STATES))
-
+    disadvantage = pl.col("strength_state").is_in(list(_DISADVANTAGE_STATES))
     keys = df.select(
-        _state=pl.when(disadvantage).then(shooter_state.replace(_DISADVANTAGE_STATES)).otherwise(shooter_state),
+        _state=pl.when(disadvantage)
+        .then(pl.col("strength_state").replace(_DISADVANTAGE_STATES))
+        .otherwise(pl.col("strength_state")),
         _score_diff=pl.col("home_score_diff").clip(-3, 3).cast(pl.Int64),
-        _is_home=(shooter == pl.col("home_team")) != disadvantage,
+        _is_home=(pl.col("event_team") == pl.col("home_team")) != disadvantage,
     )
     weight = keys.join(
         _pred_goal_weights(), on=["_state", "_score_diff", "_is_home"], how="left", maintain_order="left"
