@@ -11,7 +11,8 @@ from unittest.mock import patch
 import pytest
 import requests
 
-from chickenstats.chicken_nhl import Game
+from chickenstats.chicken_nhl import Game, Scraper
+from chickenstats.exceptions import GameNotStartedError
 
 MOCK_DATA_DIR = os.path.join(os.path.dirname(__file__), "mock_data")
 LIVE_DATA_DIR = os.path.join(MOCK_DATA_DIR, "live")
@@ -278,3 +279,65 @@ def test_period_and_game_markers_translated():
     assert events.count("PEND") == 3
     assert events.count("GEND") == 1
     assert all(event.isupper() for event in events)
+
+
+# -----------------------------------------------------------------------------
+# A game that has not started
+# -----------------------------------------------------------------------------
+
+
+def serve_edited_api_response(edit):
+    """A Session.get that serves the saved game's API response after edit(response), and everything else as saved."""
+    served_get = requests.Session.get
+
+    def get(self, url, *args, **kwargs):
+        response = served_get(self, url, *args, **kwargs)
+        if "gamecenter/2023020001/play-by-play" in str(url):
+            body = json.loads(response.content)
+            edit(body)
+            response._content = json.dumps(body).encode()
+        return response
+
+    return get
+
+
+def as_pregame(body: dict) -> None:
+    """Edit an API response to look like one for a game at PRE: no period yet, and no plays."""
+    body["gameState"] = "PRE"
+    body.pop("periodDescriptor", None)
+    body["plays"] = []
+
+
+def test_a_game_that_has_not_started_says_so():
+    with patch.object(requests.Session, "get", serve_edited_api_response(as_pregame)):
+        game = Game(2023020001)
+        with pytest.raises(GameNotStartedError, match="has not started"):
+            _ = game.play_by_play
+
+    assert (game.game_state, game.current_period) == ("PRE", 0)
+
+
+def test_a_scraper_records_a_game_that_has_not_started_as_failed():
+    with patch.object(requests.Session, "get", serve_edited_api_response(as_pregame)):
+        scraper = Scraper([2023020001], disable_progress_bar=True)
+        with pytest.warns(UserWarning, match="Failed to scrape 1 game"):
+            play_by_play = scraper.play_by_play
+
+    assert scraper.failed_games == [2023020001]
+    assert play_by_play.height == 0
+
+
+def test_a_response_that_fails_to_parse_is_not_kept():
+    """A failed parse leaves no response behind, so the next access fetches it again."""
+
+    def without_venue(body: dict) -> None:
+        body.pop("venue")
+
+    with patch.object(requests.Session, "get", serve_edited_api_response(without_venue)):
+        game = Game(2023020001)
+        with pytest.raises(KeyError):
+            game._fetch_api_data()
+
+    assert game.api_response is None
+    game._fetch_api_data()
+    assert game.api_response is not None

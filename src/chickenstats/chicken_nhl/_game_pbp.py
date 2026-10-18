@@ -27,7 +27,7 @@ from chickenstats.chicken_nhl._docstrings import (
     shared_doc,
 )
 from chickenstats.chicken_nhl._game_core import _GameBase
-from chickenstats.exceptions import DataMismatchError
+from chickenstats.exceptions import DataMismatchError, GameNotStartedError
 
 # Collapse raw NHL position codes to the F/D/G encoding used in xG model training.
 # Forwards (C, L, R, LW, RW, W) → "F"; defensemen → "D"; goalies → "G".
@@ -804,6 +804,15 @@ class _GamePBPMixin(_GameBase):
                 (self._fetch_shifts, ("shifts", "changes")),
             )
         )
+        self._fetch_api_data()
+        if self.game_state in ("FUT", "PRE"):
+            raise GameNotStartedError(
+                f"Game {self.game_id} has not started yet (state {self.game_state}); "
+                "its play-by-play is available once the game is under way",
+                game_id=self.game_id,
+                game_state=self.game_state,
+            )
+
         api_events = self.api_events
         html_events = self.html_events
         changes = self.changes

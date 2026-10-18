@@ -7,6 +7,7 @@ __all__ = [
     "InvalidTeamError",
     "UnsupportedBackendError",
     "DataMismatchError",
+    "GameNotStartedError",
     "InvalidInputError",
 ]
 
@@ -60,6 +61,16 @@ class DataMismatchError(ChickenstatsError):
         """Store the affected game ID (if any) alongside the error message."""
         super().__init__(message)
         self.game_id = game_id
+
+
+class GameNotStartedError(ChickenstatsError):
+    """Raised when play-by-play is requested for a game that has not started yet."""
+
+    def __init__(self, message: str, game_id: int | str | float | None = None, game_state: str | None = None):
+        """Store the game ID and the API's game state alongside the error message."""
+        super().__init__(message)
+        self.game_id = game_id
+        self.game_state = game_state
 
 
 class InvalidInputError(ChickenstatsError):

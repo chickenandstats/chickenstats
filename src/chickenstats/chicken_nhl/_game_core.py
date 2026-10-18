@@ -25,6 +25,7 @@ class _GameBase:
         season: int
         session: str
         game_id: int
+        game_state: str
         home_team: dict
         away_team: dict
         game_date: str
@@ -159,7 +160,6 @@ class _GameCore(_GameBase):
             return
 
         response: dict = self._requests_session.get(self.api_endpoint).json()
-        self.api_response = response
 
         # Away team information
         away_team: dict = response["awayTeam"]
@@ -211,9 +211,14 @@ class _GameCore(_GameBase):
         self.running = clock["running"]
         self.in_intermission = clock["inIntermission"]
 
-        if response["gameState"] != "FUT":
-            self.current_period = response["periodDescriptor"]["number"]
-            self.current_period_type = response["periodDescriptor"]["periodType"]
+        # A game has no period until it starts, so PRE and FUT responses carry none
+        period = response.get("periodDescriptor")
+        if period:
+            self.current_period = period["number"]
+            self.current_period_type = period["periodType"]
+
+        # Stored last, so a response that fails to parse is fetched again instead of read half-set
+        self.api_response = response
 
     def _prefetch_needed(self, *tasks: tuple[Callable[[], object], tuple[str, ...]]) -> list[Callable[[], object]]:
         """Filter fetch tasks to only those whose targets aren't already cached.
