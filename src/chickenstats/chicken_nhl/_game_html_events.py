@@ -279,16 +279,6 @@ class _GameHTMLEventsMixin(_GameBase):
                                 }
                             )
 
-                            if "TEAM" in event["description"] or "HEAD COACH" in event["description"]:
-                                event["player_2"], event["player_3"] = event["player_3"], event["player_2"]
-                                event["player_2_eh_id"], event["player_3_eh_id"] = (
-                                    event["player_3_eh_id"],
-                                    event["player_2_eh_id"],
-                                )
-                                event["player_2_position"], event["player_3_position"] = (
-                                    event["player_3_position"],
-                                    event["player_2_position"],
-                                )
                 elif "SERVED BY" in event["description"]:
                     if (served_by := re.search(served_re, event["description"])) is not None:
                         served_name = served_by.group(1) + str(served_by.group(2))

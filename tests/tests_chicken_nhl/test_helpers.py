@@ -18,6 +18,7 @@ from chickenstats.chicken_nhl._game_utils import (
     _return_name_html as return_name_html,
     add_pred_goal_adj,
     calculate_score_adjustment,
+    handle_penalty_details,
     load_score_adjustments,
 )
 from chickenstats.utilities.utilities import convert_to_list
@@ -338,3 +339,27 @@ def test_data_directory_default_path(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     data_directory()
     assert (tmp_path / "data").is_dir()
+
+
+# -----------------------------------------------------------------------------
+# handle_penalty_details
+# -----------------------------------------------------------------------------
+
+
+def _penalty(**details) -> dict:
+    return {"typeCode": "BEN", "descKey": "too-many-men-on-the-ice", "duration": 2, **details}
+
+
+def test_bench_minor_with_a_drawer_puts_the_drawer_in_player_2():
+    """As for any penalty, player_2 drew it and player_3 serves it."""
+    info = handle_penalty_details(_penalty(drawnByPlayerId=1, servedByPlayerId=2))
+
+    assert (info["player_1"], info["player_2_api_id"], info["player_3_api_id"]) == ("BENCH", 1, 2)
+    assert (info["player_2_type"], info["player_3_type"]) == ("DRAWN BY", "SERVED BY")
+
+
+def test_bench_minor_with_no_drawer_puts_the_server_in_player_2():
+    info = handle_penalty_details(_penalty(servedByPlayerId=2))
+
+    assert (info["player_1"], info["player_2_api_id"], info["player_2_type"]) == ("BENCH", 2, "SERVED BY")
+    assert info.get("player_3_api_id") is None

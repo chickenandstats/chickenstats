@@ -633,6 +633,19 @@ def test_penalties_drawn_are_credited_to_the_other_team(request, fixture):
     assert drawn.join(rosters, on=["team", "api_id"], how="anti").is_empty()
 
 
+def test_bench_minor_with_a_drawer_credits_the_drawer():
+    """A TEAM penalty with SERVED BY and DRAWN BY keeps the drawer in player_2 and the server in player_3."""
+    game = Game(2023020125)
+    raw = next(e for e in game._fetch_html_events() if e["event"] == "PENL" and "TEAM" in e["description"])
+    lak = next(p for p in game.rosters if p["team"] == "LAK" and p["status"] == "ACTIVE" and p["position"] != "G")
+    raw = {**raw, "description": f"{raw['description']} DRAWN BY: LAK #{lak['jersey']} {lak['player_name']}"}
+    actives = {p["team_jersey"]: p for p in game.rosters if p.get("team_jersey") and p.get("status") == "ACTIVE"}
+
+    event = game._munge_html_events([raw], actives, {})[0]
+
+    assert (event["player_1"], event["player_2"], event["player_3"]) == ("BENCH", lak["player_name"], "PAUL COTTER")
+
+
 @pytest.mark.parametrize("fixture", ["fixture_game", "shootout_game", "long_shootout_game", "playoff_overtime_game"])
 def test_only_penalty_rows_count_as_penalties(request, fixture):
     """A delayed penalty is only a call, so penalty counts come from PENL rows alone."""

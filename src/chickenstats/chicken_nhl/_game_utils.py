@@ -298,15 +298,19 @@ def handle_penalty_details(event_details: dict) -> dict:
         or "TEAM-STAFF" in event_info["penalty_reason"]
     )
     if is_bench and not event_details.get("committedByPlayerId"):
-        event_info.update(
-            {
-                "player_1": "BENCH",
-                "player_1_eh_id": "BENCH",
-                "player_1_type": "COMMITTED BY",
-                "player_2_api_id": event_details.get("servedByPlayerId"),
-                "player_2_type": "SERVED BY",
-            }
-        )
+        event_info.update({"player_1": "BENCH", "player_1_eh_id": "BENCH", "player_1_type": "COMMITTED BY"})
+        # As for any penalty, player_2 is whoever drew it and player_3 the teammate who serves it
+        if event_details.get("drawnByPlayerId"):
+            event_info.update(
+                {
+                    "player_2_api_id": event_details.get("drawnByPlayerId"),
+                    "player_2_type": "DRAWN BY",
+                    "player_3_api_id": event_details.get("servedByPlayerId"),
+                    "player_3_type": "SERVED BY",
+                }
+            )
+        else:
+            event_info.update({"player_2_api_id": event_details.get("servedByPlayerId"), "player_2_type": "SERVED BY"})
     else:
         event_info.update(
             {
