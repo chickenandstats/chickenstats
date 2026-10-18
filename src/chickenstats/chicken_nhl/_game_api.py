@@ -32,6 +32,27 @@ from chickenstats.chicken_nhl._game_core import _GameBase
 model_version = "0.1.1"
 
 
+# The API's event names and the codes the HTML reports use
+_EVENT_CODES = {
+    "faceoff": "FAC",
+    "hit": "HIT",
+    "giveaway": "GIVE",
+    "takeaway": "TAKE",
+    "shot-on-goal": "SHOT",
+    "missed-shot": "MISS",
+    "failed-shot-attempt": "MISS",
+    "goal": "GOAL",
+    "blocked-shot": "BLOCK",
+    "penalty": "PENL",
+    "stoppage": "STOP",
+    "period-start": "PSTR",
+    "period-end": "PEND",
+    "game-end": "GEND",
+    "shootout-complete": "SOC",
+    "delayed-penalty": "DELPEN",
+}
+
+
 class _GameAPIMixin(_GameBase):
     def _munge_single_api_event(self, event: dict, teams: dict, rosters: dict) -> dict:
         """Processes one row of the raw API events feed, returning single event with additional event and player details."""
@@ -133,15 +154,9 @@ class _GameAPIMixin(_GameBase):
             # The feed can list a stoppage before its reason is filled in
             event_info.update({"event": "STOP", "stoppage_reason": "", "stoppage_reason_secondary": ""})
 
-        # Period and game markers usually come without details, so they are translated either way
-        marker_codes = {
-            "period-start": "PSTR",
-            "period-end": "PEND",
-            "game-end": "GEND",
-            "shootout-complete": "SOC",
-            "delayed-penalty": "DELPEN",
-        }
-        event_info["event"] = marker_codes.get(event_info["event"], event_info["event"])
+        # Every event gets its upper-case code, details or not: the feed can list an event before its details,
+        # and period and game markers usually come without any, so the cases above do not reach them
+        event_info["event"] = _EVENT_CODES.get(event_info["event"], event_info["event"])
 
         # Apply external fixes and map roster metadata (names, positions, eh_ids)
         event_info = api_events_fixes(self.game_id, event_info)

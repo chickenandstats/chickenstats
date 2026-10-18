@@ -432,3 +432,36 @@ def test_a_finished_game_whose_html_report_has_a_faceoff_with_no_winner_is_logge
             _ = Game(2023020001).play_by_play
 
     assert any("HTML events report has 1 faceoff(s) with no winner" in record.getMessage() for record in caplog.records)
+
+
+@pytest.mark.parametrize(
+    "type_desc_key, code",
+    [
+        ("faceoff", "FAC"),
+        ("hit", "HIT"),
+        ("giveaway", "GIVE"),
+        ("takeaway", "TAKE"),
+        ("shot-on-goal", "SHOT"),
+        ("missed-shot", "MISS"),
+        ("blocked-shot", "BLOCK"),
+        ("goal", "GOAL"),
+        ("penalty", "PENL"),
+    ],
+)
+def test_an_api_event_without_details_gets_its_event_code(type_desc_key, code):
+    """The feed can list an event before its details; it still gets the code its HTML row has."""
+    sort_order = {}
+
+    def without_details(body: dict) -> None:
+        play = next(play for play in body["plays"] if play["typeDescKey"] == type_desc_key)
+        play.pop("details", None)
+        sort_order["value"] = play["sortOrder"]
+
+    expected = sum(event["event"] == code for event in Game(2023020001).play_by_play)
+    with patch.object(requests.Session, "get", serve_edited_api_response(without_details)):
+        game = Game(2023020001)
+        event = next(event for event in game.api_events if event["event_idx"] == sort_order["value"])
+        play_by_play = game.play_by_play
+
+    assert event["event"] == code
+    assert sum(row["event"] == code for row in play_by_play) == expected
