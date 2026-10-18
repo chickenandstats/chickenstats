@@ -43,7 +43,6 @@ def known_bug(reason: str, raises: type[BaseException] | tuple[type[BaseExceptio
 # -----------------------------------------------------------------------------
 
 
-@known_bug("scraping one data type after another appends the same game's rows twice")
 def test_access_order_does_not_duplicate_rows():
     scraper = Scraper([GAME_ID], disable_progress_bar=True)
     _ = scraper.rosters

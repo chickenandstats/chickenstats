@@ -47,15 +47,11 @@ class TestScraperPersist:
             "play_by_play_ext",
             "xg_fields",
         ]
-        # Each original comes from its own Scraper, because reading one frame after another duplicates rows (R3)
-        originals = {name: getattr(Scraper(game_ids=[2023020001], disable_progress_bar=True), name) for name in names}
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
-        _ = scraper.play_by_play
+        originals = {name: getattr(scraper, name) for name in names}
+        # Building play_by_play rewrites the cached changes (R21), so they are read again after it
+        originals["changes"] = scraper.changes
         save_path = scraper.save(tmp_path / "cache")
-        # Building play_by_play rewrites the cached changes (R21), and the saved Scraper built it
-        after_play_by_play = Scraper(game_ids=[2023020001], disable_progress_bar=True)
-        _ = after_play_by_play.play_by_play
-        originals["changes"] = after_play_by_play.changes
 
         with patch("requests.Session.get", side_effect=AssertionError("should not hit the network")):
             loaded = Scraper.load(save_path, disable_progress_bar=True)

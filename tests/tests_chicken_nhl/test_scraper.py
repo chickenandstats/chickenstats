@@ -879,3 +879,27 @@ class TestGameIds:
         loaded = Scraper.load(path, game_ids=["2023020002", 2023020001.0], disable_progress_bar=True)
 
         assert loaded.game_ids == [2023020001, 2023020002]
+
+
+def test_a_frame_that_cannot_be_built_fails_its_game_without_storing_the_rest():
+    """A game's frames are stored together: if one cannot be built, the game fails and no type records it."""
+    from chickenstats.chicken_nhl import _scraper_core
+
+    from_dicts = pl.from_dicts
+    shifts_schema = _scraper_core._SCRAPE_REGISTRY["shifts"].schema
+
+    def broken_shifts(data, *args, schema=None, **kwargs):
+        if schema is shifts_schema:
+            raise ValueError("a shifts frame that cannot be built")
+        return from_dicts(data, *args, schema=schema, **kwargs)
+
+    with (
+        patch.object(_scraper_core.pl, "from_dicts", broken_shifts),
+        pytest.warns(UserWarning, match="Failed to scrape"),
+    ):
+        scraper = Scraper([2023020001], disable_progress_bar=True)
+        play_by_play = scraper.play_by_play
+
+    assert scraper.failed_games == [2023020001]
+    assert play_by_play.height == 0
+    assert 2023020001 not in scraper._scraped_api_events | scraper._scraped_rosters | scraper._scraped_play_by_play

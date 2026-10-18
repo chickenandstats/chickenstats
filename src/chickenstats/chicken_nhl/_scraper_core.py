@@ -375,6 +375,22 @@ class _ScraperCore(_ScraperBase):
             logger.error("Unexpected error scraping game %s", game_id, exc_info=True)
             return None
 
+    def _game_frames(self, game_id: int, result: dict, result_targets: dict) -> dict[str, pl.DataFrame | None] | None:
+        """Build one game's frames from a scrape result, or return None if any of them cannot be built.
+
+        A play-by-play scrape returns every raw type for the game, so a type already stored for it is left
+        out; storing it again appended the game's rows twice (R3).
+        """
+        try:
+            return {
+                key: pl.from_dicts(value, schema=_SCRAPE_REGISTRY[key].schema) if value else None
+                for key, value in result.items()
+                if key != "game_id" and game_id not in result_targets[key][1]
+            }
+        except Exception:  # noqa: BLE001  # pyright: ignore[reportBroadExceptionCaught]
+            logger.error("Unexpected error building the frames for game %s", game_id, exc_info=True)
+            return None
+
     def _scrape(
         self,
         scrape_type: Literal[
@@ -424,14 +440,14 @@ class _ScraperCore(_ScraperBase):
 
             for idx, game_id in enumerate(unscraped):
                 result = self._scrape_single_game(game_id, scrape_type)
+                frames = self._game_frames(game_id, result, result_targets) if result is not None else None
 
-                if result is not None:
-                    for key, value in result.items():
-                        if key == "game_id":
-                            continue
+                if frames is not None:
+                    # Committed together, so a game is either stored for every type it returned or for none
+                    for key, frame in frames.items():
                         data_list, scraped_list = result_targets[key]
-                        if value:
-                            data_list.append(pl.from_dicts(value, schema=_SCRAPE_REGISTRY[key].schema))
+                        if frame is not None:
+                            data_list.append(frame)
                         scraped_list.add(game_id)
                 else:
                     self._bad_games.append(game_id)
