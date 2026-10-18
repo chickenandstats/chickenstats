@@ -5,6 +5,7 @@ Where a number can be read from the raw API response it is compared with that re
 rest are pinned. A deliberate change to an output should update the number here in the same commit.
 """
 
+import itertools
 import json
 import os
 from unittest.mock import patch
@@ -291,6 +292,33 @@ def test_blocked_shots_count_every_blocked_attempt(fixture_game):
 
     team_stats = outputs[2].group_by("team").agg(pl.col("bsf", "bsa", "teammate_block", "opp_teammate_block").sum())
     assert dict((row[0], row[1:]) for row in team_stats.rows()) == {"NSH": (19, 11, 2, 1), "TBL": (11, 19, 1, 2)}
+
+
+SPLITS = list(itertools.product([False, True], repeat=4))
+
+
+def assert_individual_sums_match(game, strength_state, score, teammates, opposition):
+    flags = {"level": "game", "strength_state": strength_state, "score": score}
+    ind = prep_ind(game.play_by_play, teammates=teammates, opposition=opposition, **flags)
+    stats = prep_stats(game.play_by_play, game.play_by_play_ext, teammates=teammates, opposition=opposition, **flags)
+    counts = [
+        c
+        for c, dtype in ind.schema.items()
+        if dtype.is_integer() and c not in ("season", "game_id") and not c.endswith("api_id")
+    ]
+
+    assert stats.select(pl.col(counts).sum()).row(0) == ind.select(pl.col(counts).sum()).row(0), counts
+
+
+@pytest.mark.parametrize("strength_state, score, teammates, opposition", SPLITS)
+def test_stats_keep_every_individual_event(fixture_game, strength_state, score, teammates, opposition):
+    """An event credited to a player with no on-ice row in its group, such as a secondary assist, is kept."""
+    assert_individual_sums_match(fixture_game, strength_state, score, teammates, opposition)
+
+
+@pytest.mark.parametrize("fixture", ["shootout_game", "long_shootout_game", "playoff_overtime_game"])
+def test_stats_keep_every_individual_event_in_other_games(request, fixture):
+    assert_individual_sums_match(request.getfixturevalue(fixture), True, True, True, True)
 
 
 def test_team_toi_by_strength_mirrors(fixture_game):

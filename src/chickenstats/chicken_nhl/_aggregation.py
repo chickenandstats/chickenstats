@@ -987,7 +987,9 @@ def _merge_stats(ind_stats_df: pl.DataFrame, oi_stats_df: pl.DataFrame) -> pl.Da
 
     merge_cols = [x for x in merge_cols if x in ind_stats_df.columns and x in oi_stats_df.columns]
 
-    stats = oi_stats_df.join(ind_stats_df, how="left", on=merge_cols, nulls_equal=True)
+    # A full join, because an event can be credited to a player with no on-ice row in that group, such as a
+    # secondary assist or a penalty taken from the bench
+    stats = oi_stats_df.join(ind_stats_df, how="full", on=merge_cols, nulls_equal=True, coalesce=True)
 
     null_columns = (pl.col(x).fill_null(0) for x in stats.columns if x not in merge_cols)
 
