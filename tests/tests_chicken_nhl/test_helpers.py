@@ -12,8 +12,11 @@ except ImportError:
     pd = None  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
     HAS_PANDAS = False
 
+import polars as pl
+
 from chickenstats.chicken_nhl._game_utils import (
     _return_name_html as return_name_html,
+    add_pred_goal_adj,
     calculate_score_adjustment,
     load_score_adjustments,
 )
@@ -147,6 +150,69 @@ def test_calculate_score_adjustment_blocked_power_play_shot(score_adjustments):
     block_adj = calculate_score_adjustment(block, score_adjustments)["corsi_adj"]
 
     assert block_adj == pytest.approx(shot_adj)
+
+
+def _xg_rows(*rows: dict) -> pl.DataFrame:
+    """Shot rows for add_pred_goal_adj, NSH at home against CHI, overriding the columns each case needs."""
+    base = {
+        "event": "SHOT",
+        "event_team": "NSH",
+        "opp_team": "CHI",
+        "home_team": "NSH",
+        "home_score_diff": 0,
+        "strength_state": "5v5",
+        "opp_strength_state": "5v5",
+        "teammate_block": 0,
+        "shootout_attempt": 0,
+        "pred_goal": 0.2,
+    }
+    return pl.DataFrame([{**base, **row} for row in rows])
+
+
+def test_add_pred_goal_adj_uses_the_score_adjustment_rules(score_adjustments):
+    """The pred_goal weight is the shooting team's, mirrored on the penalty kill, and 1.0 outside the table."""
+    df = _xg_rows(
+        {},
+        {"event_team": "CHI", "opp_team": "NSH", "home_score_diff": 5},
+        {"strength_state": "4v5", "opp_strength_state": "5v4", "home_score_diff": -1},
+        {
+            "event": "BLOCK",
+            "event_team": "CHI",
+            "opp_team": "NSH",
+            "strength_state": "4v5",
+            "opp_strength_state": "5v4",
+        },
+        {"event": "GOAL", "strength_state": "1v0", "opp_strength_state": "0v1"},
+    )
+    expected = [
+        score_adjustments["5v5"][0]["home_pred_goal_weight"],
+        score_adjustments["5v5"][3]["away_pred_goal_weight"],
+        score_adjustments["5v4"][-1]["away_pred_goal_weight"],
+        score_adjustments["5v4"][0]["home_pred_goal_weight"],
+        1.0,
+    ]
+
+    result = add_pred_goal_adj(df)
+
+    assert result["pred_goal_adj"].to_list() == pytest.approx([0.2 * weight for weight in expected])
+
+
+def test_add_pred_goal_adj_gives_shootout_attempts_no_xg():
+    result = add_pred_goal_adj(_xg_rows({"shootout_attempt": 1, "strength_state": "1v0"}))
+
+    assert result.select("pred_goal", "pred_goal_adj").row(0) == (0.0, 0.0)
+
+
+def test_add_pred_goal_adj_keeps_a_supplied_adjustment():
+    result = add_pred_goal_adj(_xg_rows({}).with_columns(pred_goal_adj=pl.lit(0.5)))
+
+    assert result["pred_goal_adj"].to_list() == [0.5]
+
+
+def test_add_pred_goal_adj_does_nothing_without_pred_goal():
+    df = _xg_rows({}).drop("pred_goal")
+
+    assert add_pred_goal_adj(df).columns == df.columns
 
 
 def test_calculate_score_adjustment_block_teammate(score_adjustments):

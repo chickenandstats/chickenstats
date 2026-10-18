@@ -463,8 +463,8 @@ _PBP_FIELDS: dict[str, tuple[str, str]] = {
     ),
     "pred_goal_adj": (
         "float",
-        "Score- and venue-adjusted xG value for a given shot attempt; not produced by the scraper, "
-        "e.g., 0.5131293535232544",
+        "Score- and venue-adjusted xG value for a given shot attempt; not produced by the scraper, and filled in "
+        "from pred_goal by the aggregation functions when it is not supplied, e.g., 0.5131293535232544",
     ),
     "goal": ("int", "Dummy indicator whether event is a goal, e.g., 1"),
     "goal_adj": ("float", "Score- and venue-adjusted value for a goal, e.g., 1.0"),
