@@ -15,6 +15,7 @@ except ImportError:
 import polars as pl
 
 from chickenstats.chicken_nhl._game_utils import (
+    aggregate_players,
     _return_name_html as return_name_html,
     prepare_xg,
     calculate_score_adjustment,
@@ -389,3 +390,32 @@ def test_bench_minor_with_no_drawer_puts_the_server_in_player_2():
 
     assert (info["player_1"], info["player_2_api_id"], info["player_2_type"]) == ("BENCH", 2, "SERVED BY")
     assert info.get("player_3_api_id") is None
+
+
+# -----------------------------------------------------------------------------
+# aggregate_players
+# -----------------------------------------------------------------------------
+
+
+def _player(api_id, position: str, name: str) -> dict:
+    return {"team_jersey": f"NSH{name}", "player_name": name, "eh_id": name, "api_id": api_id, "position": position}
+
+
+def test_aggregate_players_sorts_by_position_then_api_id():
+    """Defense, then goalies, then forwards, whose roster positions (C, L, R) are not in the order table."""
+    players = [_player(3, "C", "C3"), _player(1, "D", "D1"), _player(2, "G", "G2"), _player(4, "L", "L4")]
+
+    agg = aggregate_players(players)
+
+    assert agg["ALL"]["names"] == ["D1", "G2", "C3", "L4"]
+    assert (agg["F"]["count"], agg["D"]["count"], agg["G"]["count"]) == (2, 1, 1)
+
+
+def test_aggregate_players_keeps_a_player_with_no_api_id():
+    """A player with no API ID sorts after the others in their bucket instead of raising (R17)."""
+    players = [_player(None, "C", "NOID"), _player(5, "C", "C5"), _player(2, "D", "D2")]
+
+    agg = aggregate_players(players)
+
+    assert agg["ALL"]["names"] == ["D2", "C5", "NOID"]
+    assert agg["F"]["names"] == ["C5", "NOID"]

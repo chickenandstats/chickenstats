@@ -422,16 +422,20 @@ def aggregate_players(players: list) -> dict:
             cast(list, agg[b]["api_ids"]).append(api_id)
             cast(list, agg[b]["positions"]).append(pos)
 
+    def by_api_id(api_id: str) -> tuple[int, int]:
+        # A player the rosters have no API ID for is stored as "None" and sorts after the rest (R17)
+        return (0, int(api_id)) if api_id.isdigit() else (1, 0)
+
     for bucket_name, bucket in agg.items():
         api_ids: list[str] = cast(list, bucket["api_ids"])
         if api_ids:
             positions: list[str] = cast(list, bucket["positions"])
             if bucket_name == "ALL":
                 order = sorted(
-                    range(len(api_ids)), key=lambda i: (_POSITION_ORDER.get(positions[i], 3), int(api_ids[i]))
-                )  # type: ignore[arg-type]
+                    range(len(api_ids)), key=lambda i: (_POSITION_ORDER.get(positions[i], 3), *by_api_id(api_ids[i]))
+                )
             else:
-                order = sorted(range(len(api_ids)), key=lambda i: int(api_ids[i]))  # type: ignore[arg-type]
+                order = sorted(range(len(api_ids)), key=lambda i: by_api_id(api_ids[i]))
             for key in ("jerseys", "names", "eh_ids", "api_ids", "positions"):
                 bucket[key] = [cast(list, bucket[key])[i] for i in order]
 
