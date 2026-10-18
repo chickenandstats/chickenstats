@@ -331,13 +331,27 @@ def test_float_count_columns_give_the_same_totals(fixture_game):
     assert ind_stats.select(pl.col("g", "isf", "iff", "ihf").sum()).row(0) == (8, 65, 96, 45)
 
 
-@known_bug("a shot with no description is dropped from individual stats")
 def test_shots_without_a_description_are_counted(fixture_game):
     play_by_play = fixture_game.play_by_play.with_columns(
         pl.when(pl.col("event") == "SHOT").then(None).otherwise(pl.col("description")).alias("description")
     )
 
     assert prep_ind(play_by_play, level="game", strength_state=False)["isf"].sum() == 65
+
+
+def test_events_without_a_description_are_counted(fixture_game):
+    """Blanking every description that is not a teammate block leaves every individual count unchanged."""
+    play_by_play = fixture_game.play_by_play
+    blanked = play_by_play.with_columns(
+        pl.when(pl.col("teammate_block") == 0).then(None).otherwise(pl.col("description")).alias("description")
+    )
+    before = prep_ind(play_by_play, level="game", strength_state=False)
+    after = prep_ind(blanked, level="game", strength_state=False)
+    counts = [
+        c for c, dtype in before.schema.items() if dtype.is_integer() and c not in ("season", "game_id", "api_id")
+    ]
+
+    assert after.select(pl.col(counts).sum()).row(0) == before.select(pl.col(counts).sum()).row(0)
 
 
 @known_bug("the standalone aggregation functions fail on a pandas frame")
