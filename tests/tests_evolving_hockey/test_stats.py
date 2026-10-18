@@ -16,7 +16,7 @@ from chickenstats.evolving_hockey import (  # noqa: E402
     prep_team_stats,
     prep_xgar,
 )
-from chickenstats.exceptions import DataMismatchError, UnsupportedBackendError  # noqa: E402
+from chickenstats.exceptions import DataMismatchError, InvalidInputError, UnsupportedBackendError  # noqa: E402
 
 # -----------------------------------------------------------------------------
 # Fixtures
@@ -644,3 +644,19 @@ class TestPrepXgar:
     def test_explicit_backend_overrides_input(self, raw_xgar_pandas):
         result = prep_xgar(raw_xgar_pandas, backend="polars")
         assert isinstance(result, pl.DataFrame)
+
+
+@pytest.mark.parametrize(
+    "prep, options",
+    [
+        (prep_ind, {}),
+        (prep_oi, {}),
+        (prep_stats, {"disable_progress_bar": True}),
+        (prep_lines, {"disable_progress_bar": True}),
+        (prep_team_stats, {"disable_progress_bar": True}),
+    ],
+)
+def test_an_unrecognized_level_raises(pbp_polars, prep, options):
+    """An unknown level raises instead of being aggregated as season (R18), as in chicken_nhl."""
+    with pytest.raises(InvalidInputError, match="level must be one of"):
+        prep(pbp_polars, level="seasons", **options)

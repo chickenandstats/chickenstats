@@ -1,3 +1,5 @@
+from chickenstats.exceptions import InvalidInputError
+
 # Own on-ice lineup columns. Appended when teammates=True.
 TEAMMATES_COLS = [
     "forwards",
@@ -332,6 +334,9 @@ _CANONICAL_ORDER: list[str] = [
 ]
 
 
+AGG_LEVELS = ("period", "game", "session", "season")
+
+
 def build_group_list(
     base: list[str],
     *,
@@ -376,6 +381,10 @@ def build_group_list(
     _teammates = teammates_cols if teammates_cols is not None else TEAMMATES_COLS
     _opposition = opposition_cols if opposition_cols is not None else OPPOSITION_COLS
     level_team_col = "event_team" if opp_perspective else "opp_team"
+
+    # Checked here because every prep_* function groups through this; an unknown level was read as season (R18)
+    if level not in AGG_LEVELS:
+        raise InvalidInputError(f"level must be one of {list(AGG_LEVELS)}, got {level!r}", obj=level)
 
     cols = list(base)
     if level == "game":

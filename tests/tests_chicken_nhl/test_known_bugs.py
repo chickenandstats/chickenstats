@@ -94,10 +94,6 @@ UNKNOWN_LEVEL_CALLS = {
 
 @pytest.mark.parametrize("level", ["Game", "seasons", None])
 @pytest.mark.parametrize("call", UNKNOWN_LEVEL_CALLS)
-@known_bug(
-    "an unrecognized level is aggregated as if it were season, or crashes in prep_lines",
-    raises=(pytest.fail.Exception, UnboundLocalError),
-)
 def test_unknown_level_raises(call, level):
     scraper = Scraper([GAME_ID], disable_progress_bar=True)
 
