@@ -1923,7 +1923,7 @@ _OI_P60_FIELDS: dict[str, tuple[str, str]] = {
 _OI_PERCENT_FIELDS: dict[str, tuple[str, str]] = {
     "gf_percent": ("float | None", "On-ice goals for as a percentage of total on-ice goals i.e., GF / (GF + GA)"),
     "hdgf_percent": (
-        "float",
+        "float | None",
         "On-ice high-danger goals for as a percentage of total on-ice high-danger goals\ni.e., HDGF / (HDGF + HDGA)",
     ),
     "xgf_percent": (
@@ -1932,25 +1932,25 @@ _OI_PERCENT_FIELDS: dict[str, tuple[str, str]] = {
     ),
     "sf_percent": ("float | None", "On-ice shots for as a percentage of total on-ice shots i.e., SF / (SF + SA)"),
     "hdsf_percent": (
-        "float",
+        "float | None",
         "On-ice high-danger shots for as a percentage of total on-ice high-danger shots\ni.e., HDSF / (HDSF + HDSA)",
     ),
     "ff_percent": ("float | None", "On-ice fenwick for as a percentage of total on-ice fenwick i.e., FF / (FF + FA)"),
     "hdff_percent": (
-        "float",
+        "float | None",
         "On-ice high-danger fenwick for as a percentage of total on-ice high-danger fenwick\ni.e., HDFF / (HDFF + HDFA)",
     ),
     "cf_percent": ("float | None", "On-ice corsi for as a percentage of total on-ice corsi i.e., CF / (CF + CA)"),
     "bsf_percent": (
-        "float",
+        "float | None",
         "On-ice blocked shots for as a percentage of total on-ice blocked shots i.e., BSF / (BSF + BSA)",
     ),
     "msf_percent": (
-        "float",
+        "float | None",
         "On-ice missed shots for as a percentage of total on-ice missed shots i.e., MSF / (MSF + MSA)",
     ),
     "hdmsf_percent": (
-        "float",
+        "float | None",
         "On-ice high-danger missed shots for as a percentage of total on-ice high-danger missed shots\ni.e., HDMSF / (HDMSF + HDMSA)",
     ),
     "hf_percent": ("float | None", "On-ice hits for as a percentage of total on-ice hits i.e., HF / (HF + HT)"),
