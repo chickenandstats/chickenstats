@@ -1968,8 +1968,21 @@ _OI_PERCENT_FIELDS: dict[str, tuple[str, str]] = {
 # Docstring constants for stats properties and public methods
 # -----------------------------------------------------------------------------
 
+
+def _result_state(prep: str) -> str:
+    """The paragraph each Scraper result property carries about which arguments its frame was built with."""
+    return (
+        f"Returns the frame ``{prep}()`` last built, with the arguments of that call; call it again to\n"
+        f"change them. If ``{prep}()`` has not run yet, this property runs it with its defaults. After\n"
+        f"``add_games()``, the frame is rebuilt on the next access with the same arguments, so it covers\n"
+        f"the new games too."
+    )
+
+
 _IND_STATS_DOC = f"""\
 DataFrame of individual stats aggregated from play-by-play data, with the below fields.
+
+{_result_state("prep_stats")}
 
 Note:
     You can determine the DataFrame backend with the ``backend`` argument at Scraper instantiation,
@@ -1995,6 +2008,8 @@ Examples:
 
 _OI_STATS_DOC = f"""\
 DataFrame of on-ice stats aggregated from play-by-play data, with the below fields.
+
+{_result_state("prep_stats")}
 
 Note:
     You can determine the DataFrame backend with the ``backend`` argument at Scraper instantiation,
@@ -2053,7 +2068,8 @@ _STATS_DOC = f"""\
 DataFrame combining individual and on-ice stats, with the below fields.
 
 Contains all columns from ``ind_stats`` and ``oi_stats`` plus per-60 and percentage columns.
-Call ``prep_stats()`` to change the aggregation level or filters before accessing this property.
+
+{_result_state("prep_stats")}
 
 Note:
     You can determine the DataFrame backend with the ``backend`` argument at Scraper instantiation,
@@ -2106,8 +2122,7 @@ Examples:
 _LINES_DOC = f"""\
 DataFrame of line-level on-ice stats, with the below fields.
 
-Call ``prep_lines()`` to change the position, aggregation level, or filters
-before accessing this property.
+{_result_state("prep_lines")}
 
 Note:
     You can determine the DataFrame backend with the ``backend`` argument at Scraper instantiation,
@@ -2160,8 +2175,7 @@ Examples:
 _TEAM_STATS_DOC = f"""\
 DataFrame of team-level on-ice stats, with the below fields.
 
-Call ``prep_team_stats()`` to change the aggregation level or filters
-before accessing this property.
+{_result_state("prep_team_stats")}
 
 Note:
     You can determine the DataFrame backend with the ``backend`` argument at Scraper instantiation,
@@ -2217,7 +2231,7 @@ on-ice personnel changed. Feeds ``chickenstats.chicken_nhl.rapm.build_rapm_matri
 Stats are keyed on venue rather than perspective: a stat's "against" side is the other
 team's "for" (``home_sa`` is ``away_sf``), so one row carries both sides.
 
-Call ``prep_stints()`` to change the aggregation filters before accessing this property.
+{_result_state("prep_stints")}
 
 Note:
     You can determine the DataFrame backend with the ``backend`` argument at Scraper instantiation,
