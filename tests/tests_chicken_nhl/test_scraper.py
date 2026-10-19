@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 import polars as pl
@@ -1017,3 +1018,75 @@ def test_a_scraped_game_leaves_only_its_frames_behind():
         tracemalloc.stop()
 
     assert per_game < 1_000_000
+
+
+class TestGameState:
+    """Only a game the API reports as OFF is final; a game in any other state is fetched again (N9)."""
+
+    @staticmethod
+    def served_as(state: str, requested: list[str]):
+        """A Session.get that serves the saved responses with the fixture game's API state set to state."""
+        served_get = requests.Session.get
+
+        def get(self, url, *args, **kwargs):
+            requested.append(str(url))
+            response = served_get(self, url, *args, **kwargs)
+            if "gamecenter/2023020001/play-by-play" in str(url):
+                payload = response.json()
+                payload["gameState"] = state
+                response._content = json.dumps(payload).encode()
+            return response
+
+        return get
+
+    @staticmethod
+    def html_requests(requested: list[str]) -> int:
+        return sum("020001.HTM" in url for url in requested)
+
+    def test_a_final_game_is_fetched_again_and_its_rows_replaced(self):
+        requested: list[str] = []
+        with patch.object(requests.Session, "get", self.served_as("FINAL", requested)):
+            scraper = Scraper([2023020001], disable_progress_bar=True)
+            first = scraper.play_by_play
+            fetched = self.html_requests(requested)
+
+            scraper.add_games([2023020015])
+            second = scraper.play_by_play
+
+        assert scraper._game_states[2023020001] == "FINAL"
+        assert self.html_requests(requested) == 2 * fetched
+        assert second.filter(pl.col("game_id") == 2023020001).equals(first)
+
+    def test_an_off_game_is_not_fetched_again(self):
+        requested: list[str] = []
+        with patch.object(requests.Session, "get", self.served_as("OFF", requested)):
+            scraper = Scraper([2023020001], disable_progress_bar=True)
+            _ = scraper.play_by_play
+            fetched = len(requested)
+
+            _ = scraper.shifts
+            scraper.add_games([2023020001])
+            _ = scraper.play_by_play
+
+        assert scraper._game_states[2023020001] == "OFF"
+        assert len(requested) == fetched
+
+    def test_a_final_game_from_a_cache_is_fetched_again(self, tmp_path):
+        """A cache=True run taken before the game is OFF does not keep that data for good."""
+        requested: list[str] = []
+        with patch.object(requests.Session, "get", self.served_as("FINAL", requested)):
+            _ = Scraper([2023020001], disable_progress_bar=True, cache=tmp_path / "cache").play_by_play
+        with patch.object(requests.Session, "get", self.served_as("OFF", requested)):
+            requested.clear()
+            scraper = Scraper([2023020001], disable_progress_bar=True, cache=tmp_path / "cache")
+            play_by_play = scraper.play_by_play
+
+        assert self.html_requests(requested) > 0
+        assert scraper._game_states[2023020001] == "OFF"
+        assert play_by_play.height == 781
+
+    def test_an_html_only_scrape_records_the_state(self):
+        scraper = Scraper([2023020001], disable_progress_bar=True)
+        _ = scraper.html_events
+
+        assert scraper._game_states == {2023020001: "OFF"}

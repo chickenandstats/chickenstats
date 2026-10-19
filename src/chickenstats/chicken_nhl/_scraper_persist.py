@@ -65,6 +65,7 @@ class _ScraperPersistMixin(_ScraperBase):
             "game_ids": list(self.game_ids),
             "bad_games": list(self._bad_games),
             "backend": self._backend,
+            "game_states": {str(game_id): state for game_id, state in self._game_states.items()},
             "scraped": {
                 key: sorted(getattr(self, attr)) for key, attr in _RAW_DATA_ATTRS.items() if _SCRAPED_KEYS[key] == key
             },
@@ -95,6 +96,9 @@ class _ScraperPersistMixin(_ScraperBase):
                 self._failed_types.setdefault(game_id, set()).update(_SCRAPE_REGISTRY)
                 if game_id not in self._bad_games:
                     self._bad_games.append(game_id)
+
+        # A game with no recorded state is provisional, so it is fetched again on its next scrape
+        self._game_states.update({int(game_id): state for game_id, state in meta.get("game_states", {}).items()})
 
         scraped = meta.get("scraped", {})
         for key, attr in _RAW_DATA_ATTRS.items():

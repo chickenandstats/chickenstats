@@ -32,6 +32,11 @@ class Scraper(_ScraperCore, _ScraperRawMixin, _ScraperStatsMixin, _ScraperPersis
             Ignore an existing cache on construction and scrape fresh; the next
             auto-save overwrites it. No effect when ``cache`` is falsy. Default ``False``.
 
+    A game's data is final only once the NHL API reports the game as ``OFF``. Data still changes in every
+    earlier state (``FUT``, ``PRE``, ``LIVE``, ``CRIT``, ``OVER`` and ``FINAL``), so a game in one of those
+    is returned as it stands and fetched again the next time its data is scraped, for example after
+    ``add_games()``, or from a cache. An ``OFF`` game is never fetched again.
+
     Attributes:
         game_ids (list):
             Game IDs tracked by this Scraper, e.g., ``[2023020001, 2023020002, 2023020003]``

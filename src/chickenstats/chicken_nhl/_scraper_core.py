@@ -74,6 +74,12 @@ _LEAF_ATTRS: dict[str, str] = {
 
 logger = logging.getLogger(__name__)
 
+# The only API game state whose data is final; data still changes at FINAL and OVER (N9)
+FINAL_STATE = "OFF"
+
+# Keys of a scrape result that describe the game rather than hold one of its data types
+_RESULT_META_KEYS = frozenset({"game_id", "game_state"})
+
 
 def normalize_game_ids(game_ids: list[str | float | int] | pd.Series | str | float | int) -> list[int]:
     """Return the game IDs as a new list of ints, in order, each once.
@@ -126,6 +132,7 @@ class _ScraperBase:
         _xg_fields: dict[int, pl.DataFrame]
         _bad_games: list
         _failed_types: dict[int, set[str]]
+        _game_states: dict[int, str]
 
         # Aggregated stat frames (from _ScraperCore)
         _ind_stats: pl.DataFrame
@@ -222,6 +229,8 @@ class _ScraperCore(_ScraperBase):
         self._bad_games: list = []
         # The data types that failed for each game in _bad_games; a game leaves the list when none are left
         self._failed_types: dict[int, set[str]] = {}
+        # Each scraped game's API state when it was last fetched; only FINAL_STATE games are not fetched again
+        self._game_states: dict[int, str] = {}
 
         self._requests_session: ChickenSession = ChickenSession()
 
@@ -291,8 +300,17 @@ class _ScraperCore(_ScraperBase):
         """Return True if df has no rows."""
         return df.is_empty()
 
+    def _is_final(self, game_id: int) -> bool:
+        """Whether game_id's stored data was fetched once the game was final, so it is not fetched again."""
+        return self._game_states.get(game_id) == FINAL_STATE
+
     def _seed_game_from_cache(self, game: Game, game_id: int) -> None:
-        """Write already-scraped/cached data for game_id into game.__dict__ to skip re-fetching."""
+        """Write already-scraped/cached data for game_id into game.__dict__ to skip re-fetching.
+
+        Only a final game is seeded: a game still provisional is fetched whole, so its types match.
+        """
+        if not self._is_final(game_id):
+            return
         for prop, list_attr in _LEAF_ATTRS.items():
             frame = getattr(self, list_attr).get(game_id)
             if frame is not None and not frame.is_empty():
@@ -315,25 +333,26 @@ class _ScraperCore(_ScraperBase):
             game = Game(game_id, self._requests_session)
             self._seed_game_from_cache(game, game_id)
 
+            result: dict
             match scrape_type:
                 case "api_events":
                     # api_events and api_rosters share the same HTTP call
-                    return {"game_id": game_id, "api_events": game.api_events, "api_rosters": game.api_rosters}
+                    result = {"game_id": game_id, "api_events": game.api_events, "api_rosters": game.api_rosters}
                 case "api_rosters":
-                    return {"game_id": game_id, "api_rosters": game.api_rosters}
+                    result = {"game_id": game_id, "api_rosters": game.api_rosters}
                 case "html_events":
-                    return {"game_id": game_id, "html_events": game.html_events}
+                    result = {"game_id": game_id, "html_events": game.html_events}
                 case "html_rosters":
-                    return {"game_id": game_id, "html_rosters": game.html_rosters}
+                    result = {"game_id": game_id, "html_rosters": game.html_rosters}
                 case "rosters":
-                    return {"game_id": game_id, "rosters": game.rosters}
+                    result = {"game_id": game_id, "rosters": game.rosters}
                 case "shifts":
-                    return {"game_id": game_id, "shifts": game.shifts, "changes": game.changes}
+                    result = {"game_id": game_id, "shifts": game.shifts, "changes": game.changes}
                 case "changes":
-                    return {"game_id": game_id, "changes": game.changes, "shifts": game.shifts}
+                    result = {"game_id": game_id, "changes": game.changes, "shifts": game.shifts}
                 case "play_by_play":
                     # Skip re-fetching api_rosters/html_rosters if rosters is already cached.
-                    rosters_already_cached = game_id in self._rosters
+                    rosters_already_cached = game_id in self._rosters and self._is_final(game_id)
                     result = {
                         "game_id": game_id,
                         "play_by_play": game.play_by_play,
@@ -348,7 +367,14 @@ class _ScraperCore(_ScraperBase):
                     if not rosters_already_cached:
                         result["api_rosters"] = game.api_rosters
                         result["html_rosters"] = game.html_rosters
-                    return result
+
+            # The API state decides whether this game is fetched again; a final game's state does not change
+            if self._is_final(game_id):
+                result["game_state"] = FINAL_STATE
+            else:
+                game._fetch_api_data()
+                result["game_state"] = game.game_state
+            return result
 
         except (ChickenstatsError, RequestException, ValidationError) as exc:
             # Expected per-game failures: data-quality issues, network errors, bad payloads.
@@ -362,13 +388,14 @@ class _ScraperCore(_ScraperBase):
     def _game_frames(self, game_id: int, result: dict) -> dict[str, pl.DataFrame] | None:
         """Build one game's frames from a scrape result, or return None if any of them cannot be built.
 
-        A play-by-play scrape returns every raw type for the game, so a type already stored for it is left
-        out; storing it again appended the game's rows twice (R3).
+        A play-by-play scrape returns every raw type for the game, so a type already stored for a final game is
+        left out. A game that was still provisional has every type replaced, so its types match.
         """
+        final = self._is_final(game_id)
         try:
             frames = {}
             for key, value in result.items():
-                if key == "game_id" or game_id in getattr(self, _SCRAPE_REGISTRY[key].list_attr):
+                if key in _RESULT_META_KEYS or (final and game_id in getattr(self, _SCRAPE_REGISTRY[key].list_attr)):
                     continue
                 schema = _SCRAPE_REGISTRY[key].schema
                 frames[key] = pl.from_dicts(value, schema=schema) if value else pl.DataFrame(schema=schema)
@@ -399,8 +426,9 @@ class _ScraperCore(_ScraperBase):
         """
         pbar_stubs = {key: spec.pbar_label for key, spec in _SCRAPE_REGISTRY.items() if spec.pbar_label is not None}
 
+        # A game not yet final is fetched again, so its rows are replaced by the latest data (N9)
         stored = getattr(self, _SCRAPE_REGISTRY[scrape_type].list_attr)
-        unscraped = [x for x in self.game_ids if x not in stored]
+        unscraped = [x for x in self.game_ids if x not in stored or not self._is_final(x)]
 
         if not unscraped:
             return
@@ -421,7 +449,8 @@ class _ScraperCore(_ScraperBase):
                     # Committed together, so a game is either stored for every type it returned or for none
                     for key, frame in frames.items():
                         getattr(self, _SCRAPE_REGISTRY[key].list_attr)[game_id] = frame
-                    self._record_success(game_id, {scrape_type, *result} - {"game_id"})
+                    self._game_states[game_id] = result["game_state"]
+                    self._record_success(game_id, {scrape_type, *result} - _RESULT_META_KEYS)
                 else:
                     self._record_failure(game_id, scrape_type)
                     failed_now.append(game_id)
