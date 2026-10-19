@@ -39,6 +39,10 @@ class Scraper(_ScraperCore, _ScraperRawMixin, _ScraperStatsMixin, _ScraperPersis
     is returned as it stands and fetched again the next time its data is scraped, for example after
     ``add_games()``, or from a cache. An ``OFF`` game is never fetched again.
 
+    A game that fails is listed in ``failed_games`` and the scrape goes on, but after 5 games in a row fail
+    because their requests failed, the scrape stops with ``NHLUnavailableError``, since the NHL is likely
+    down. The games scraped before it are kept.
+
     Attributes:
         game_ids (list):
             Game IDs tracked by this Scraper, e.g., ``[2023020001, 2023020002, 2023020003]``

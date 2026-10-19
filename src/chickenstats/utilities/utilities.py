@@ -53,15 +53,28 @@ class ChickenHTTPAdapter(HTTPAdapter):
         return super().send(request, stream=stream, timeout=timeout, verify=verify, cert=cert, proxies=proxies)
 
 
+# The longest a Retry-After header can make a request wait; the NHL has sent hours (N66)
+MAX_RETRY_AFTER = 60
+
+
+class _CappedRetry(urllib3.Retry):
+    """A Retry that waits at most MAX_RETRY_AFTER seconds for a Retry-After header."""
+
+    def parse_retry_after(self, retry_after: str) -> float:
+        """Return the header's wait in seconds, capped at MAX_RETRY_AFTER."""
+        return min(super().parse_retry_after(retry_after), MAX_RETRY_AFTER)
+
+
 class ChickenSession(requests.Session):
     """Requests session pre-configured for reliable, high-volume scraping.
 
     Configuration applied on construction (not user-configurable without subclassing):
 
     Retries:
-        Up to 5 automatic retries with 1s exponential backoff. Retries on
-        HTTP 408, 429, 500, 502, 503, and 504. Respects ``Retry-After`` response
-        headers. Retry logic applies to GET, HEAD, and OPTIONS only.
+        Up to 3 automatic retries with 1s exponential backoff: at most 2 for a
+        failed connection, 1 for a failed read and 3 for HTTP 408, 429, 500, 502,
+        503 and 504. Respects ``Retry-After`` response headers, for up to 60
+        seconds. Retry logic applies to GET, HEAD, and OPTIONS only.
 
     Timeouts:
         3.05s connect timeout, 30s read timeout. The fractional connect
@@ -95,8 +108,12 @@ class ChickenSession(requests.Session):
         """Initializes Requests Session object."""
         super().__init__()
 
-        retry = urllib3.Retry(
-            total=5,
+        # Small budgets, so an NHL outage costs seconds per request instead of minutes (N66)
+        retry = _CappedRetry(
+            total=3,
+            connect=2,
+            read=1,
+            status=3,
             backoff_factor=1,
             respect_retry_after_header=True,
             status_forcelist=[408, 429, 500, 502, 503, 504],

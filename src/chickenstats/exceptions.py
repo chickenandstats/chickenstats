@@ -11,6 +11,7 @@ __all__ = [
     "ReportUnavailableError",
     "InvalidInputError",
     "CacheFormatError",
+    "NHLUnavailableError",
 ]
 
 
@@ -100,3 +101,12 @@ class CacheFormatError(ChickenstatsError):
         """Store the cache directory alongside the error message."""
         super().__init__(message)
         self.path = path
+
+
+class NHLUnavailableError(ChickenstatsError):
+    """Raised when several games in a row fail with network errors, as when the NHL's servers are down."""
+
+    def __init__(self, message: str, game_ids: list[int] | None = None):
+        """Store the game IDs that failed in a row alongside the error message."""
+        super().__init__(message)
+        self.game_ids = game_ids or []

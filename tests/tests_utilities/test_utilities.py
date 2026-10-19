@@ -67,6 +67,26 @@ def test_update_headers():
     assert session.headers["X-Custom"] == "test-value"
 
 
+def test_retry_budget_is_small():
+    """An outage costs a few retries per request, not minutes (N66)."""
+    adapter = ChickenSession().get_adapter("https://api-web.nhle.com")
+    assert isinstance(adapter, ChickenHTTPAdapter)
+    retry = adapter.max_retries
+
+    assert (retry.total, retry.connect, retry.read, retry.status) == (3, 2, 1, 3)
+
+
+def test_retry_after_is_capped():
+    """A Retry-After header asking for an hour waits a minute instead (N66)."""
+    adapter = ChickenSession().get_adapter("https://api-web.nhle.com")
+    assert isinstance(adapter, ChickenHTTPAdapter)
+    retry = adapter.max_retries
+
+    assert retry.parse_retry_after("3600") == 60
+    assert retry.parse_retry_after("5") == 5
+    assert type(retry.increment(method="GET", url="/")) is type(retry)
+
+
 # -----------------------------------------------------------------------------
 # ChickenHTTPAdapter
 # -----------------------------------------------------------------------------

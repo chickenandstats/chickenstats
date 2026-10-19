@@ -15,7 +15,13 @@ if TYPE_CHECKING:
     import pandas as pd
 
 from chickenstats.chicken_nhl.game import Game
-from chickenstats.exceptions import ChickenstatsError, InvalidGameIDError, InvalidInputError
+from chickenstats.exceptions import (
+    ChickenstatsError,
+    InvalidGameIDError,
+    InvalidInputError,
+    NHLUnavailableError,
+    ReportUnavailableError,
+)
 from chickenstats.chicken_nhl.validation_polars import (
     api_events_polars_schema,
     api_rosters_polars_schema,
@@ -79,6 +85,19 @@ logger = logging.getLogger(__name__)
 # The only API game state whose data is final; data still changes at FINAL and OVER (N9)
 FINAL_STATE = "OFF"
 
+# Games in a row that fail with network errors before a scrape stops, since the NHL is likely down (N66)
+MAX_NETWORK_FAILURES = 5
+
+
+def _is_network_failure(exc: BaseException) -> bool:
+    """Whether a game failed because a request failed, rather than because of its data."""
+    if isinstance(exc, RequestException):
+        return True
+    return isinstance(exc, ReportUnavailableError) and all(
+        reason.startswith("request failed") for reason in exc.reports.values()
+    )
+
+
 # Keys of a scrape result that describe the game rather than hold one of its data types
 _RESULT_META_KEYS = frozenset({"game_id", "game_state"})
 
@@ -137,6 +156,7 @@ class _ScraperBase:
         _failed_types: dict[int, set[str]]
         _game_states: dict[int, str]
         _stale: set[int]
+        _last_failure_was_network: bool
 
         # Aggregated stat frames (from _ScraperCore)
         _ind_stats: pl.DataFrame
@@ -243,6 +263,8 @@ class _ScraperCore(_ScraperBase):
         self._failed_types: dict[int, set[str]] = {}
         # Each scraped game's API state when it was last fetched; only FINAL_STATE games are not fetched again
         self._game_states: dict[int, str] = {}
+        # Whether the last game that failed did so because a request failed, for the outage check in _scrape
+        self._last_failure_was_network: bool = False
         # Games refresh() is fetching again; each counts as not final until refresh() ends
         self._stale: set[int] = set()
 
@@ -396,10 +418,12 @@ class _ScraperCore(_ScraperBase):
         except (ChickenstatsError, RequestException, ValidationError) as exc:
             # Expected per-game failures: data-quality issues, network errors, bad payloads.
             logger.warning("Failed to scrape game %s: %s", game_id, exc, exc_info=True)
+            self._last_failure_was_network = _is_network_failure(exc)
             return None
         except Exception:  # noqa: BLE001
             # Unexpected error — likely a real bug; log louder but don't crash the batch.
             logger.error("Unexpected error scraping game %s", game_id, exc_info=True)
+            self._last_failure_was_network = False
             return None
 
     def _game_frames(self, game_id: int, result: dict) -> dict[str, pl.DataFrame] | None:
@@ -452,6 +476,7 @@ class _ScraperCore(_ScraperBase):
             return
 
         failed_now: list[int] = []
+        network_failures: list[int] = []
 
         # Not wrapped in `with self._requests_session:` — the session is shared for the
         # Scraper's whole lifetime, not just this call.
@@ -474,6 +499,17 @@ class _ScraperCore(_ScraperBase):
                     self._record_failure(game_id, scrape_type)
                     failed_now.append(game_id)
                     self._cache_game(game_id, ())
+
+                network_failures = (
+                    [*network_failures, game_id] if result is None and self._last_failure_was_network else []
+                )
+                if len(network_failures) >= MAX_NETWORK_FAILURES:
+                    raise NHLUnavailableError(
+                        f"The last {len(network_failures)} games failed with network errors: {network_failures}. "
+                        "The NHL may be unavailable; every game scraped so far is kept, and calling again, or "
+                        "refresh(), fetches the rest.",
+                        game_ids=network_failures,
+                    )
 
                 if idx + 1 < len(unscraped):
                     next_message = f"Downloading {pbar_stub} for {unscraped[idx + 1]}..."

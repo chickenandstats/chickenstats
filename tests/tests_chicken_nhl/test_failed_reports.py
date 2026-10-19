@@ -162,3 +162,57 @@ def test_refresh_rejects_a_game_not_in_the_scraper():
 
     with pytest.raises(InvalidInputError, match="not in this Scraper"):
         scraper.refresh([2023020015])
+
+
+def test_a_failed_api_request_is_not_repeated():
+    """A Game raises its failed API request again instead of retrying it on the next property (N66)."""
+    from chickenstats.chicken_nhl import Game
+
+    calls = []
+
+    def api_down(self, url, *args, **kwargs):
+        calls.append(str(url))
+        raise requests.exceptions.ConnectionError("down")
+
+    game = Game(GAME_ID)
+    with patch.object(requests.Session, "get", api_down):
+        for _ in range(2):
+            with pytest.raises(requests.exceptions.ConnectionError):
+                game._fetch_api_data()
+
+    assert len(calls) == 1
+
+
+def test_a_scrape_stops_after_five_games_fail_on_the_network():
+    """When every request fails, the Scraper stops after five games with a clear error (N66)."""
+    from chickenstats.exceptions import NHLUnavailableError
+
+    def network_down(self, url, *args, **kwargs):
+        raise requests.exceptions.ConnectionError("down")
+
+    game_ids: list[str | float | int] = list(range(2023020001, 2023020008))
+    scraper = Scraper(game_ids, disable_progress_bar=True)
+    with patch.object(requests.Session, "get", network_down), warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(NHLUnavailableError, match="last 5 games failed with network errors") as raised:
+            _ = scraper.play_by_play
+
+    assert raised.value.game_ids == game_ids[:5]
+    assert scraper.failed_games == game_ids[:5]
+
+
+def test_a_game_that_fails_on_its_data_resets_the_count():
+    """Only games failing in a row on the network stop the scrape; a data failure in between does not."""
+    from chickenstats.chicken_nhl import _scraper_core
+
+    def every_fourth_on_its_data(self, game_id, scrape_type):
+        self._last_failure_was_network = game_id % 4 != 0
+        return None
+
+    with patch.object(_scraper_core._ScraperCore, "_scrape_single_game", every_fourth_on_its_data):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            scraper = Scraper(list(range(2023020001, 2023020013)), disable_progress_bar=True)
+            _ = scraper.play_by_play
+
+    assert len(scraper.failed_games) == 12

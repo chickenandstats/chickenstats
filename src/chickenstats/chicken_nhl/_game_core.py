@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Literal
 from zoneinfo import ZoneInfo
 
 import polars as pl
+from requests.exceptions import RequestException
 
 from chickenstats.exceptions import InvalidGameIDError, ReportUnavailableError
 from chickenstats.utilities.enums import Backend
@@ -39,6 +40,7 @@ class _GameBase:
         html_events_endpoint: str
         _requests_session: ChickenSession
         _report_failures: dict[str, str]
+        _api_error: RequestException | None
 
         # Score-adjustment state (from _GameCore.__init__)
         _score_adjustments: dict
@@ -153,6 +155,9 @@ class _GameCore(_GameBase):
         self._raw_shifts: list | None = None
         # Each HTML report that could not be fetched or read (PL, RO, TH, TV), with the reason
         self._report_failures: dict[str, str] = {}
+        # A failed API request is raised again instead of retried, so a prefetch failure does not cost a second
+        # full retry cycle when a property asks for the same data (N66)
+        self._api_error: RequestException | None = None
 
     def __repr__(self) -> str:
         """Return a string representation of the Game object."""
@@ -166,8 +171,14 @@ class _GameCore(_GameBase):
         """
         if self.api_response is not None:
             return
+        if self._api_error is not None:
+            raise self._api_error
 
-        response: dict = self._requests_session.get(self.api_endpoint).json()
+        try:
+            response: dict = self._requests_session.get(self.api_endpoint).json()
+        except RequestException as exc:
+            self._api_error = exc
+            raise
 
         # Away team information
         away_team: dict = response["awayTeam"]
