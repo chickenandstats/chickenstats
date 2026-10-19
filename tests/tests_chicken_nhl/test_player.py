@@ -241,6 +241,29 @@ class TestPlayer:
         assert forsberg._game_logs
 
 
+class TestPlayersWithoutATeamOrStats:
+    """A retired player has null team fields, and a player who has not played has no stats sections (R32)."""
+
+    def test_a_retired_player_has_no_team(self):
+        player = Player(player_id=8447400)  # Wayne Gretzky
+
+        assert player.is_active is False
+        assert (player.current_team_id, player.current_team, player.current_team_name) == (None, None, None)
+        assert (player.current_team_full_name, player.current_team_full_name_fr) == (None, None)
+        assert player._career_regular_season_stats is not None
+
+    def test_a_player_with_no_nhl_games_has_no_stats(self):
+        player = Player(player_id=8482465)  # signed by New Jersey, no NHL games yet
+
+        assert player.current_team == "NJD"
+        assert player._featured_stats is None
+        assert (player._current_featured_season, player._featured_regular_season_stats) == (None, None)
+        assert (player._featured_career_stats, player._career_totals) == (None, None)
+        assert (player._career_regular_season_stats, player._career_playoff_stats) == (None, None)
+        assert player._last_five_games == []
+        assert (player.active_seasons, player.playoff_seasons) == ([], [])
+
+
 class TestSearchPlayers:
     @pytest.mark.nhl
     def test_finds_expected_player(self):

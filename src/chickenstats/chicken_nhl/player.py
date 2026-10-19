@@ -219,75 +219,77 @@ class Player:
         """Whether the player is currently active on an NHL roster."""
         return self.player_info["isActive"]
 
+    # A retired or unsigned player's landing page has null team fields, so each of these is None for them (R32)
     @property
-    def current_team_id(self) -> int:
-        """NHL team ID for the player's current team."""
-        return self.player_info["currentTeamId"]
+    def current_team_id(self) -> int | None:
+        """NHL team ID for the player's current team, or None for a player with no team."""
+        return self.player_info.get("currentTeamId")
 
     @property
-    def current_team(self) -> str:
-        """Three-letter abbreviation of the player's current team."""
-        return self.player_info["currentTeamAbbrev"]
+    def current_team(self) -> str | None:
+        """Three-letter abbreviation of the player's current team, or None for a player with no team."""
+        return self.player_info.get("currentTeamAbbrev")
 
     @property
-    def current_team_name(self) -> str:
-        """Common name of the player's current team (e.g. 'Predators')."""
-        return self.player_info["teamCommonName"]["default"]
+    def current_team_name(self) -> str | None:
+        """Common name of the player's current team (e.g. 'Predators'), or None for a player with no team."""
+        return (self.player_info.get("teamCommonName") or {}).get("default")
 
     @property
-    def current_team_full_name(self) -> str:
-        """Full English name of the player's current team (e.g. 'Nashville Predators')."""
-        return self.player_info["fullTeamName"]["default"]
+    def current_team_full_name(self) -> str | None:
+        """Full English name of the player's current team (e.g. 'Nashville Predators'), or None."""
+        return (self.player_info.get("fullTeamName") or {}).get("default")
 
     @property
-    def current_team_full_name_fr(self) -> str:
-        """Full French name of the player's current team."""
-        return self.player_info["fullTeamName"]["fr"]
+    def current_team_full_name_fr(self) -> str | None:
+        """Full French name of the player's current team, or None for a player with no team."""
+        return (self.player_info.get("fullTeamName") or {}).get("fr")
 
+    # A player who has not played an NHL game has no featuredStats, careerTotals or last5Games on the landing page
     @cached_property
-    def _featured_stats(self) -> dict:
-        """Raw featured-stats payload from the NHL API landing page."""
-        return self._landing_info["featuredStats"]
+    def _featured_stats(self) -> dict | None:
+        """Raw featured-stats payload from the NHL API landing page, or None if the player has none."""
+        return self._landing_info.get("featuredStats")
 
     @property
-    def _current_featured_season(self) -> int:
+    def _current_featured_season(self) -> int | None:
         """Season ID of the current featured season from the featured-stats payload."""
-        return self._featured_stats["season"]
+        return self._featured_stats["season"] if self._featured_stats else None
 
     @property
-    def _featured_regular_season_stats(self) -> dict:
+    def _featured_regular_season_stats(self) -> dict | None:
         """Regular-season stat totals from the featured-stats payload."""
-        return self._featured_stats["regularSeason"]["subSeason"]
+        return self._featured_stats["regularSeason"]["subSeason"] if self._featured_stats else None
 
     @property
-    def _featured_career_stats(self) -> dict:
+    def _featured_career_stats(self) -> dict | None:
         """Career aggregate stat totals from the featured-stats payload."""
-        return self._featured_stats["regularSeason"]["career"]
+        return self._featured_stats["regularSeason"]["career"] if self._featured_stats else None
 
     @cached_property
-    def _career_totals(self) -> dict:
-        """Raw career-totals payload from the NHL API landing page."""
-        return self._landing_info["careerTotals"]
+    def _career_totals(self) -> dict | None:
+        """Raw career-totals payload from the NHL API landing page, or None if the player has none."""
+        return self._landing_info.get("careerTotals")
 
     @cached_property
-    def _career_regular_season_stats(self) -> dict:
+    def _career_regular_season_stats(self) -> dict | None:
         """Raw regular-season career rows from the career-totals payload."""
-        return self._career_totals["regularSeason"]
+        return self._career_totals["regularSeason"] if self._career_totals else None
 
     @property
     def _career_playoff_stats(self) -> dict | None:
         """Raw playoff career rows from the career-totals payload, or None if unavailable."""
-        return self._career_totals.get("playoffs")
+        return self._career_totals.get("playoffs") if self._career_totals else None
 
     @property
     def _last_five_games(self) -> list:
-        """Raw last-five-games entries from the NHL API landing page."""
-        return self._landing_info["last5Games"]
+        """Raw last-five-games entries from the NHL API landing page; empty if the player has none."""
+        return self._landing_info.get("last5Games", [])
 
     @property
     def _season_totals(self) -> list:
-        """Raw season-totals entries from the NHL API landing page."""
-        return self._landing_info["seasonTotals"]
+        """Raw season-totals entries from the NHL API landing page; empty if the player has none."""
+        return self._landing_info.get("seasonTotals", [])
 
     @property
     def _game_logs(self) -> list:
