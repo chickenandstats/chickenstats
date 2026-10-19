@@ -31,7 +31,7 @@ class TestScraperPersist:
 
         assert isinstance(reloaded, pl.DataFrame)
         assert reloaded.shape == original.shape
-        assert 2023020001 in loaded._scraped_play_by_play
+        assert 2023020001 in loaded._play_by_play
 
     def test_load_round_trips_every_frame(self, tmp_path):
         """Every frame save() writes comes back from load() unchanged, with no network access."""
@@ -68,8 +68,8 @@ class TestScraperPersist:
         loaded = Scraper.load(save_path, game_ids=[2023020002], disable_progress_bar=True)
 
         assert loaded.game_ids == [2023020001, 2023020002]
-        assert 2023020001 in loaded._scraped_play_by_play
-        assert 2023020002 not in loaded._scraped_play_by_play
+        assert 2023020001 in loaded._play_by_play
+        assert 2023020002 not in loaded._play_by_play
 
     def test_load_preserves_failed_games(self, tmp_path):
         """Failed games are preserved across a save/load round trip."""
@@ -138,7 +138,7 @@ class TestScraperCacheArgument:
             reloaded = scraper2.play_by_play
 
         assert reloaded.shape == original.shape
-        assert 2023020001 in scraper2._scraped_play_by_play
+        assert 2023020001 in scraper2._play_by_play
 
     def test_cache_path_empty_dir_scrapes_normally(self, tmp_path):
         """cache=<path> pointing at a directory with no _meta.json yet doesn't error —
@@ -162,7 +162,7 @@ class TestScraperCacheArgument:
             _ = scraper2.play_by_play
 
         assert mock_get.call_count > 0
-        assert 2023020001 in scraper2._scraped_play_by_play
+        assert 2023020001 in scraper2._play_by_play
 
     def test_overwrite_true_without_cache_is_noop(self, tmp_path, monkeypatch):
         """overwrite=True with cache=False (default) behaves identically to cache=False alone."""

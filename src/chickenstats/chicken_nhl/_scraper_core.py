@@ -41,9 +41,10 @@ class _ScrapeSpec(NamedTuple):
     """Metadata for one raw scrape-data type; one entry per type in `_SCRAPE_REGISTRY`."""
 
     list_attr: str
-    """Scraper attribute holding this type's raw ``list[pl.DataFrame]``."""
-    tracker_attr: str
-    """Scraper attribute holding the ``set[int]`` of game IDs already scraped for this type."""
+    """Scraper attribute holding this type's frames as ``dict[int, pl.DataFrame]``, one per game scraped.
+
+    A game whose scrape returned no rows is stored as an empty frame, so a game is stored once it is a key.
+    """
     schema: dict
     """Polars schema for ``pl.from_dicts(..., schema=...)``."""
     pbar_label: str | None = None
@@ -52,23 +53,23 @@ class _ScrapeSpec(NamedTuple):
 
 
 _SCRAPE_REGISTRY: dict[str, _ScrapeSpec] = {
-    "api_events": _ScrapeSpec("_api_events", "_scraped_api_events", api_events_polars_schema, "API events"),
-    "api_rosters": _ScrapeSpec("_api_rosters", "_scraped_api_rosters", api_rosters_polars_schema, "API rosters"),
-    "changes": _ScrapeSpec("_changes", "_scraped_changes", changes_polars_schema, "changes"),
-    "html_events": _ScrapeSpec("_html_events", "_scraped_html_events", html_events_polars_schema, "HTML events"),
-    "html_rosters": _ScrapeSpec("_html_rosters", "_scraped_html_rosters", html_rosters_polars_schema, "HTML rosters"),
-    "rosters": _ScrapeSpec("_rosters", "_scraped_rosters", rosters_polars_schema, "rosters"),
-    "shifts": _ScrapeSpec("_shifts", "_scraped_shifts", shifts_polars_schema, "shifts"),
-    "play_by_play": _ScrapeSpec("_play_by_play", "_scraped_play_by_play", pbp_polars_schema, "play-by-play data"),
-    "play_by_play_ext": _ScrapeSpec("_play_by_play_ext", "_scraped_play_by_play", pbp_ext_polars_schema),
-    "xg_fields": _ScrapeSpec("_xg_fields", "_scraped_play_by_play", xg_polars_schema),
+    "api_events": _ScrapeSpec("_api_events", api_events_polars_schema, "API events"),
+    "api_rosters": _ScrapeSpec("_api_rosters", api_rosters_polars_schema, "API rosters"),
+    "changes": _ScrapeSpec("_changes", changes_polars_schema, "changes"),
+    "html_events": _ScrapeSpec("_html_events", html_events_polars_schema, "HTML events"),
+    "html_rosters": _ScrapeSpec("_html_rosters", html_rosters_polars_schema, "HTML rosters"),
+    "rosters": _ScrapeSpec("_rosters", rosters_polars_schema, "rosters"),
+    "shifts": _ScrapeSpec("_shifts", shifts_polars_schema, "shifts"),
+    "play_by_play": _ScrapeSpec("_play_by_play", pbp_polars_schema, "play-by-play data"),
+    "play_by_play_ext": _ScrapeSpec("_play_by_play_ext", pbp_ext_polars_schema),
+    "xg_fields": _ScrapeSpec("_xg_fields", xg_polars_schema),
 }
 
 # Pre-seedable leaf types, used by _seed_game_from_cache. Excludes the terminal
 # play_by_play/play_by_play_ext/xg_fields outputs, which nothing else derives from.
 _TERMINAL_KEYS = frozenset({"play_by_play", "play_by_play_ext", "xg_fields"})
-_LEAF_ATTRS: dict[str, tuple[str, str]] = {
-    key: (spec.list_attr, spec.tracker_attr) for key, spec in _SCRAPE_REGISTRY.items() if key not in _TERMINAL_KEYS
+_LEAF_ATTRS: dict[str, str] = {
+    key: spec.list_attr for key, spec in _SCRAPE_REGISTRY.items() if key not in _TERMINAL_KEYS
 }
 
 logger = logging.getLogger(__name__)
@@ -113,24 +114,16 @@ class _ScraperBase:
         _cache_dir: Path | None
 
         # Raw data caches (from _ScraperCore)
-        _api_events: list[pl.DataFrame]
-        _api_rosters: list[pl.DataFrame]
-        _html_events: list[pl.DataFrame]
-        _html_rosters: list[pl.DataFrame]
-        _rosters: list[pl.DataFrame]
-        _shifts: list[pl.DataFrame]
-        _changes: list[pl.DataFrame]
-        _play_by_play: list[pl.DataFrame]
-        _play_by_play_ext: list[pl.DataFrame]
-        _xg_fields: list[pl.DataFrame]
-        _scraped_api_events: set[int]
-        _scraped_api_rosters: set[int]
-        _scraped_html_events: set[int]
-        _scraped_html_rosters: set[int]
-        _scraped_rosters: set[int]
-        _scraped_shifts: set[int]
-        _scraped_changes: set[int]
-        _scraped_play_by_play: set[int]
+        _api_events: dict[int, pl.DataFrame]
+        _api_rosters: dict[int, pl.DataFrame]
+        _html_events: dict[int, pl.DataFrame]
+        _html_rosters: dict[int, pl.DataFrame]
+        _rosters: dict[int, pl.DataFrame]
+        _shifts: dict[int, pl.DataFrame]
+        _changes: dict[int, pl.DataFrame]
+        _play_by_play: dict[int, pl.DataFrame]
+        _play_by_play_ext: dict[int, pl.DataFrame]
+        _xg_fields: dict[int, pl.DataFrame]
         _bad_games: list
         _failed_types: dict[int, set[str]]
 
@@ -177,7 +170,7 @@ class _ScraperBase:
                 "rosters",
             ],
         ) -> None: ...
-        def _finalize_dataframe(self, data: list[pl.DataFrame], schema: object) -> DataFrameT: ...
+        def _finalize_dataframe(self, data: dict[int, pl.DataFrame], schema: object) -> DataFrameT: ...
 
 
 class _ScraperCore(_ScraperBase):
@@ -231,33 +224,10 @@ class _ScraperCore(_ScraperBase):
         self._failed_types: dict[int, set[str]] = {}
 
         self._requests_session: ChickenSession = ChickenSession()
-        self._games: dict[int, Game] = {}
 
-        self._api_events: list[pl.DataFrame] = []
-        self._scraped_api_events: set[int] = set()
-
-        self._api_rosters: list[pl.DataFrame] = []
-        self._scraped_api_rosters: set[int] = set()
-
-        self._changes: list[pl.DataFrame] = []
-        self._scraped_changes: set[int] = set()
-
-        self._html_events: list[pl.DataFrame] = []
-        self._scraped_html_events: set[int] = set()
-
-        self._html_rosters: list[pl.DataFrame] = []
-        self._scraped_html_rosters: set[int] = set()
-
-        self._rosters: list[pl.DataFrame] = []
-        self._scraped_rosters: set[int] = set()
-
-        self._shifts: list[pl.DataFrame] = []
-        self._scraped_shifts: set[int] = set()
-
-        self._play_by_play: list[pl.DataFrame] = []
-        self._play_by_play_ext: list[pl.DataFrame] = []
-        self._xg_fields: list[pl.DataFrame] = []
-        self._scraped_play_by_play: set[int] = set()
+        # Each raw type's frames, keyed by game ID; a Game is dropped once its frames are stored (R14, N18)
+        for spec in _SCRAPE_REGISTRY.values():
+            setattr(self, spec.list_attr, {})
 
         dataframe = pl.DataFrame()
 
@@ -323,15 +293,10 @@ class _ScraperCore(_ScraperBase):
 
     def _seed_game_from_cache(self, game: Game, game_id: int) -> None:
         """Write already-scraped/cached data for game_id into game.__dict__ to skip re-fetching."""
-        for prop, (list_attr, tracker_attr) in _LEAF_ATTRS.items():
-            if game_id not in getattr(self, tracker_attr):
-                continue
-            frames: list[pl.DataFrame] = getattr(self, list_attr)
-            if not frames:
-                continue
-            rows = pl.concat(frames).filter(pl.col("game_id") == game_id).to_dicts()
-            if rows:
-                game.__dict__[prop] = rows
+        for prop, list_attr in _LEAF_ATTRS.items():
+            frame = getattr(self, list_attr).get(game_id)
+            if frame is not None and not frame.is_empty():
+                game.__dict__[prop] = frame.to_dicts()
 
     def _scrape_single_game(
         self,
@@ -347,11 +312,8 @@ class _ScraperCore(_ScraperBase):
         ``"play_by_play"`` is a superset fetch that also returns every raw component.
         """
         try:
-            game = self._games.get(game_id)
-            if game is None:
-                game = Game(game_id, self._requests_session)
-                self._seed_game_from_cache(game, game_id)
-                self._games[game_id] = game
+            game = Game(game_id, self._requests_session)
+            self._seed_game_from_cache(game, game_id)
 
             match scrape_type:
                 case "api_events":
@@ -371,7 +333,7 @@ class _ScraperCore(_ScraperBase):
                     return {"game_id": game_id, "changes": game.changes, "shifts": game.shifts}
                 case "play_by_play":
                     # Skip re-fetching api_rosters/html_rosters if rosters is already cached.
-                    rosters_already_cached = game_id in self._scraped_rosters
+                    rosters_already_cached = game_id in self._rosters
                     result = {
                         "game_id": game_id,
                         "play_by_play": game.play_by_play,
@@ -397,18 +359,20 @@ class _ScraperCore(_ScraperBase):
             logger.error("Unexpected error scraping game %s", game_id, exc_info=True)
             return None
 
-    def _game_frames(self, game_id: int, result: dict, result_targets: dict) -> dict[str, pl.DataFrame | None] | None:
+    def _game_frames(self, game_id: int, result: dict) -> dict[str, pl.DataFrame] | None:
         """Build one game's frames from a scrape result, or return None if any of them cannot be built.
 
         A play-by-play scrape returns every raw type for the game, so a type already stored for it is left
         out; storing it again appended the game's rows twice (R3).
         """
         try:
-            return {
-                key: pl.from_dicts(value, schema=_SCRAPE_REGISTRY[key].schema) if value else None
-                for key, value in result.items()
-                if key != "game_id" and game_id not in result_targets[key][1]
-            }
+            frames = {}
+            for key, value in result.items():
+                if key == "game_id" or game_id in getattr(self, _SCRAPE_REGISTRY[key].list_attr):
+                    continue
+                schema = _SCRAPE_REGISTRY[key].schema
+                frames[key] = pl.from_dicts(value, schema=schema) if value else pl.DataFrame(schema=schema)
+            return frames
         except Exception:  # noqa: BLE001  # pyright: ignore[reportBroadExceptionCaught]
             logger.error("Unexpected error building the frames for game %s", game_id, exc_info=True)
             return None
@@ -421,8 +385,7 @@ class _ScraperCore(_ScraperBase):
     ) -> None:
         """Scrape only the data needed for scrape_type for unscraped game IDs.
 
-        Uses the type-specific _scraped_* list to determine which games still need
-        fetching, so previously scraped games are not re-fetched.
+        A game already stored for scrape_type is not fetched again.
 
         Examples:
             First, instantiate the Scraper object
@@ -436,21 +399,11 @@ class _ScraperCore(_ScraperBase):
         """
         pbar_stubs = {key: spec.pbar_label for key, spec in _SCRAPE_REGISTRY.items() if spec.pbar_label is not None}
 
-        scraped_tracker = {
-            key: getattr(self, spec.tracker_attr)
-            for key, spec in _SCRAPE_REGISTRY.items()
-            if spec.pbar_label is not None
-        }
-
-        unscraped = [x for x in self.game_ids if x not in scraped_tracker[scrape_type]]
+        stored = getattr(self, _SCRAPE_REGISTRY[scrape_type].list_attr)
+        unscraped = [x for x in self.game_ids if x not in stored]
 
         if not unscraped:
             return
-
-        result_targets = {
-            key: (getattr(self, spec.list_attr), getattr(self, spec.tracker_attr))
-            for key, spec in _SCRAPE_REGISTRY.items()
-        }
 
         failed_now: list[int] = []
 
@@ -462,15 +415,12 @@ class _ScraperCore(_ScraperBase):
 
             for idx, game_id in enumerate(unscraped):
                 result = self._scrape_single_game(game_id, scrape_type)
-                frames = self._game_frames(game_id, result, result_targets) if result is not None else None
+                frames = self._game_frames(game_id, result) if result is not None else None
 
                 if frames is not None and result is not None:
                     # Committed together, so a game is either stored for every type it returned or for none
                     for key, frame in frames.items():
-                        data_list, scraped_list = result_targets[key]
-                        if frame is not None:
-                            data_list.append(frame)
-                        scraped_list.add(game_id)
+                        getattr(self, _SCRAPE_REGISTRY[key].list_attr)[game_id] = frame
                     self._record_success(game_id, {scrape_type, *result} - {"game_id"})
                 else:
                     self._record_failure(game_id, scrape_type)
@@ -495,13 +445,13 @@ class _ScraperCore(_ScraperBase):
         if self._cache_dir is not None:
             self.save(self._cache_dir)
 
-    def _finalize_dataframe(self, data: list[pl.DataFrame], schema) -> DataFrameT:
-        """Concatenate raw data frames and return in the configured backend format.
+    def _finalize_dataframe(self, data: dict[int, pl.DataFrame], schema) -> DataFrameT:
+        """Concatenate one type's frames in ``game_ids`` order and return them in the configured backend format.
 
         Parameters:
-            data (list[pl.DataFrame]):
-                Frames collected across all scraped games for one data type.
-                Empty list returns an empty frame with the given schema.
+            data (dict[int, pl.DataFrame]):
+                Frames for one data type, keyed by game ID. Games not in ``game_ids`` are left out, and
+                no frames return an empty frame with the given schema.
             schema:
                 Polars schema used to initialize an empty DataFrame when ``data`` is
                 empty, ensuring callers always receive a consistently-typed result.
@@ -512,7 +462,8 @@ class _ScraperCore(_ScraperBase):
                 Scraper instantiation (``"polars"``, ``"pandas"``, ``"pyarrow"``,
                 or ``"narwhals"``).
         """
-        df = pl.concat(data) if data else pl.DataFrame(schema=schema)
+        frames = [data[game_id] for game_id in self.game_ids if game_id in data]
+        df = pl.concat(frames) if frames else pl.DataFrame(schema=schema)
         return _to_backend(df, self._backend)
 
     def add_games(self, game_ids: list[int | str | float] | int) -> None:

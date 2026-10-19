@@ -234,40 +234,40 @@ class TestScraper:
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
         _ = scraper.api_rosters
 
-        assert len(scraper._scraped_api_rosters) == 1
-        assert len(scraper._scraped_html_events) == 0
-        assert len(scraper._scraped_html_rosters) == 0
-        assert len(scraper._scraped_shifts) == 0
-        assert len(scraper._scraped_changes) == 0
-        assert len(scraper._scraped_play_by_play) == 0
+        assert len(scraper._api_rosters) == 1
+        assert len(scraper._html_events) == 0
+        assert len(scraper._html_rosters) == 0
+        assert len(scraper._shifts) == 0
+        assert len(scraper._changes) == 0
+        assert len(scraper._play_by_play) == 0
 
     def test_selective_scraping_api_events_also_populates_api_rosters(self):
         """api_events and api_rosters share the same HTTP call — both should be tracked."""
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
         _ = scraper.api_events
 
-        assert len(scraper._scraped_api_events) == 1
-        assert len(scraper._scraped_api_rosters) == 1
+        assert len(scraper._api_events) == 1
+        assert len(scraper._api_rosters) == 1
         # Other types should remain unscraped
-        assert len(scraper._scraped_html_events) == 0
-        assert len(scraper._scraped_shifts) == 0
+        assert len(scraper._html_events) == 0
+        assert len(scraper._shifts) == 0
 
     def test_selective_scraping_html_events_only(self):
         """Accessing html_events should not populate api_events, shifts, etc."""
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
         _ = scraper.html_events
 
-        assert len(scraper._scraped_html_events) == 1
-        assert len(scraper._scraped_api_events) == 0
-        assert len(scraper._scraped_api_rosters) == 0
-        assert len(scraper._scraped_shifts) == 0
+        assert len(scraper._html_events) == 1
+        assert len(scraper._api_events) == 0
+        assert len(scraper._api_rosters) == 0
+        assert len(scraper._shifts) == 0
 
     def test_selective_scraping_play_by_play_populates_ext(self):
         """play_by_play and play_by_play_ext share the same scrape — both should be tracked once."""
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
         _ = scraper.play_by_play
 
-        assert len(scraper._scraped_play_by_play) == 1
+        assert len(scraper._play_by_play) == 1
         # play_by_play_ext should already be populated (same scrape pass)
         assert len(scraper._play_by_play_ext) > 0
 
@@ -278,7 +278,7 @@ class TestScraper:
         count_after_first = len(scraper._api_rosters)
 
         # Invalidate the cached_property so the property body runs again,
-        # but _scrape should be a no-op because game is already in _scraped_api_rosters
+        # but _scrape should be a no-op because the game is already stored in _api_rosters
         scraper.__dict__.pop("api_rosters", None)
         _ = scraper.api_rosters
         count_after_second = len(scraper._api_rosters)
@@ -511,21 +511,25 @@ class TestScraper:
         result = scraper._scrape_single_game(game_id=9999999999, scrape_type="api_rosters")
         assert result is None
 
-    def test_scrape_single_game_reuses_cached_game_instance(self):
-        """A game_id's Game instance is cached and reused across scrape_type calls, so
-        sequential partial-property access (e.g. api_events then rosters) doesn't
-        reconstruct Game or redundantly re-fetch data already cached on it."""
+    def test_a_game_is_not_kept_after_its_frames_are_stored(self):
+        """A later scrape of another type reuses the stored frames instead of a kept Game (R14, N18)."""
+        from chickenstats.chicken_nhl import _scraper_core
+
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
-        scraper._scrape_single_game(game_id=2023020001, scrape_type="api_rosters")
-        first_game = scraper._games[2023020001]
+        _ = scraper.api_rosters
+        assert not hasattr(scraper, "_games")
 
-        scraper._scrape_single_game(game_id=2023020001, scrape_type="rosters")
-        second_game = scraper._games[2023020001]
+        seeded = []
+        seed = _scraper_core._ScraperCore._seed_game_from_cache
 
-        assert first_game is second_game
-        # api_rosters was already fetched via the first call, so the second call (which
-        # also needs api_rosters as part of `rosters`) should find it already cached.
-        assert "api_rosters" in first_game.__dict__
+        def recording_seed(self, game, game_id):
+            seed(self, game, game_id)
+            seeded.append(set(game.__dict__) & {"api_events", "api_rosters"})
+
+        with patch.object(_scraper_core._ScraperCore, "_seed_game_from_cache", recording_seed):
+            _ = scraper.rosters
+
+        assert seeded == [{"api_rosters"}]
 
     def test_scrape_single_game_expected_error_logs_warning(self, caplog):
         """A known/expected failure class (ChickenstatsError, RequestException,
@@ -903,7 +907,7 @@ def test_a_frame_that_cannot_be_built_fails_its_game_without_storing_the_rest():
 
     assert scraper.failed_games == [2023020001]
     assert play_by_play.height == 0
-    assert 2023020001 not in scraper._scraped_api_events | scraper._scraped_rosters | scraper._scraped_play_by_play
+    assert 2023020001 not in {*scraper._api_events, *scraper._rosters, *scraper._play_by_play}
 
 
 def test_add_games_rebuilds_every_result_with_its_last_arguments():
@@ -975,3 +979,41 @@ class TestFailedGames:
 
         assert loaded.play_by_play.height == 781
         assert loaded.failed_games == []
+
+
+def test_a_scraped_game_leaves_only_its_frames_behind():
+    """Each game's Game object is dropped once its frames are stored (R14, N18).
+
+    tracemalloc sees Python objects, not the frames' Arrow buffers, so this measures what a kept Game cost:
+    about 15 MB of row dicts per game before, and almost nothing now.
+    """
+    import gc
+    import tracemalloc
+
+    saved: list[str | float | int] = [
+        2023020001,
+        2023020015,
+        2023020125,
+        2023020411,
+        2023030223,
+        2010020012,
+        2017030111,
+    ]
+
+    warm = Scraper(saved[:1], disable_progress_bar=True)
+    _ = warm.play_by_play
+    del warm
+    gc.collect()
+
+    tracemalloc.start()
+    try:
+        before = tracemalloc.get_traced_memory()[0]
+        scraper = Scraper(saved, disable_progress_bar=True)
+        _ = scraper.play_by_play
+        scraper.__dict__.pop("play_by_play")
+        gc.collect()
+        per_game = (tracemalloc.get_traced_memory()[0] - before) / len(saved)
+    finally:
+        tracemalloc.stop()
+
+    assert per_game < 1_000_000

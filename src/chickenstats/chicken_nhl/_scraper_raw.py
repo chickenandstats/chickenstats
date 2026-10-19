@@ -199,19 +199,15 @@ class _ScraperRawMixin(_ScraperBase):
     @shared_doc(_SCRAPER_PLAY_BY_PLAY_DOC)
     def play_by_play(self) -> DataFrameT:
         """play_by_play — docstring lives in _docstrings._SCRAPER_PLAY_BY_PLAY_DOC."""
-        if set(self.game_ids) != self._scraped_play_by_play:
-            self._scrape("play_by_play")
+        self._scrape("play_by_play")
 
-        raw = pl.concat(self._play_by_play) if self._play_by_play else pl.DataFrame(schema=pbp_polars_schema)
-
-        return _to_backend(raw, self._backend)
+        return self._finalize_dataframe(data=self._play_by_play, schema=pbp_polars_schema)
 
     @cached_property
     @shared_doc(_SCRAPER_PLAY_BY_PLAY_EXT_DOC)
     def play_by_play_ext(self) -> DataFrameT:
         """play_by_play_ext — docstring lives in _docstrings._SCRAPER_PLAY_BY_PLAY_EXT_DOC."""
-        if set(self.game_ids) != self._scraped_play_by_play:
-            self._scrape("play_by_play")
+        self._scrape("play_by_play")
 
         df = self._finalize_dataframe(data=self._play_by_play_ext, schema=pbp_ext_polars_schema)
 
@@ -220,8 +216,7 @@ class _ScraperRawMixin(_ScraperBase):
     @cached_property
     def xg_fields(self) -> DataFrameT:
         """Polars DataFrame of xG input features for every fenwick event across all scraped games."""
-        if set(self.game_ids) != self._scraped_play_by_play:
-            self._scrape("play_by_play")
+        self._scrape("play_by_play")
 
         return self._finalize_dataframe(data=self._xg_fields, schema=xg_polars_schema)
 

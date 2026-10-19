@@ -13,13 +13,23 @@ from chickenstats.utilities.utilities import data_directory
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-# scrape-data key -> Scraper attribute holding its raw per-game DataFrame list.
+# scrape-data key -> Scraper attribute holding its frames keyed by game ID.
 _RAW_DATA_ATTRS: dict[str, str] = {key: spec.list_attr for key, spec in _SCRAPE_REGISTRY.items()}
 
-# scrape-data key -> Scraper attribute tracking which game IDs already have that data.
-_SCRAPED_TRACKER_ATTRS: dict[str, str] = {
-    key: spec.tracker_attr for key, spec in _SCRAPE_REGISTRY.items() if spec.pbar_label is not None
+# The keys _meta.json lists games under; play_by_play_ext and xg_fields are stored with play_by_play.
+_SCRAPED_KEYS: dict[str, str] = {
+    key: key if spec.pbar_label is not None else "play_by_play" for key, spec in _SCRAPE_REGISTRY.items()
 }
+
+
+def _split_by_game(frame: pl.DataFrame) -> dict[int, pl.DataFrame]:
+    """One type's saved rows, split by game.
+
+    play_by_play_ext has no game_id column; its id is the game ID followed by a four-digit event index.
+    """
+    game_id = pl.col("game_id") if "game_id" in frame.columns else pl.col("id") // 10_000
+    keyed = frame.with_columns(_game=game_id)
+    return {key: rows.drop("_game") for (key,), rows in keyed.partition_by("_game", as_dict=True).items()}
 
 
 class _ScraperPersistMixin(_ScraperBase):
@@ -47,15 +57,17 @@ class _ScraperPersistMixin(_ScraperBase):
         target.mkdir(parents=True, exist_ok=True)
 
         for key, attr in _RAW_DATA_ATTRS.items():
-            frames: list[pl.DataFrame] = getattr(self, attr)
+            frames: dict[int, pl.DataFrame] = getattr(self, attr)
             if frames:
-                pl.concat(frames).write_parquet(target / f"{key}.parquet")
+                pl.concat(frames.values()).write_parquet(target / f"{key}.parquet")
 
         meta = {
             "game_ids": list(self.game_ids),
             "bad_games": list(self._bad_games),
             "backend": self._backend,
-            "scraped": {key: sorted(getattr(self, attr)) for key, attr in _SCRAPED_TRACKER_ATTRS.items()},
+            "scraped": {
+                key: sorted(getattr(self, attr)) for key, attr in _RAW_DATA_ATTRS.items() if _SCRAPED_KEYS[key] == key
+            },
         }
         (target / "_meta.json").write_text(json.dumps(meta, indent=2))
 
@@ -84,14 +96,16 @@ class _ScraperPersistMixin(_ScraperBase):
                 if game_id not in self._bad_games:
                     self._bad_games.append(game_id)
 
+        scraped = meta.get("scraped", {})
         for key, attr in _RAW_DATA_ATTRS.items():
             file = path / f"{key}.parquet"
-            if file.exists():
-                setattr(self, attr, [pl.read_parquet(file)])
-
-        scraped = meta.get("scraped", {})
-        for key, attr in _SCRAPED_TRACKER_ATTRS.items():
-            getattr(self, attr).update(scraped.get(key, []))
+            schema = _SCRAPE_REGISTRY[key].schema
+            frame = pl.read_parquet(file) if file.exists() else pl.DataFrame(schema=schema)
+            by_game = _split_by_game(frame)
+            # A game listed as scraped with no rows is stored as an empty frame, so it is not fetched again
+            stored: dict[int, pl.DataFrame] = getattr(self, attr)
+            for game_id in scraped.get(_SCRAPED_KEYS[key], []):
+                stored[game_id] = by_game.get(game_id, pl.DataFrame(schema=schema))
 
     @classmethod
     def load(
