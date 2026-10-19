@@ -166,7 +166,7 @@ class _ScraperBase:
             overwrite: bool = False,
         ) -> None: ...
         def _is_empty(self, df: pl.DataFrame) -> bool: ...
-        def _apply_cache(self, path: Path, meta: dict | None = None) -> None: ...
+        def _apply_cache(self, path: Path, meta: dict | None = None, add_cached_games: bool = True) -> None: ...
         def _cache_game(self, game_id: int, keys: Iterable[str]) -> None: ...
         def _clear_cache(self, path: Path) -> None: ...
         def save(self, path: str | Path | None = None) -> Path: ...
@@ -217,9 +217,10 @@ class _ScraperCore(_ScraperBase):
             cache (bool | str | Path):
                 Persist scraped data to disk and reuse it on construction. ``False``
                 (default) disables caching. ``True`` uses ``data_directory()``; a
-                ``str``/``Path`` uses that directory. Cached game IDs extend ``game_ids``
-                (cached first). Each game is written to the cache as soon as its scrape ends,
-                so an interrupted run keeps the games it finished.
+                ``str``/``Path`` uses that directory. Only the games in ``game_ids`` are read
+                from the cache, and other cached games stay in it; use ``Scraper.load()`` for
+                every cached game (N84). Each game is written to the cache as soon as its
+                scrape ends, so an interrupted run keeps the games it finished.
             overwrite (bool):
                 Remove an existing cache's files on construction and scrape fresh. Only
                 the files chickenstats writes are removed. No effect when ``cache`` is
@@ -275,7 +276,7 @@ class _ScraperCore(_ScraperBase):
             if overwrite:
                 self._clear_cache(self._cache_dir)
             else:
-                self._apply_cache(self._cache_dir)
+                self._apply_cache(self._cache_dir, add_cached_games=False)
 
     def __repr__(self) -> str:
         """Return a string representation of the Scraper object."""

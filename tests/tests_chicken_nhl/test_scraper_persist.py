@@ -300,3 +300,16 @@ class TestCacheFormat:
 
         assert 2023020001 not in scraper._shifts
         assert scraper.shifts.height > 0
+
+    def test_cache_returns_the_games_asked_for(self, tmp_path):
+        """cache= with one game returns that game, and the other cached games stay in the cache (N84)."""
+        cache_dir = tmp_path / "cache"
+        _ = Scraper([2023020001, 2023020015], disable_progress_bar=True, cache=cache_dir).play_by_play
+
+        with patch("requests.Session.get", side_effect=AssertionError("should not hit the network")):
+            one = Scraper([2023020015], disable_progress_bar=True, cache=cache_dir)
+            play_by_play = one.play_by_play
+
+        assert one.game_ids == [2023020015]
+        assert play_by_play["game_id"].unique().to_list() == [2023020015]
+        assert Scraper.load(cache_dir, disable_progress_bar=True).game_ids == [2023020001, 2023020015]

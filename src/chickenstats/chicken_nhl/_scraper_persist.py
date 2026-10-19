@@ -155,23 +155,26 @@ class _ScraperPersistMixin(_ScraperBase):
         _remove_cache_files(path)
         self._cache_meta = None
 
-    def _apply_cache(self, path: Path, meta: dict | None = None) -> None:
+    def _apply_cache(self, path: Path, meta: dict | None = None, add_cached_games: bool = True) -> None:
         """Populate ``self`` with cached data previously written by :meth:`save`.
 
-        Extends ``self.game_ids`` with any cached IDs not already present (cached first),
-        loads the raw parquet data, and marks those games as already-scraped.
+        Loads the raw parquet data for the Scraper's games and marks them as already scraped.
 
         Parameters:
             path (Path): Directory previously written by :meth:`save`.
             meta (dict | None): Already-read ``_meta.json`` contents, if the caller has
                 them; read from ``path`` otherwise.
+            add_cached_games (bool): Extend ``self.game_ids`` with every cached game (cached
+                first), as :meth:`load` does. ``cache=`` passes ``False``, so a Scraper asked for
+                one game returns that game (N84).
         """
         meta = meta or _read_meta(path)
         if meta is None:
             return
 
-        cached_ids = normalize_game_ids(meta["game_ids"]) if meta["game_ids"] else []
-        self.game_ids = list(dict.fromkeys([*cached_ids, *self.game_ids]))
+        if add_cached_games:
+            cached_ids = normalize_game_ids(meta["game_ids"]) if meta["game_ids"] else []
+            self.game_ids = list(dict.fromkeys([*cached_ids, *self.game_ids]))
         games = {int(game_id): entry for game_id, entry in meta["games"].items() if int(game_id) in self.game_ids}
 
         for key, spec in _SCRAPE_REGISTRY.items():

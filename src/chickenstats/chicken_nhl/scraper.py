@@ -26,11 +26,13 @@ class Scraper(_ScraperCore, _ScraperRawMixin, _ScraperStatsMixin, _ScraperPersis
         cache (bool | str | Path):
             Persist scraped data to disk and reuse it on construction. ``False``
             (default) disables caching. ``True`` uses ``data_directory()``; a
-            ``str``/``Path`` uses that directory. Cached game IDs extend ``game_ids``
-            (cached first); new scrapes auto-save back to the same path.
+            ``str``/``Path`` uses that directory. Only the games in ``game_ids`` are read
+            from the cache; use ``Scraper.load()`` for every cached game. Each game is
+            written to the cache as soon as its scrape ends.
         overwrite (bool):
-            Ignore an existing cache on construction and scrape fresh; the next
-            auto-save overwrites it. No effect when ``cache`` is falsy. Default ``False``.
+            Remove an existing cache's files on construction and scrape fresh. Only the
+            files chickenstats writes are removed. No effect when ``cache`` is falsy.
+            Default ``False``.
 
     A game's data is final only once the NHL API reports the game as ``OFF``. Data still changes in every
     earlier state (``FUT``, ``PRE``, ``LIVE``, ``CRIT``, ``OVER`` and ``FINAL``), so a game in one of those
