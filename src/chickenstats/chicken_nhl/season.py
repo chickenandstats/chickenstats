@@ -470,7 +470,7 @@ class Season:
                 "road_ties": team.get("roadTies"),
                 "road_wins": team.get("roadWins"),
                 "season": team.get("seasonId"),
-                "shootoutLosses": team.get("shootoutLosses"),
+                "shootout_losses": team.get("shootoutLosses"),
                 "shootout_wins": team.get("shootoutWins"),
                 "streak_code": team.get("streakCode", ""),
                 "streak_count": team.get("streakCount", 0),
@@ -521,8 +521,8 @@ class Season:
                 Number of losses, e.g., 29
             ot_losses (int):
                 Number of losses in overtime play, e.g., 4
-            shootout_losses (int | np.nan):
-                Number of losses due during shootout, e.g., NaN
+            shootout_losses (int | None):
+                Number of losses in a shootout, e.g., 3
             ties (int):
                 Number of ties, e.g., 0
             win_pct (float):

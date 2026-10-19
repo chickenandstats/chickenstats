@@ -452,6 +452,13 @@ class TestScheduleCaching:
         with pytest.raises(InvalidTeamError, match="did not play in 2023-24"):
             Season(2023).schedule("XYZ", disable_progress_bar=True)
 
+    def test_standings_fill_shootout_losses(self):
+        """shootout_losses is filled from the NHL's standings, not left null (R93)."""
+        standings = Season(2023).standings
+
+        assert standings["shootout_losses"].null_count() == 0
+        assert standings["shootout_losses"].sum() == standings["shootout_wins"].sum()
+
     def test_standings_second_call_uses_cache(self):
         """Second standings call hits the False branch of `if not self._standings:`."""
         season = Season(2023)
