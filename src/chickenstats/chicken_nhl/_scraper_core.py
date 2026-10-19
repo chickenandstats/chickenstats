@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 from chickenstats.chicken_nhl.game import Game
-from chickenstats.exceptions import ChickenstatsError, InvalidGameIDError
+from chickenstats.exceptions import ChickenstatsError, InvalidGameIDError, InvalidInputError
 from chickenstats.chicken_nhl.validation_polars import (
     api_events_polars_schema,
     api_rosters_polars_schema,
@@ -133,6 +133,7 @@ class _ScraperBase:
         _bad_games: list
         _failed_types: dict[int, set[str]]
         _game_states: dict[int, str]
+        _stale: set[int]
 
         # Aggregated stat frames (from _ScraperCore)
         _ind_stats: pl.DataFrame
@@ -176,6 +177,7 @@ class _ScraperBase:
                 "shifts",
                 "rosters",
             ],
+            only: list[int] | None = None,
         ) -> None: ...
         def _finalize_dataframe(self, data: dict[int, pl.DataFrame], schema: object) -> DataFrameT: ...
 
@@ -231,6 +233,8 @@ class _ScraperCore(_ScraperBase):
         self._failed_types: dict[int, set[str]] = {}
         # Each scraped game's API state when it was last fetched; only FINAL_STATE games are not fetched again
         self._game_states: dict[int, str] = {}
+        # Games refresh() is fetching again; each counts as not final until refresh() ends
+        self._stale: set[int] = set()
 
         self._requests_session: ChickenSession = ChickenSession()
 
@@ -302,7 +306,7 @@ class _ScraperCore(_ScraperBase):
 
     def _is_final(self, game_id: int) -> bool:
         """Whether game_id's stored data was fetched once the game was final, so it is not fetched again."""
-        return self._game_states.get(game_id) == FINAL_STATE
+        return game_id not in self._stale and self._game_states.get(game_id) == FINAL_STATE
 
     def _seed_game_from_cache(self, game: Game, game_id: int) -> None:
         """Write already-scraped/cached data for game_id into game.__dict__ to skip re-fetching.
@@ -409,8 +413,9 @@ class _ScraperCore(_ScraperBase):
         scrape_type: Literal[
             "api_events", "api_rosters", "changes", "html_events", "html_rosters", "play_by_play", "shifts", "rosters"
         ],
+        only: list[int] | None = None,
     ) -> None:
-        """Scrape only the data needed for scrape_type for unscraped game IDs.
+        """Scrape only the data needed for scrape_type for unscraped game IDs, or for the games in only.
 
         A game already stored for scrape_type is not fetched again.
 
@@ -428,7 +433,7 @@ class _ScraperCore(_ScraperBase):
 
         # A game not yet final is fetched again, so its rows are replaced by the latest data (N9)
         stored = getattr(self, _SCRAPE_REGISTRY[scrape_type].list_attr)
-        unscraped = [x for x in self.game_ids if x not in stored or not self._is_final(x)]
+        unscraped = [x for x in (self.game_ids if only is None else only) if x not in stored or not self._is_final(x)]
 
         if not unscraped:
             return
@@ -523,11 +528,73 @@ class _ScraperCore(_ScraperBase):
 
         self.game_ids.extend(new_ids)
 
+        self._clear_results()
+
+    def _clear_results(self) -> None:
+        """Clear every returned frame, raw and aggregated, so each is rebuilt from the stored games on its next access.
+
+        Each aggregated result is rebuilt with the arguments it was last built with (R6).
+        """
         for prop in _SCRAPE_REGISTRY:
             self.__dict__.pop(prop, None)
 
-        # The aggregated results were built from the old games; each is rebuilt on its next access, with the
-        # arguments it was last built with (R6)
         empty = pl.DataFrame()
         self._ind_stats, self._oi_stats, self._stats = empty, empty, empty
         self._lines, self._team_stats, self._stints = empty, empty, empty
+
+    def refresh(self, game_ids: list[int | str | float] | int | None = None) -> None:
+        """Fetch games again and replace their rows.
+
+        A game is fetched again for each data type the Scraper holds or failed to get for it; when play-by-play is
+        among them, one play-by-play scrape replaces them all. A game's rows are replaced only when its new scrape
+        succeeds: a game that fails again keeps its earlier rows and is listed in ``failed_games``. Every returned
+        frame is rebuilt on its next access.
+
+        Parameters:
+            game_ids (list or int or float or str or None):
+                Games to fetch again, which must already be in the Scraper. Default ``None`` fetches every game
+                that is not final, that is, every game the API has not yet reported as ``OFF``, failed games
+                included.
+
+        Raises:
+            InvalidInputError: If a game ID is not in the Scraper.
+
+        Examples:
+            Scrape tonight's games while they are in progress
+            >>> scraper = Scraper([2025020601, 2025020602])
+            >>> pbp = scraper.play_by_play
+
+            Later, fetch the games that were not final yet
+            >>> scraper.refresh()
+            >>> pbp = scraper.play_by_play
+        """
+        if game_ids is None:
+            targets = [game_id for game_id in self.game_ids if not self._is_final(game_id)]
+        else:
+            targets = normalize_game_ids(game_ids)
+            unknown = [game_id for game_id in targets if game_id not in self.game_ids]
+            if unknown:
+                raise InvalidInputError(
+                    f"Games {unknown} are not in this Scraper; add them with add_games()", obj=unknown
+                )
+
+        held = {
+            key
+            for game_id in targets
+            for key, spec in _SCRAPE_REGISTRY.items()
+            if game_id in getattr(self, spec.list_attr) or key in self._failed_types.get(game_id, set())
+        }
+        # play_by_play_ext and xg_fields come only from a play-by-play scrape, which also returns every raw type
+        if held & _TERMINAL_KEYS:
+            scrape_types = ["play_by_play"]
+        else:
+            scrape_types = [key for key in _SCRAPE_REGISTRY if key in held]
+
+        self._stale.update(targets)
+        try:
+            for scrape_type in scrape_types:
+                self._scrape(scrape_type, only=targets)  # ty: ignore[invalid-argument-type]
+        finally:
+            self._stale.difference_update(targets)
+
+        self._clear_results()

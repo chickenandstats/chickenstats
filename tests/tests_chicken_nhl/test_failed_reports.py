@@ -3,8 +3,8 @@
 Each report the scraper fetches for a game (play-by-play PL, the two shift reports TH and TV, and the
 rosters RO) is failed four ways through the shared network guard: a connection error, a 404, a 500, and
 a report cut off before its end.
-Each must record the game in failed_games with a warning that names the report. The retry through
-Scraper.refresh is a known bug until block 3.3 adds it.
+Each must record the game in failed_games with a warning that names the report, and Scraper.refresh must
+recover it once the report can be read.
 """
 
 import logging
@@ -15,7 +15,6 @@ import pytest
 import requests
 
 from chickenstats.chicken_nhl import Scraper
-from test_known_bugs import known_bug
 
 GAME_ID = 2023020001
 REPORTS = ["PL", "TH", "TV", "RO"]
@@ -68,8 +67,8 @@ def test_a_failed_report_fails_the_game(caplog, report, failure):
 
 @pytest.mark.parametrize("failure", FAILURES)
 @pytest.mark.parametrize("report", REPORTS)
-@known_bug("there is no Scraper.refresh to retry a failed game (block 3.3)", raises=AttributeError)
 def test_a_retry_recovers_a_failed_game(caplog, report, failure):
+    """Once the report can be read, refresh() fetches the game again and it leaves failed_games."""
     scraper, _, _ = scrape_with_a_failed_report(caplog, report, failure)
 
     scraper.refresh([GAME_ID])
@@ -120,3 +119,46 @@ def test_a_defect_in_the_play_by_play_pipeline_reaches_the_error_log(caplog):
 
     assert scraper.failed_games == [GAME_ID]
     assert any("Unexpected error" in record.getMessage() for record in caplog.records)
+
+
+def test_a_refresh_that_fails_again_keeps_the_earlier_rows(caplog):
+    """A game whose report fails on refresh keeps the rows it had, and is listed as failed."""
+    scraper = Scraper([GAME_ID], disable_progress_bar=True)
+    before = scraper.play_by_play
+
+    with patch.object(requests.Session, "get", failing("PL", 500)), pytest.warns(UserWarning, match="Failed"):
+        scraper.refresh([GAME_ID])
+
+    assert scraper.failed_games == [GAME_ID]
+    assert scraper.play_by_play.equals(before)
+
+
+def test_refresh_with_no_games_fetches_only_those_not_final(caplog):
+    """refresh() fetches failed and provisional games, and leaves a final game alone."""
+    with patch.object(requests.Session, "get", failing("PL", 404)), pytest.warns(UserWarning):
+        scraper = Scraper([GAME_ID, 2023020015], disable_progress_bar=True)
+        _ = scraper.play_by_play
+    assert scraper.failed_games == [GAME_ID]
+
+    served_get = requests.Session.get
+    requested: list[str] = []
+
+    def recording_get(self, url, *args, **kwargs):
+        requested.append(str(url))
+        return served_get(self, url, *args, **kwargs)
+
+    with patch.object(requests.Session, "get", recording_get):
+        scraper.refresh()
+
+    assert scraper.failed_games == []
+    assert requested and not any("2023020015" in url or "020015.HTM" in url for url in requested)
+    assert scraper.play_by_play["game_id"].unique().sort().to_list() == [GAME_ID, 2023020015]
+
+
+def test_refresh_rejects_a_game_not_in_the_scraper():
+    from chickenstats.exceptions import InvalidInputError
+
+    scraper = Scraper([GAME_ID], disable_progress_bar=True)
+
+    with pytest.raises(InvalidInputError, match="not in this Scraper"):
+        scraper.refresh([2023020015])
