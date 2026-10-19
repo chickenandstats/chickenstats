@@ -503,6 +503,15 @@ class TestMungeSchedule:
         with pytest.raises(InvalidInputError, match="session must be one of"):
             _session_codes("X")
 
+    def test_a_game_not_yet_played_has_no_score(self):
+        """A future game's scores are null, not a 0-0 final (N20)."""
+        future = _mock_game(gameState="FUT")
+        del future["homeTeam"]["score"], future["awayTeam"]["score"]
+
+        result = Season._munge_schedule([future, _mock_game()])
+
+        assert [(game["home_score"], game["away_score"]) for game in result] == [(None, None), (3, 2)]
+
     def test_z_suffix_utc_time_normalized(self):
         """startTimeUTC ending in 'Z' is parsed successfully."""
         game = _mock_game()

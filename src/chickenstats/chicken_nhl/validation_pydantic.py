@@ -756,10 +756,10 @@ class ScheduleGame(ChickenBaseModel):
     game_state: str
     home_team: str
     home_team_id: int
-    home_score: int
+    home_score: int | None
     away_team: str
     away_team_id: int
-    away_score: int
+    away_score: int | None
     venue: str
     venue_timezone: str
     neutral_site: int

@@ -228,10 +228,11 @@ class Season:
                 "game_state": game["gameState"],
                 "home_team": game["homeTeam"]["abbrev"],
                 "home_team_id": game["homeTeam"]["id"],
-                "home_score": game["homeTeam"].get("score", 0),
+                # A game that has not started has no score, which is not the same as 0-0 (N20)
+                "home_score": game["homeTeam"].get("score"),
                 "away_team": game["awayTeam"]["abbrev"],
                 "away_team_id": game["awayTeam"]["id"],
-                "away_score": game["awayTeam"].get("score", 0),
+                "away_score": game["awayTeam"].get("score"),
                 "venue": game["venue"]["default"].upper(),
                 "venue_timezone": game["venueTimezone"],
                 "neutral_site": int(game["neutralSite"]),
@@ -289,14 +290,14 @@ class Season:
                 Three-letter code for the home team, e.g., NSH
             home_team_id (int):
                 Two-digit code assigned to the home franchise by the NHL, e.g., 18
-            home_score (int):
-                Number of goals scored by the home team, e.g., 3
+            home_score (int | None):
+                Number of goals scored by the home team, or null for a game that has not started, e.g., 3
             away_team (str):
                 Three-letter code for the away team, e.g., SEA
             away_team_id (int):
                 Two-digit code assigned to the away franchise by the NHL, e.g., 55
-            away_score (int):
-                Number of goals scored by the away team, e.g., 0
+            away_score (int | None):
+                Number of goals scored by the away team, or null for a game that has not started, e.g., 0
             venue (str):
                 Name of the venue where game is / was played, e.g., BRIDGESTONE ARENA
             venue_timezone (str):
