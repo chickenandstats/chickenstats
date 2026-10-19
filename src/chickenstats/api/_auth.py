@@ -28,6 +28,9 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import chickenstats_api
 import requests
 
+from chickenstats.api._api_constants import REQUEST_TIMEOUT
+from chickenstats.exceptions import AuthError
+
 # Desktop-app OAuth client ID/secret -- see this module's docstring for why the
 # secret is fine to embed.
 _GOOGLE_OAUTH_CLIENT_ID = "572721742848-03580sju886smc8jntggsl9gnlgm8nes.apps.googleusercontent.com"
@@ -84,10 +87,6 @@ def _callback_page(title: str, heading: str, message: str) -> str:
         Body(Div(Img(src=_LOGO_URL, alt="chickenstats"), H1(heading), P(message), cls="card")),
     )
     return to_xml(page)
-
-
-class AuthError(Exception):
-    """Raised for any failure in the browser login flow or credential refresh."""
 
 
 def _login_api(host: str) -> chickenstats_api.LoginApi:
@@ -169,7 +168,9 @@ def refresh_access_token(refresh_token: str, host: str = _DEFAULT_HOST) -> dict:
     AuthError on a rejected/expired refresh token.
     """
     try:
-        token = _login_api(host).login_refresh(chickenstats_api.RefreshTokenRequest(refresh_token=refresh_token))
+        token = _login_api(host).login_refresh(
+            chickenstats_api.RefreshTokenRequest(refresh_token=refresh_token), _request_timeout=REQUEST_TIMEOUT
+        )
     except chickenstats_api.ApiException as exc:
         raise AuthError(f"Refresh token rejected ({exc.status}) -- run `chickenstats login` again.") from exc
     return token.model_dump()
@@ -190,7 +191,9 @@ def password_login(email: str, password: str, host: str = _DEFAULT_HOST) -> Cred
     password."
     """
     try:
-        token = _login_api(host).login_firebase_token(username=email, password=password)
+        token = _login_api(host).login_firebase_token(
+            username=email, password=password, _request_timeout=REQUEST_TIMEOUT
+        )
     except chickenstats_api.ApiException as exc:
         raise AuthError(f"Sign-in failed ({exc.status}): {exc.reason}") from exc
 
@@ -347,7 +350,9 @@ def _exchange_google_for_firebase(google_id_token: str) -> tuple[str, str | None
 def _exchange_firebase_for_local(firebase_id_token: str, host: str) -> tuple[str, str]:
     """Exchange a Firebase ID token for this API's own access/refresh tokens."""
     try:
-        token = _login_api(host).login_verify_token(chickenstats_api.IdToken(id_token=firebase_id_token))
+        token = _login_api(host).login_verify_token(
+            chickenstats_api.IdToken(id_token=firebase_id_token), _request_timeout=REQUEST_TIMEOUT
+        )
     except chickenstats_api.ApiException as exc:
         raise AuthError(f"chickenstats API sign-in failed ({exc.status}): {exc.reason}") from exc
 

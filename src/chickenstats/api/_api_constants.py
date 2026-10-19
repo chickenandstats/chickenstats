@@ -8,3 +8,7 @@ STATS_MAX_LIMIT: int = 50_000
 PRED_GOAL_MAX_LIMIT: int = 50_000
 RAW_MAX_LIMIT: int = 50_000
 """Shared limit for the raw chicken_nhl endpoints (rosters, shifts, changes, games, players)."""
+
+# Connect and read timeouts, in seconds, for every chickenstats API request, so a stalled connection fails
+# instead of blocking for good (N43); the read timeout allows for a large page of results
+REQUEST_TIMEOUT: tuple[float, float] = (3.05, 60)

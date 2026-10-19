@@ -7,9 +7,15 @@ import chickenstats_api
 import polars as pl
 from chickenstats_api.exceptions import UnauthorizedException
 
-from chickenstats.api._api_constants import PBP_MAX_LIMIT, PRED_GOAL_MAX_LIMIT, RAW_MAX_LIMIT, STATS_MAX_LIMIT
+from chickenstats.api._api_constants import (
+    PBP_MAX_LIMIT,
+    PRED_GOAL_MAX_LIMIT,
+    RAW_MAX_LIMIT,
+    REQUEST_TIMEOUT,
+    STATS_MAX_LIMIT,
+)
 from chickenstats.api._api_utils import _to_int_list, _to_str_list
-from chickenstats.exceptions import UnsupportedBackendError
+from chickenstats.exceptions import AuthError, UnsupportedBackendError
 from chickenstats.utilities import ChickenProgress, ChickenProgressIndeterminate
 from chickenstats.utilities.enums import Backend
 from chickenstats.utilities.types import DataFrameT
@@ -37,6 +43,8 @@ class ChickenUser:
         cf_client_secret (str):
             Cloudflare Access service token client secret for programmatic access.
             Default is the CHICKENSTATS_API_CF_CLIENT_SECRET environment variable
+        timeout (tuple[float, float]):
+            Connect and read timeouts, in seconds, for every request. Default is (3.05, 60)
 
     Attributes:
         username (str):
@@ -72,6 +80,7 @@ class ChickenUser:
         host: str | None = None,
         cf_client_id: str | None = None,
         cf_client_secret: str | None = None,
+        timeout: tuple[float, float] = REQUEST_TIMEOUT,
     ):
         """Instantiates the user object for the chickenstats API.
 
@@ -82,7 +91,13 @@ class ChickenUser:
         the whole point of `chickenstats login` being not needing to pass a
         password at all. Explicit username/password always takes priority
         over a cached login when both are present.
+
+        ``timeout`` is the connect and read timeout, in seconds, for every request.
+
+        Raises:
+            AuthError: If there is no username and password and no cached login.
         """
+        self.timeout = timeout
         self.username = username or os.environ.get("CHICKENSTATS_API_USERNAME")
         self.password = password or os.environ.get("CHICKENSTATS_API_PASSWORD")
         self.host = host or os.environ.get("CHICKENSTATS_API_HOST") or "https://api.chickenstats.com"
@@ -109,12 +124,21 @@ class ChickenUser:
                 self.configuration.access_token = cached.access_token
                 return
 
+        # Without this, the login posted empty strings and the API answered with a raw validation error (R47)
+        if not (self.username and self.password):
+            raise AuthError(
+                "No chickenstats login. Run `chickenstats login`, or pass username and password (or set "
+                "CHICKENSTATS_API_USERNAME and CHICKENSTATS_API_PASSWORD)."
+            )
+
         self.login()
 
     def login(self) -> None:
         """Log the user into the chickenstats API."""
         api_instance = chickenstats_api.LoginApi(self.api_client)
-        token = api_instance.login_firebase_token(username=self.username or "", password=self.password or "")
+        token = api_instance.login_firebase_token(
+            username=self.username or "", password=self.password or "", _request_timeout=self.timeout
+        )
         self.access_token = token.access_token
         self.refresh_token = token.refresh_token
         self.configuration.access_token = token.access_token
@@ -157,7 +181,7 @@ class ChickenUser:
             UserPublic: The current user's profile, including email, tier, and is_superuser.
         """
         api_instance = chickenstats_api.LoginApi(self.api_client)
-        return api_instance.test_token()
+        return api_instance.test_token(_request_timeout=self.timeout)
 
     def reset_password(self, current_password: str, new_password: str) -> None:
         """Update the password for the chickenstats API.
@@ -175,7 +199,7 @@ class ChickenUser:
             current_password=current_password, new_password=new_password
         )
 
-        api_instance.update_password_me(update_password_body)
+        api_instance.update_password_me(update_password_body, _request_timeout=self.timeout)
 
 
 class ChickenStats:
@@ -202,6 +226,8 @@ class ChickenStats:
         cf_client_secret (str):
             Cloudflare Access service token client secret for programmatic access.
             Default is the CHICKENSTATS_API_CF_CLIENT_SECRET environment variable
+        timeout (tuple[float, float]):
+            Connect and read timeouts, in seconds, for every request. Default is (3.05, 60)
 
     Attributes:
         user (ChickenUser):
@@ -248,6 +274,7 @@ class ChickenStats:
         limit: int | None = None,
         cf_client_id: str | None = None,
         cf_client_secret: str | None = None,
+        timeout: tuple[float, float] = REQUEST_TIMEOUT,
     ):
         """Instantiates the ChickenStats object for the chickenstats API."""
         self.user = ChickenUser(
@@ -256,6 +283,7 @@ class ChickenStats:
             host=host,
             cf_client_id=cf_client_id,
             cf_client_secret=cf_client_secret,
+            timeout=timeout,
         )
         self.access_token = self.user.access_token
         self.backend = backend
@@ -287,6 +315,8 @@ class ChickenStats:
         when there's a refresh token to use -- a genuinely revoked or
         unauthorized credential still surfaces as a 401 rather than looping.
         """
+        # Every request has a timeout, so a stalled connection fails instead of blocking for good (N43)
+        kwargs.setdefault("_request_timeout", self.user.timeout)
         try:
             return api_method(**kwargs)
         except UnauthorizedException:

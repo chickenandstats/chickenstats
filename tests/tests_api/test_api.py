@@ -83,9 +83,30 @@ class TestLoginSource:
     def test_username_and_password_are_posted(self, login_api):
         cs = ChickenStats(username="tester", password="secret")
 
-        login_api.return_value.login_firebase_token.assert_called_once_with(username="tester", password="secret")
+        login_api.return_value.login_firebase_token.assert_called_once_with(
+            username="tester", password="secret", _request_timeout=(3.05, 60)
+        )
         assert cs.user.access_token == "test-token"
         assert cs.user.refresh_token == "test-refresh-token"
+
+    def test_no_login_raises_a_clear_error(self, login_api):
+        """With no username, password or cached login, the client says how to log in instead of posting (R47)."""
+        from chickenstats.exceptions import AuthError
+
+        with pytest.raises(AuthError, match="chickenstats login"):
+            ChickenStats()
+
+        login_api.return_value.login_firebase_token.assert_not_called()
+
+    def test_a_timeout_reaches_every_request(self, login_api):
+        """A stalled connection fails after the timeout instead of blocking for good (N43)."""
+        cs = ChickenStats(username="tester", password="secret", timeout=(1, 2))
+        api_method = MagicMock(return_value="ok")
+
+        cs._call(api_method, foo=1)
+
+        api_method.assert_called_once_with(foo=1, _request_timeout=(1, 2))
+        assert login_api.return_value.login_firebase_token.call_args.kwargs["_request_timeout"] == (1, 2)
 
     def test_cached_login_is_used_without_logging_in(self, login_api, credentials_path):
         credentials_path.write_text(json.dumps({"access_token": "cached-token", "refresh_token": "cached-refresh"}))
@@ -145,7 +166,7 @@ class TestFetchPaginated:
             api_method, limit=100, progress=MagicMock(), progress_task=MagicMock(), pbar_message="test"
         )
         assert result == rows
-        api_method.assert_called_once_with(limit=100, offset=0)
+        api_method.assert_called_once_with(limit=100, offset=0, _request_timeout=(3.05, 60))
 
     def test_multi_page_concatenates_all_rows(self, cs):
         page1 = _make_page([{"a": 1}], total=2, has_next=True)
@@ -172,7 +193,7 @@ class TestCallRefreshesOn401:
     def test_passes_through_when_no_error(self, cs):
         api_method = MagicMock(return_value="ok")
         assert cs._call(api_method, foo=1) == "ok"
-        api_method.assert_called_once_with(foo=1)
+        api_method.assert_called_once_with(foo=1, _request_timeout=(3.05, 60))
 
     def test_refreshes_and_retries_once_on_401(self, cs):
         api_method = MagicMock(side_effect=[_unauthorized(), "ok"])

@@ -12,6 +12,7 @@ __all__ = [
     "InvalidInputError",
     "CacheFormatError",
     "NHLUnavailableError",
+    "AuthError",
 ]
 
 
@@ -110,3 +111,7 @@ class NHLUnavailableError(ChickenstatsError):
         """Store the game IDs that failed in a row alongside the error message."""
         super().__init__(message)
         self.game_ids = game_ids or []
+
+
+class AuthError(ChickenstatsError):
+    """Raised when the chickenstats API has no login to use, or rejects the one it is given."""
