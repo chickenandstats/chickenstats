@@ -9,8 +9,18 @@ except ImportError:
     pd = None  # type: ignore[assignment]  # ty: ignore[invalid-assignment]
     HAS_PANDAS = False
 
-from chickenstats.chicken_nhl.season import Season, multi_season_schedule, add_schedule_context, _TEAMS_BY_YEAR
-from chickenstats.exceptions import InvalidSeasonError
+from unittest.mock import patch
+
+import requests
+
+from chickenstats.chicken_nhl.season import (
+    Season,
+    _session_codes,
+    _TEAMS_BY_YEAR,
+    add_schedule_context,
+    multi_season_schedule,
+)
+from chickenstats.exceptions import InvalidInputError, InvalidSeasonError, InvalidTeamError
 
 _skip_no_pandas = pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installed")
 
@@ -395,6 +405,42 @@ class TestScheduleCaching:
         season._scrape_schedule(disable_progress_bar=True)
         assert len(season._schedule) > 0
 
+    def test_a_failed_request_keeps_the_teams_before_it(self):
+        """A team whose request fails raises, and the next call returns every game of the teams before it (N12)."""
+        served_get = requests.Session.get
+
+        def tbl_down(self, url, *args, **kwargs):
+            if "club-schedule-season/TBL" in str(url):
+                response = requests.Response()
+                response.status_code, response.url, response._content = 500, str(url), b""
+                return response
+            return served_get(self, url, *args, **kwargs)
+
+        season = Season(2023)
+        with patch.object(requests.Session, "get", tbl_down), pytest.raises(requests.HTTPError):
+            season.schedule(["NSH", "TBL"], disable_progress_bar=True)
+
+        assert season._scraped_schedule_teams == ["NSH"]
+        assert season.schedule("NSH", disable_progress_bar=True).height == 88
+
+    def test_a_later_call_with_other_sessions_returns_them(self):
+        """The cache holds every game type, so the sessions of the first call do not limit later ones (R7, R33)."""
+        season = Season(2023)
+        regular = season.schedule("NSH", sessions="R", disable_progress_bar=True)
+        everything = season.schedule("NSH", sessions=["PR", "R", "P"], disable_progress_bar=True)
+
+        assert set(regular["session"]) == {2}
+        assert {1, 2} <= set(everything["session"])
+        assert everything.height > regular.height
+
+    def test_a_lowercase_team_code_is_accepted(self):
+        season = Season(2023)
+        assert season.schedule("nsh", disable_progress_bar=True).height == 88
+
+    def test_an_unknown_team_raises(self):
+        with pytest.raises(InvalidTeamError, match="did not play in 2023-24"):
+            Season(2023).schedule("XYZ", disable_progress_bar=True)
+
     def test_standings_second_call_uses_cache(self):
         """Second standings call hits the False branch of `if not self._standings:`."""
         season = Season(2023)
@@ -440,28 +486,26 @@ def _mock_game(**overrides) -> dict:
 
 
 class TestMungeSchedule:
-    def test_sessions_none_keeps_regular_and_playoffs(self):
-        result = Season._munge_schedule([_mock_game()], sessions=None)
-        assert len(result) == 1
+    def test_every_game_type_is_kept(self):
+        """The cache holds every game type, so a later call can ask for any session (R7, R33)."""
+        games = [_mock_game(), _mock_game(gameType=1), _mock_game(gameType=3)]
+        result = Season._munge_schedule(games)
+        assert [game["session"] for game in result] == [2, 1, 3]
 
-    def test_sessions_none_filters_preseason(self):
-        result = Season._munge_schedule([_mock_game(gameType=1)], sessions=None)
-        assert len(result) == 0
+    def test_sessions_default_to_regular_season_and_playoffs(self):
+        assert _session_codes(None) == {2, 3}
 
-    def test_sessions_list_filters_correctly(self):
-        games = [_mock_game(), _mock_game(gameType=1)]
-        result = Season._munge_schedule(games, sessions=["R"])
-        assert len(result) == 1
-        assert result[0]["session"] == 2
+    def test_sessions_list_and_string(self):
+        assert _session_codes(["R", "PR"]) == {2, 1}
+        assert _session_codes("P") == {3}
 
-    def test_sessions_string_filters_correctly(self):
-        games = [_mock_game(), _mock_game(gameType=1)]
-        result = Season._munge_schedule(games, sessions="R")
-        assert len(result) == 1
+    def test_an_unknown_session_raises(self):
+        with pytest.raises(InvalidInputError, match="session must be one of"):
+            _session_codes("X")
 
     def test_z_suffix_utc_time_normalized(self):
         """startTimeUTC ending in 'Z' is parsed successfully."""
         game = _mock_game()
         assert game["startTimeUTC"].endswith("Z")
-        result = Season._munge_schedule([game], sessions=None)
+        result = Season._munge_schedule([game])
         assert len(result) == 1

@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 import polars as pl
 
 from chickenstats.utilities.utilities import convert_to_list
-from chickenstats.exceptions import InvalidSeasonError
+from chickenstats.exceptions import InvalidInputError, InvalidSeasonError, InvalidTeamError
 from chickenstats.utilities.enums import Backend
 from chickenstats.utilities.types import DataFrameT
 
@@ -17,6 +17,19 @@ from chickenstats.utilities.utilities import ChickenProgress, ChickenSession, _t
 from chickenstats.chicken_nhl._season_constants import regular_season_end_dates, _TEAMS_BY_YEAR
 
 _SESSION_CODES: dict[str, int] = {"PR": 1, "R": 2, "P": 3, "FO": 19}
+
+
+def _session_codes(sessions: list[str] | str | None) -> set[int]:
+    """The NHL game types the sessions argument asks for; regular season and playoffs when it is empty."""
+    if not sessions:
+        return {_SESSION_CODES["R"], _SESSION_CODES["P"]}
+
+    codes = set()
+    for session in convert_to_list(sessions, "sessions"):
+        if session not in _SESSION_CODES:
+            raise InvalidInputError(f"session must be one of {list(_SESSION_CODES)}, got {session!r}", obj=session)
+        codes.add(_SESSION_CODES[session])
+    return codes
 
 
 class Season:
@@ -122,11 +135,14 @@ class Season:
     def _scrape_schedule(
         self,
         teams: list[str] | str | None = None,
-        sessions: list[str] | str | None = None,
         disable_progress_bar: bool = False,
         transient_progress_bar: bool = False,
     ) -> None:
-        """Scrape the schedule from the NHL API.
+        """Scrape every game type in each team's schedule from the NHL API.
+
+        Each team's games are stored before the team is marked as scraped, so a failed request raises and
+        leaves every earlier team complete, instead of a later call returning part of the schedule (N12).
+        Sessions are filtered when ``schedule()`` returns, so one cache serves any ``sessions`` (R7, R33).
 
         For more information and usage, see
         https://docs.chickenstats.com/contribute/
@@ -142,8 +158,6 @@ class Season:
             >>> season._scrape_schedule()  # Scrapes all teams, all games available
             >>> season._schedule  # Returns schedule
         """
-        schedule_list = []
-
         with ChickenProgress(disable=disable_progress_bar, transient=transient_progress_bar) as progress:
             if teams is None:
                 schedule_teams = self.teams or []
@@ -174,25 +188,19 @@ class Season:
                 raw_response = self._requests_session.get(url)
                 raw_response.raise_for_status()
                 response = raw_response.json()
-                if response["games"]:
-                    games = [x for x in response["games"] if x["id"] not in self._scraped_schedule]
-                    games = self._munge_schedule(games, sessions)
-                    schedule_list.extend(games)
-                    self._scraped_schedule_teams.append(team)
-                    self._scraped_schedule.extend(x["game_id"] for x in games)
+                games = self._munge_schedule([x for x in response["games"] if x["id"] not in self._scraped_schedule])
+                self._schedule.extend(games)
+                self._scraped_schedule.extend(x["game_id"] for x in games)
+                self._scraped_schedule_teams.append(team)
                 if team != schedule_teams[-1]:
                     pbar_message = f"Downloading {pbar_stub} for {team}..."
                 else:
                     pbar_message = f"Finished downloading {pbar_stub}"
                 progress.update(sched_task, description=pbar_message, advance=1, refresh=True)
 
-        schedule_list = sorted(schedule_list, key=lambda x: (x["game_date_dt_local"], x["game_id"]))
-
-        self._schedule.extend(schedule_list)
-
     @staticmethod
-    def _munge_schedule(games: list[dict], sessions: list[str] | str | None) -> list[dict]:
-        """Munge the schedule from the NHL API. Called from `_scrape_schedule`.
+    def _munge_schedule(games: list[dict]) -> list[dict]:
+        """Munge every game in a schedule from the NHL API, whatever its game type. Called from `_scrape_schedule`.
 
         For more information and usage, see
         https://docs.chickenstats.com/contribute/
@@ -200,20 +208,6 @@ class Season:
         returned_games = []
 
         for game in games:
-            if not sessions:
-                if int(game["gameType"]) not in [2, 3]:
-                    continue
-
-            else:
-                if isinstance(sessions, list):
-                    session_codes = [_SESSION_CODES[x] for x in sessions]
-
-                if isinstance(sessions, str):
-                    session_codes = [_SESSION_CODES[sessions]]
-
-                if int(game["gameType"]) not in session_codes:
-                    continue
-
             local_time = ZoneInfo(game["venueTimezone"])
 
             if "Z" in game["startTimeUTC"]:
@@ -335,19 +329,32 @@ class Season:
             Get schedule for a single team
             >>> schedule = season.schedule("NSH")
 
+        Raises:
+            InvalidTeamError: If a team did not play in the season.
+            InvalidInputError: If a session is not one of "PR", "R", "P" or "FO".
+            requests.HTTPError: If a team's schedule cannot be fetched. Teams fetched before it are kept, so
+                calling again fetches only the rest.
+
         """
         if not teams:
-            schedule_teams = self.teams
+            schedule_teams = self.teams or []
 
         else:
-            schedule_teams = convert_to_list(teams, "team codes")
+            schedule_teams = [team.upper() for team in convert_to_list(teams, "team codes")]
+            unknown = [team for team in schedule_teams if team not in (self.teams or [])]
+            if unknown:
+                raise InvalidTeamError(
+                    f"{unknown} did not play in {self._season_str}; the teams that did are {self.teams}",
+                    team_code=unknown[0],
+                )
 
-        scrape_teams = [x for x in (schedule_teams or []) if x not in self._scraped_schedule_teams]
+        session_codes = _session_codes(sessions)
+
+        scrape_teams = [x for x in schedule_teams if x not in self._scraped_schedule_teams]
 
         if scrape_teams:
             self._scrape_schedule(
                 teams=scrape_teams,
-                sessions=sessions,
                 disable_progress_bar=disable_progress_bar,
                 transient_progress_bar=transient_progress_bar,
             )
@@ -355,7 +362,7 @@ class Season:
         return_list = [
             x
             for x in self._schedule
-            if x["home_team"] in (schedule_teams or []) or x["away_team"] in (schedule_teams or [])
+            if x["session"] in session_codes and (x["home_team"] in schedule_teams or x["away_team"] in schedule_teams)
         ]
 
         return_list = sorted(return_list, key=lambda x: (x["game_date_dt_utc"], x["game_id"]))

@@ -170,7 +170,6 @@ def test_rolling_chart_rejects_a_filter_it_cannot_apply():
 # -----------------------------------------------------------------------------
 
 
-@known_bug("the schedule is cached per team, so a second call with other sessions returns the first result")
 def test_schedule_second_call_with_other_sessions():
     season = Season(2023)
     regular_season = season.schedule("NSH", sessions="R", disable_progress_bar=True)
