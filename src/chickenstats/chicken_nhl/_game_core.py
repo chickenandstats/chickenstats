@@ -106,8 +106,9 @@ class _GameCore(_GameBase):
         year = int(str(self.game_id)[0:4])
         self.season: int = int(f"{year}{year + 1}")
 
-        # Digits 5-6 of the game ID encode session type (01=PR, 02=R, 03=P, 19=FO/4 Nations)
-        game_sessions = {"01": "PR", "02": "R", "03": "P", "19": "FO"}
+        # Digits 5-6 of the game ID encode session type (01=PR, 02=R, 03=P, 19 and 20=FO, the 4 Nations games
+        # and their final)
+        game_sessions = {"01": "PR", "02": "R", "03": "P", "19": "FO", "20": "FO"}
         game_session: str = str(self.game_id)[4:6]
         self.session: str = game_sessions[game_session]
 

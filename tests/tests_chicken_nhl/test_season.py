@@ -316,8 +316,19 @@ class TestSeasonInit:
     def test_every_season_with_teams_has_an_end_date(self):
         from chickenstats.chicken_nhl._season_constants import _TEAMS_BY_YEAR, regular_season_end_dates
 
-        # 2004-05 was cancelled by the lockout, so it has teams but no final game.
-        assert set(_TEAMS_BY_YEAR) - set(regular_season_end_dates) == {2004}
+        assert set(_TEAMS_BY_YEAR) == set(regular_season_end_dates)
+
+    def test_the_lockout_season_raises(self):
+        """2004-05 was never played, so it is refused with the reason instead of an empty schedule (N87)."""
+        with pytest.raises(InvalidSeasonError, match="cancelled by the lockout"):
+            Season(2004)
+
+    def test_multi_season_schedule_skips_the_lockout_season(self):
+        with patch.object(Season, "schedule", lambda self, **kwargs: pl.DataFrame({"season": [self.season]})):
+            with pytest.warns(UserWarning, match="Skipping 2004"):
+                schedule = multi_season_schedule(range(2003, 2006), disable_progress_bar=True)
+
+        assert schedule["season"].to_list() == [20032004, 20052006]
 
     def test_season_str_format(self):
         season = Season(2023)
@@ -498,6 +509,10 @@ class TestMungeSchedule:
     def test_sessions_list_and_string(self):
         assert _session_codes(["R", "PR"]) == {2, 1}
         assert _session_codes("P") == {3}
+
+    def test_four_nations_includes_its_final(self):
+        """The 4 Nations Face-Off final has game type 20, not 19 (N89)."""
+        assert _session_codes("FO") == {19, 20}
 
     def test_an_unknown_session_raises(self):
         with pytest.raises(InvalidInputError, match="session must be one of"):

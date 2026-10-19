@@ -555,3 +555,9 @@ class TestGameCoverage:
             game.__dict__["rosters"] = []
             result = game.html_events
         assert result == []
+
+
+@pytest.mark.parametrize(("game_id", "session"), [(2024190001, "FO"), (2024200007, "FO"), (2023020001, "R")])
+def test_four_nations_game_ids_are_their_own_session(game_id, session):
+    """The 4 Nations Face-Off games are game type 19 and their final game type 20 (N89)."""
+    assert Game(game_id).session == session

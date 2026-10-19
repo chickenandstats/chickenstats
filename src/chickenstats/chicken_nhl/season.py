@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from datetime import datetime as dt
 from typing import Literal
 from zoneinfo import ZoneInfo
@@ -14,21 +15,22 @@ from chickenstats.utilities.types import DataFrameT
 from chickenstats.chicken_nhl.validation_pydantic import ScheduleGame, StandingsTeam
 from chickenstats.chicken_nhl.validation_polars import schedule_polars_schema, standings_polars_schema
 from chickenstats.utilities.utilities import ChickenProgress, ChickenSession, _to_backend, _to_polars, _detect_backend
-from chickenstats.chicken_nhl._season_constants import regular_season_end_dates, _TEAMS_BY_YEAR
+from chickenstats.chicken_nhl._season_constants import _CANCELLED_SEASONS, _TEAMS_BY_YEAR, regular_season_end_dates
 
-_SESSION_CODES: dict[str, int] = {"PR": 1, "R": 2, "P": 3, "FO": 19}
+# The NHL game types in each session; the 4 Nations Face-Off final has its own game type, 20 (N89)
+_SESSION_CODES: dict[str, set[int]] = {"PR": {1}, "R": {2}, "P": {3}, "FO": {19, 20}}
 
 
 def _session_codes(sessions: list[str] | str | None) -> set[int]:
     """The NHL game types the sessions argument asks for; regular season and playoffs when it is empty."""
     if not sessions:
-        return {_SESSION_CODES["R"], _SESSION_CODES["P"]}
+        return _SESSION_CODES["R"] | _SESSION_CODES["P"]
 
     codes = set()
     for session in convert_to_list(sessions, "sessions"):
         if session not in _SESSION_CODES:
             raise InvalidInputError(f"session must be one of {list(_SESSION_CODES)}, got {session!r}", obj=session)
-        codes.add(_SESSION_CODES[session])
+        codes |= _SESSION_CODES[session]
     return codes
 
 
@@ -92,6 +94,9 @@ class Season:
             )
 
         first_year = int(str(self.season)[0:4])
+
+        if first_year in _CANCELLED_SEASONS:
+            raise InvalidSeasonError(f"No {first_year} season: {_CANCELLED_SEASONS[first_year]}.", season=first_year)
 
         self.teams = _TEAMS_BY_YEAR.get(first_year)
 
@@ -275,9 +280,9 @@ class Season:
         Returns:
             season (int):
                 8-digit season identifier, e.g., 20232024
-            session (str):
-                Type of game played — regular season (R), playoffs (P), pre-season (PR),
-                or 4 Nations Face Off (FO), e.g., R
+            session (int):
+                NHL game type: 1 for pre-season, 2 for regular season, 3 for playoffs, 19 for a
+                4 Nations Face-Off game and 20 for its final, e.g., 2
             game_id (int):
                 Unique game ID assigned by the NHL, e.g., 2023020015
             game_date (str):
@@ -659,6 +664,10 @@ def multi_season_schedule(
     frames = []
 
     for year in years:
+        first_year = int(str(int(year))[:4])
+        if first_year in _CANCELLED_SEASONS:
+            warnings.warn(f"Skipping {first_year}: {_CANCELLED_SEASONS[first_year]}", UserWarning, stacklevel=2)
+            continue
         season = Season(year, backend="polars")
         season_schedule = season.schedule(teams=teams, sessions=sessions, disable_progress_bar=disable_progress_bar)
         frames.append(season_schedule)
