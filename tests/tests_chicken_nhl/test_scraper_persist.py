@@ -1,3 +1,4 @@
+import json
 import os
 from unittest.mock import patch
 
@@ -10,14 +11,14 @@ from chickenstats.chicken_nhl.scraper import Scraper
 
 class TestScraperPersist:
     def test_save_creates_files(self, tmp_path):
-        """save() writes a parquet per populated data type plus _meta.json."""
+        """save() writes a parquet per game in a folder per data type, plus _meta.json."""
         scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
         _ = scraper.play_by_play
 
         save_path = scraper.save(tmp_path / "cache")
 
         assert (save_path / "_meta.json").exists()
-        assert (save_path / "play_by_play.parquet").exists()
+        assert (save_path / "play_by_play" / "2023020001.parquet").exists()
 
     def test_load_round_trips_play_by_play(self, tmp_path):
         """load() reproduces the same play_by_play data without re-scraping."""
@@ -115,7 +116,7 @@ class TestScraperCacheArgument:
 
         save_path = tmp_path / "data"
         assert (save_path / "_meta.json").exists()
-        assert (save_path / "play_by_play.parquet").exists()
+        assert (save_path / "play_by_play" / "2023020001.parquet").exists()
 
     def test_cache_path_auto_saves(self, tmp_path):
         """cache=<path> auto-saves to that exact directory after scraping."""
@@ -124,7 +125,7 @@ class TestScraperCacheArgument:
         _ = scraper.play_by_play
 
         assert (cache_dir / "_meta.json").exists()
-        assert (cache_dir / "play_by_play.parquet").exists()
+        assert (cache_dir / "play_by_play" / "2023020001.parquet").exists()
 
     def test_second_construction_reuses_cache_without_network(self, tmp_path):
         """A fresh Scraper(cache=<path>) against an already-populated cache doesn't
@@ -212,3 +213,90 @@ class TestScraperCrossFetchReuse:
         fresh_scraper = Scraper(game_ids=[2023020001], disable_progress_bar=True)
         rosters_fresh = fresh_scraper.rosters
         assert rosters.equals(rosters_fresh)
+
+
+class TestCacheFormat:
+    """Each game is written as its scrape ends, files are swapped in whole, and other formats are refused."""
+
+    def test_an_interrupted_run_resumes_without_duplicate_rows(self, tmp_path):
+        """A run stopped after its first game keeps that game, and the next run fetches only the rest (N53)."""
+        from chickenstats.chicken_nhl import _scraper_core
+
+        cache_dir = tmp_path / "cache"
+        scrape_one = _scraper_core._ScraperCore._scrape_single_game
+
+        def interrupted(self, game_id, scrape_type):
+            if game_id == 2023020015:
+                raise KeyboardInterrupt
+            return scrape_one(self, game_id, scrape_type)
+
+        with patch.object(_scraper_core._ScraperCore, "_scrape_single_game", interrupted):
+            with pytest.raises(KeyboardInterrupt):
+                _ = Scraper([2023020001, 2023020015], disable_progress_bar=True, cache=cache_dir).play_by_play
+
+        served_get = requests.Session.get
+        with patch.object(requests.Session, "get", autospec=True, side_effect=served_get) as mock_get:
+            resumed = Scraper([2023020001, 2023020015], disable_progress_bar=True, cache=cache_dir)
+            play_by_play = resumed.play_by_play
+
+        requested = [str(call.args[1]) for call in mock_get.call_args_list]
+        assert requested and not any("2023020001" in url or "020001.HTM" in url for url in requested)
+        assert play_by_play.group_by("game_id").len().sort("game_id")["len"].to_list() == [781, 792]
+        assert play_by_play.select("game_id", "event_idx").is_duplicated().sum() == 0
+
+    def test_overwrite_removes_only_the_cache_files(self, tmp_path):
+        """overwrite=True removes every file chickenstats wrote, so none is stale, and nothing else (R38)."""
+        cache_dir = tmp_path / "cache"
+        _ = Scraper([2023020001], disable_progress_bar=True, cache=cache_dir).play_by_play
+        (cache_dir / "notes.txt").write_text("not ours")
+
+        scraper = Scraper([2023020001], disable_progress_bar=True, cache=cache_dir, overwrite=True)
+        _ = scraper.html_events
+
+        assert (cache_dir / "notes.txt").read_text() == "not ours"
+        assert sorted(path.name for path in cache_dir.iterdir()) == ["_meta.json", "html_events", "notes.txt"]
+
+    def test_a_cache_from_before_1_9_is_refused(self, tmp_path):
+        """A cache in the old format is never loaded, because 1.9.0 changed its values (R29)."""
+        from chickenstats.exceptions import CacheFormatError
+
+        cache_dir = tmp_path / "cache"
+        cache_dir.mkdir()
+        (cache_dir / "_meta.json").write_text(json.dumps({"game_ids": [2023020001], "bad_games": [], "scraped": {}}))
+        pl.DataFrame({"game_id": [2023020001]}).write_parquet(cache_dir / "play_by_play.parquet")
+
+        with pytest.raises(CacheFormatError, match="overwrite=True"):
+            Scraper([2023020001], disable_progress_bar=True, cache=cache_dir)
+        with pytest.raises(CacheFormatError):
+            Scraper.load(cache_dir)
+
+        scraper = Scraper([2023020001], disable_progress_bar=True, cache=cache_dir, overwrite=True)
+        assert scraper.play_by_play.height == 781
+        assert not (cache_dir / "play_by_play.parquet").exists()
+
+    def test_a_failed_write_keeps_the_earlier_file(self, tmp_path):
+        """A file is written under a temporary name and swapped in, so a failed write leaves the old one (N54)."""
+        from chickenstats.chicken_nhl._scraper_persist import _replace_file
+
+        file = tmp_path / "frame.parquet"
+        pl.DataFrame({"a": [1]}).write_parquet(file)
+
+        def half_written(path):
+            path.write_bytes(b"PAR1")
+            raise OSError("disk full")
+
+        with pytest.raises(OSError, match="disk full"):
+            _replace_file(file, half_written)
+
+        assert pl.read_parquet(file)["a"].to_list() == [1]
+        assert [path.name for path in tmp_path.iterdir()] == ["frame.parquet"]
+
+    def test_a_listed_file_that_is_missing_is_fetched_again(self, tmp_path):
+        cache_dir = tmp_path / "cache"
+        _ = Scraper([2023020001], disable_progress_bar=True, cache=cache_dir).play_by_play
+        (cache_dir / "shifts" / "2023020001.parquet").unlink()
+
+        scraper = Scraper([2023020001], disable_progress_bar=True, cache=cache_dir)
+
+        assert 2023020001 not in scraper._shifts
+        assert scraper.shifts.height > 0

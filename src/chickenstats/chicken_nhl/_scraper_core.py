@@ -10,6 +10,8 @@ from pydantic import ValidationError
 from requests.exceptions import RequestException
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     import pandas as pd
 
 from chickenstats.chicken_nhl.game import Game
@@ -118,6 +120,7 @@ class _ScraperBase:
         disable_progress_bar: bool
         transient_progress_bar: bool
         _cache_dir: Path | None
+        _cache_meta: dict | None
 
         # Raw data caches (from _ScraperCore)
         _api_events: dict[int, pl.DataFrame]
@@ -164,6 +167,8 @@ class _ScraperBase:
         ) -> None: ...
         def _is_empty(self, df: pl.DataFrame) -> bool: ...
         def _apply_cache(self, path: Path, meta: dict | None = None) -> None: ...
+        def _cache_game(self, game_id: int, keys: Iterable[str]) -> None: ...
+        def _clear_cache(self, path: Path) -> None: ...
         def save(self, path: str | Path | None = None) -> Path: ...
         def _scrape(
             self,
@@ -213,13 +218,17 @@ class _ScraperCore(_ScraperBase):
                 Persist scraped data to disk and reuse it on construction. ``False``
                 (default) disables caching. ``True`` uses ``data_directory()``; a
                 ``str``/``Path`` uses that directory. Cached game IDs extend ``game_ids``
-                (cached first); new scrapes auto-save back to the same path.
+                (cached first). Each game is written to the cache as soon as its scrape ends,
+                so an interrupted run keeps the games it finished.
             overwrite (bool):
-                Ignore an existing cache on construction and scrape fresh; the next
-                auto-save overwrites it. No effect when ``cache`` is falsy. Default ``False``.
+                Remove an existing cache's files on construction and scrape fresh. Only
+                the files chickenstats writes are removed. No effect when ``cache`` is
+                falsy. Default ``False``.
 
         Raises:
             InvalidGameIDError: If a game ID is not a whole number.
+            CacheFormatError: If ``cache`` holds a cache written in another format, such as by
+                chickenstats before 1.9.0, and ``overwrite`` is ``False``.
         """
         self._backend: str = backend
 
@@ -260,9 +269,12 @@ class _ScraperCore(_ScraperBase):
         self._stints_levels: StintsLevels = StintsLevels()
 
         self._cache_dir: Path | None = None
+        self._cache_meta: dict | None = None
         if cache:
             self._cache_dir = data_directory() if cache is True else Path(cache)
-            if not overwrite and (self._cache_dir / "_meta.json").exists():
+            if overwrite:
+                self._clear_cache(self._cache_dir)
+            else:
                 self._apply_cache(self._cache_dir)
 
     def __repr__(self) -> str:
@@ -456,9 +468,11 @@ class _ScraperCore(_ScraperBase):
                         getattr(self, _SCRAPE_REGISTRY[key].list_attr)[game_id] = frame
                     self._game_states[game_id] = result["game_state"]
                     self._record_success(game_id, {scrape_type, *result} - _RESULT_META_KEYS)
+                    self._cache_game(game_id, frames)
                 else:
                     self._record_failure(game_id, scrape_type)
                     failed_now.append(game_id)
+                    self._cache_game(game_id, ())
 
                 if idx + 1 < len(unscraped):
                     next_message = f"Downloading {pbar_stub} for {unscraped[idx + 1]}..."
@@ -475,9 +489,6 @@ class _ScraperCore(_ScraperBase):
                 UserWarning,
                 stacklevel=2,
             )
-
-        if self._cache_dir is not None:
-            self.save(self._cache_dir)
 
     def _finalize_dataframe(self, data: dict[int, pl.DataFrame], schema) -> DataFrameT:
         """Concatenate one type's frames in ``game_ids`` order and return them in the configured backend format.
