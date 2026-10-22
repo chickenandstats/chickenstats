@@ -33,6 +33,9 @@ class Scraper(_ScraperCore, _ScraperRawMixin, _ScraperStatsMixin, _ScraperPersis
             Remove an existing cache's files on construction and scrape fresh. Only the
             files chickenstats writes are removed. No effect when ``cache`` is falsy.
             Default ``False``.
+        requests_session (ChickenSession | None):
+            The session every request goes through, for a custom ``user_agent`` or
+            ``max_requests_per_second``. A new ``ChickenSession`` is created if not provided.
 
     A game's data is final only once the NHL API reports the game as ``OFF``. Data still changes in every
     earlier state (``FUT``, ``PRE``, ``LIVE``, ``CRIT``, ``OVER`` and ``FINAL``), so a game in one of those

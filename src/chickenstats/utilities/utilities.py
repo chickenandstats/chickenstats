@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import datetime
+import importlib.metadata
 import importlib.resources
+import threading
+import time
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, cast
 
@@ -65,10 +68,29 @@ class _CappedRetry(urllib3.Retry):
         return min(super().parse_retry_after(retry_after), MAX_RETRY_AFTER)
 
 
+def _default_user_agent() -> str:
+    """The User-Agent chickenstats sends unless told otherwise: the package and its version."""
+    try:
+        version = importlib.metadata.version("chickenstats")
+    except importlib.metadata.PackageNotFoundError:
+        version = "unknown"
+    return f"chickenstats/{version}"
+
+
 class ChickenSession(requests.Session):
     """Requests session pre-configured for reliable, high-volume scraping.
 
-    Configuration applied on construction (not user-configurable without subclassing):
+    Parameters:
+        user_agent (str | None):
+            The ``User-Agent`` header sent with every request. Defaults to
+            ``chickenstats/<version>``, so the sites being read can tell where the
+            traffic comes from.
+        max_requests_per_second (float | None):
+            The most requests the session starts in one second, across every
+            thread that shares it. Defaults to ``None``, no limit.
+
+    Raises:
+        InvalidInputError: If ``max_requests_per_second`` is zero or negative.
 
     Retries:
         Up to 3 automatic retries with 1s exponential backoff: at most 2 for a
@@ -90,13 +112,19 @@ class ChickenSession(requests.Session):
         changed while requests are in flight — see ``update_headers()``.
 
     Headers:
-        Chrome-compatible ``User-Agent``, ``Accept``, ``Accept-Encoding``,
-        and ``Connection: keep-alive`` set by default.
+        The ``User-Agent`` above, plus ``Accept``, ``Accept-Encoding`` and
+        ``Connection: keep-alive``.
 
     Examples:
         >>> from chickenstats.utilities import ChickenSession
         >>> with ChickenSession() as session:
         ...     data = session.get("https://api-web.nhle.com/v1/schedule/now").json()
+
+        Send at most two requests a second, and pass the session to a Scraper:
+
+        >>> from chickenstats.chicken_nhl import Scraper
+        >>> session = ChickenSession(max_requests_per_second=2)
+        >>> scraper = Scraper([2023020001], requests_session=session)
 
         Update headers for a specific request context:
 
@@ -104,9 +132,20 @@ class ChickenSession(requests.Session):
         >>> session.update_headers({"Accept-Language": "en-US"})
     """
 
-    def __init__(self):
+    def __init__(self, user_agent: str | None = None, max_requests_per_second: float | None = None):
         """Initializes Requests Session object."""
         super().__init__()
+
+        if max_requests_per_second is not None and max_requests_per_second <= 0:
+            raise InvalidInputError(
+                f"max_requests_per_second must be greater than 0, not {max_requests_per_second!r}. "
+                "Pass None for no limit."
+            )
+
+        # Seconds between the starts of two requests; 0 is no limit
+        self._interval: float = 1 / max_requests_per_second if max_requests_per_second else 0.0
+        self._next_request: float = 0.0
+        self._throttle_lock = threading.Lock()
 
         # Small budgets, so an NHL outage costs seconds per request instead of minutes (N66)
         retry = _CappedRetry(
@@ -132,12 +171,24 @@ class ChickenSession(requests.Session):
 
         self.headers.update(
             {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "User-Agent": user_agent or _default_user_agent(),
                 "Accept-Encoding": "gzip, deflate",
                 "Accept": "*/*",
                 "Connection": "keep-alive",
             }
         )
+
+    def request(self, method, url, *args, **kwargs):
+        """Send a request, first waiting out the throttle when ``max_requests_per_second`` is set."""
+        if self._interval:
+            # Each request claims the next start time under the lock, then sleeps outside it
+            with self._throttle_lock:
+                now = time.monotonic()
+                start = max(now, self._next_request)
+                self._next_request = start + self._interval
+            if start > now:
+                time.sleep(start - now)
+        return super().request(method, url, *args, **kwargs)
 
     def update_headers(self, headers: dict) -> None:
         """Updates session headers dynamically.

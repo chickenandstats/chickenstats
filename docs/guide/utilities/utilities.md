@@ -73,6 +73,18 @@ with ChickenSession() as session:
     data = session.get("https://api-web.nhle.com/v1/schedule/now").json()
 ```
 
+Requests identify themselves as `chickenstats/<version>`. Pass `user_agent` to send your
+own, and `max_requests_per_second` to slow a large scrape down. `Scraper`, `Season` &
+`Player` take the session as `requests_session`:
+
+```python
+from chickenstats.chicken_nhl import Scraper
+from chickenstats.utilities import ChickenSession
+
+session = ChickenSession(user_agent="my-team/1.0", max_requests_per_second=5)
+scraper = Scraper([2023020001, 2023020002], requests_session=session)
+```
+
 ### **Progress bars**
 
 `ChickenProgress` (known total) & `ChickenProgressIndeterminate` (unknown total) are the

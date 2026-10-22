@@ -184,6 +184,7 @@ class _ScraperBase:
             backend: Backend | Literal["pandas", "polars", "pyarrow", "narwhals"] = "polars",
             cache: bool | str | Path = False,
             overwrite: bool = False,
+            requests_session: ChickenSession | None = None,
         ) -> None: ...
         def _is_empty(self, df: pl.DataFrame) -> bool: ...
         def _apply_cache(self, path: Path, meta: dict | None = None, add_cached_games: bool = True) -> None: ...
@@ -216,6 +217,7 @@ class _ScraperCore(_ScraperBase):
         backend: Backend | Literal["pandas", "polars", "pyarrow", "narwhals"] = "polars",
         cache: bool | str | Path = False,
         overwrite: bool = False,
+        requests_session: ChickenSession | None = None,
     ):
         """Instantiate a Scraper for one or more game IDs.
 
@@ -245,6 +247,9 @@ class _ScraperCore(_ScraperBase):
                 Remove an existing cache's files on construction and scrape fresh. Only
                 the files chickenstats writes are removed. No effect when ``cache`` is
                 falsy. Default ``False``.
+            requests_session (ChickenSession | None):
+                The session every request goes through, for a custom ``user_agent`` or
+                ``max_requests_per_second``. A new ``ChickenSession`` is created if not provided.
 
         Raises:
             InvalidGameIDError: If a game ID is not a whole number.
@@ -268,7 +273,7 @@ class _ScraperCore(_ScraperBase):
         # Games refresh() is fetching again; each counts as not final until refresh() ends
         self._stale: set[int] = set()
 
-        self._requests_session: ChickenSession = ChickenSession()
+        self._requests_session: ChickenSession = requests_session or ChickenSession()
 
         # Each raw type's frames, keyed by game ID; a Game is dropped once its frames are stored (R14, N18)
         for spec in _SCRAPE_REGISTRY.values():

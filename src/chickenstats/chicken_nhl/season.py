@@ -49,6 +49,9 @@ class Season:
         backend (Backend | Literal["polars", "pandas", "pyarrow", "narwhals"]):
             DataFrame backend for all returned data. One of ``"polars"`` (default),
             ``"pandas"``, ``"pyarrow"``, or ``"narwhals"``.
+        requests_session (ChickenSession | None):
+            The session every request goes through, for a custom ``user_agent`` or
+            ``max_requests_per_second``. A new ``ChickenSession`` is created if not provided.
 
     Attributes:
         season (int):
@@ -71,6 +74,7 @@ class Season:
         year: str | int | float,
         standings_date: str | None = None,
         backend: Backend | Literal["polars", "pandas", "pyarrow", "narwhals"] = "polars",
+        requests_session: ChickenSession | None = None,
     ):
         """Instantiates a Season object for a given year."""
         self._backend = backend
@@ -111,7 +115,7 @@ class Season:
         self._scraped_schedule_teams = []
         self._scraped_schedule = []
         self._standings = []
-        self._requests_session = ChickenSession()
+        self._requests_session = requests_session or ChickenSession()
         self._season_str = str(self.season)[:4] + "-" + str(self.season)[6:8]
 
         # An explicit date always wins. Otherwise a finished season reports its final

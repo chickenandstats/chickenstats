@@ -130,6 +130,9 @@ class Player:
         player_id (int | str): The NHL API player ID (e.g. ``8478402`` for Connor McDavid).
         backend (str): Output backend for any DataFrame-returning methods.
             One of ``"polars"`` or ``"pandas"``. Default ``"polars"``.
+        requests_session (ChickenSession | None): The session every request goes through, for a
+            custom ``user_agent`` or ``max_requests_per_second``. A new ``ChickenSession`` is
+            created if not provided.
 
     Attributes:
         player_id (int | str): Stored player ID.
@@ -163,7 +166,12 @@ class Player:
         {...}
     """
 
-    def __init__(self, player_id: int | str, backend: Backend | Literal["polars", "pandas"] = "polars"):
+    def __init__(
+        self,
+        player_id: int | str,
+        backend: Backend | Literal["polars", "pandas"] = "polars",
+        requests_session: ChickenSession | None = None,
+    ):
         """Instantiates player endpoints and session — no network calls are made here."""
         self.backend = backend
         self.player_id = player_id
@@ -173,7 +181,7 @@ class Player:
         self.landing_url = f"{self.base_url}/landing"
         self.current_game_log_url = f"{self.base_url}/game-log/now"
 
-        self._requests_session = ChickenSession()
+        self._requests_session = requests_session or ChickenSession()
 
     def __repr__(self) -> str:
         """Return string representation of the Player instance."""

@@ -330,3 +330,11 @@ class TestSearchPlayers:
         with patch("requests.Session.get", return_value=mock_response):
             with pytest.raises(requests.exceptions.HTTPError):
                 search_players("mcdavid")
+
+
+def test_player_uses_the_session_passed_in():
+    from chickenstats.utilities import ChickenSession
+
+    session = ChickenSession(max_requests_per_second=5)
+
+    assert Player(8478402, requests_session=session)._requests_session is session

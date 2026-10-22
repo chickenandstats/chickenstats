@@ -67,6 +67,47 @@ def test_update_headers():
     assert session.headers["X-Custom"] == "test-value"
 
 
+def test_the_user_agent_names_chickenstats():
+    """Requests say they come from chickenstats, not a browser (N110)."""
+    from chickenstats import __version__
+
+    assert ChickenSession().headers["User-Agent"] == f"chickenstats/{__version__}"
+    assert ChickenSession(user_agent="my-team/1.0").headers["User-Agent"] == "my-team/1.0"
+
+
+def test_the_throttle_spaces_out_requests():
+    """With max_requests_per_second, requests start at least that far apart (N110)."""
+    import time
+
+    import requests
+
+    starts: list[float] = []
+
+    def record(self, method, url, *args, **kwargs):
+        starts.append(time.monotonic())
+        return MagicMock()
+
+    session = ChickenSession(max_requests_per_second=20)
+    with patch.object(requests.Session, "request", record):
+        for _ in range(4):
+            session.request("GET", "https://api-web.nhle.com")
+
+    gaps = [later - earlier for earlier, later in zip(starts, starts[1:], strict=False)]
+    assert min(gaps) >= 0.045
+
+
+def test_no_throttle_by_default():
+    assert ChickenSession()._interval == 0
+
+
+@pytest.mark.parametrize("rate", [0, -1])
+def test_a_throttle_of_zero_or_less_raises(rate):
+    from chickenstats.exceptions import InvalidInputError
+
+    with pytest.raises(InvalidInputError, match="max_requests_per_second"):
+        ChickenSession(max_requests_per_second=rate)
+
+
 def test_retry_budget_is_small():
     """An outage costs a few retries per request, not minutes (N66)."""
     adapter = ChickenSession().get_adapter("https://api-web.nhle.com")

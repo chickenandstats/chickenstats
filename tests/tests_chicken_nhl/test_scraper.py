@@ -1090,3 +1090,21 @@ class TestGameState:
         _ = scraper.html_events
 
         assert scraper._game_states == {2023020001: "OFF"}
+
+
+def test_every_request_goes_through_the_session_passed_in():
+    """A Scraper given a session sends each request through it, so its User-Agent and throttle apply (N110)."""
+    from chickenstats.utilities import ChickenSession
+
+    session = ChickenSession(user_agent="my-team/1.0")
+    served_get = requests.Session.get
+    sessions = []
+
+    def recording_get(self, url, *args, **kwargs):
+        sessions.append(self)
+        return served_get(self, url, *args, **kwargs)
+
+    with patch.object(requests.Session, "get", recording_get):
+        _ = Scraper(2023020001, disable_progress_bar=True, requests_session=session).play_by_play
+
+    assert sessions and all(used is session for used in sessions)

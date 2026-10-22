@@ -540,3 +540,11 @@ class TestMungeSchedule:
         assert game["startTimeUTC"].endswith("Z")
         result = Season._munge_schedule([game])
         assert len(result) == 1
+
+
+def test_season_uses_the_session_passed_in():
+    from chickenstats.utilities import ChickenSession
+
+    session = ChickenSession(max_requests_per_second=5)
+
+    assert Season(2023, requests_session=session)._requests_session is session
