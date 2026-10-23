@@ -344,6 +344,43 @@ class TestPlotStatComparison:
         assert save_path.exists()
 
 
+CHARTS = {
+    "plot_shot_chart": lambda **kw: plot_shot_chart(_make_pbp(), team="NSH", **kw),
+    "plot_density_heatmap": lambda **kw: plot_density_heatmap(_make_pbp(), team="NSH", **kw),
+    "plot_line_network": lambda **kw: plot_line_network(_make_line_stats(), team="NSH", toi_min=5.0, **kw),
+    "plot_rolling_stats": lambda **kw: plot_rolling_stats(_make_rolling_stats(), stat="cf_p60", **kw),
+    "plot_stat_comparison": lambda **kw: plot_stat_comparison(_make_comparison_stats(), x="cf_p60", y="ff_p60", **kw),
+}
+
+
+@pytest.mark.parametrize("chart", CHARTS)
+class TestFigures:
+    """Charts open at matplotlib's dpi, save at 650 dpi, and close a figure they made once it is saved (N141)."""
+
+    def test_a_saved_chart_leaves_no_figure_open(self, chart, tmp_path):
+        from PIL import Image
+
+        plt.close("all")
+        CHARTS[chart](save_path=tmp_path / "chart.png")
+
+        assert plt.get_fignums() == []
+        with Image.open(tmp_path / "chart.png") as image:
+            assert image.info["dpi"] == pytest.approx((650, 650), abs=1)
+
+    def test_a_figure_passed_in_stays_open(self, chart, tmp_path):
+        fig, ax = plt.subplots()
+        CHARTS[chart](ax=ax, save_path=tmp_path / "chart.png")
+
+        assert plt.fignum_exists(fig.number)
+        plt.close(fig)
+
+    def test_an_unsaved_chart_uses_the_default_dpi(self, chart):
+        ax = CHARTS[chart]()
+
+        assert ax.get_figure().dpi == matplotlib.rcParams["figure.dpi"]  # ty: ignore[unresolved-attribute]
+        plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
+
+
 class TestGuardedImport:
     def test_missing_plotting_extra_raises_clear_error(self, monkeypatch):
         """Simulates seaborn being unavailable — reloading viz/__init__.py should

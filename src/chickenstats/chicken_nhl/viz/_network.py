@@ -107,8 +107,9 @@ def plot_line_network(
         positions (list[str] | None): Position codes to include. Defaults to forward
             positions (``C``, ``L``, ``R``, and their combinations).
         ax (plt.Axes | None): Existing axes to draw into. Creates a new figure if ``None``.
-        save_path (str | Path | None): If given, saves the figure. A bare filename saves
-            under ``charts_directory()``.
+        save_path (str | Path | None): If given, saves the figure at 650 dpi and, when this
+            function created the figure, closes it. A bare filename saves under
+            ``charts_directory()``.
 
     Returns:
         plt.Axes: The axes the network graph was drawn on.
@@ -133,10 +134,11 @@ def plot_line_network(
 
     graph = _create_network_graph(pdf, team, strengths, toi_min, positions)
 
+    created = ax is None
     fig, ax = _ensure_fig_ax(ax)
 
     _draw_graph(graph, team, ax)
 
-    _save_or_return(fig, save_path)
+    _save_or_return(fig, save_path, close=created)
 
     return ax

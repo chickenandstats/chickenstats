@@ -65,8 +65,9 @@ def plot_shot_chart(
         zone (Literal["full", "ozone", "dzone"]): Rink area to display. Default ``"ozone"``.
         strengths (list[str] | None): Restrict to specific strength states, e.g. ``["5v5"]``.
         ax (plt.Axes | None): Existing axes to draw into. Creates a new figure if ``None``.
-        save_path (str | Path | None): If given, saves the figure. A bare filename saves
-            under ``charts_directory()``.
+        save_path (str | Path | None): If given, saves the figure at 650 dpi and, when this
+            function created the figure, closes it. A bare filename saves under
+            ``charts_directory()``.
 
     Returns:
         plt.Axes: The axes the shot chart was drawn on.
@@ -82,6 +83,7 @@ def plot_shot_chart(
     """
     df = _filter_shots(_to_polars(pbp), team, player, strengths)
 
+    created = ax is None
     fig, ax = _ensure_fig_ax(ax)
 
     rink = _setup_rink()
@@ -120,7 +122,7 @@ def plot_shot_chart(
             **plot_kwargs,
         )
 
-    _save_or_return(fig, save_path)
+    _save_or_return(fig, save_path, close=created)
 
     return ax
 
@@ -147,8 +149,9 @@ def plot_density_heatmap(
             ``"pred_goal"`` automatically if present in ``pbp``.
         strengths (list[str] | None): Restrict to specific strength states, e.g. ``["5v4"]``.
         ax (plt.Axes | None): Existing axes to draw into. Creates a new figure if ``None``.
-        save_path (str | Path | None): If given, saves the figure. A bare filename saves
-            under ``charts_directory()``.
+        save_path (str | Path | None): If given, saves the figure at 650 dpi and, when this
+            function created the figure, closes it. A bare filename saves under
+            ``charts_directory()``.
 
     Returns:
         plt.Axes: The axes the density map was drawn on.
@@ -167,6 +170,7 @@ def plot_density_heatmap(
     if weight_col is None and "pred_goal" in df.columns:
         weight_col = "pred_goal"
 
+    created = ax is None
     fig, ax = _ensure_fig_ax(ax)
 
     rink = _setup_rink()
@@ -205,6 +209,6 @@ def plot_density_heatmap(
         ax=ax,
     )
 
-    _save_or_return(fig, save_path)
+    _save_or_return(fig, save_path, close=created)
 
     return ax

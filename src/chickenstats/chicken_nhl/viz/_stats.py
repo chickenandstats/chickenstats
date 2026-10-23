@@ -39,8 +39,9 @@ def plot_rolling_stats(
         window (int | None): Window size used when the rolling column was computed;
             only used to label the axis. Default ``None``.
         ax (plt.Axes | None): Existing axes to draw into. Creates a new figure if ``None``.
-        save_path (str | Path | None): If given, saves the figure. A bare filename saves
-            under ``charts_directory()``.
+        save_path (str | Path | None): If given, saves the figure at 650 dpi and, when this
+            function created the figure, closes it. A bare filename saves under
+            ``charts_directory()``.
 
     Returns:
         plt.Axes: The axes the line chart was drawn on.
@@ -85,6 +86,7 @@ def plot_rolling_stats(
     if order_cols:
         df = df.sort(order_cols, maintain_order=True)
 
+    created = ax is None
     fig, ax = _ensure_fig_ax(ax)
 
     color = TEAM_COLORS.get(team, {}).get("GOAL") if team is not None else None
@@ -100,7 +102,7 @@ def plot_rolling_stats(
     label = f"{window}-game rolling {stat}" if window is not None else f"Rolling {stat}"
     ax.set_ylabel(label)
 
-    _save_or_return(fig, save_path)
+    _save_or_return(fig, save_path, close=created)
 
     return ax
 
@@ -134,8 +136,9 @@ def plot_stat_comparison(
         size (str | None): Column name to size bubbles by. Default ``"toi"``; pass
             ``None`` for uniform bubble size.
         ax (plt.Axes | None): Existing axes to draw into. Creates a new figure if ``None``.
-        save_path (str | Path | None): If given, saves the figure. A bare filename saves
-            under ``charts_directory()``.
+        save_path (str | Path | None): If given, saves the figure at 650 dpi and, when this
+            function created the figure, closes it. A bare filename saves under
+            ``charts_directory()``.
 
     Returns:
         plt.Axes: The axes the comparison chart was drawn on.
@@ -146,6 +149,7 @@ def plot_stat_comparison(
     """
     df = _to_polars(stats)
 
+    created = ax is None
     fig, ax = _ensure_fig_ax(ax)
 
     x_mean = cast(float, df[x].mean())
@@ -190,6 +194,6 @@ def plot_stat_comparison(
     ax.set_xlabel(x)
     ax.set_ylabel(y)
 
-    _save_or_return(fig, save_path)
+    _save_or_return(fig, save_path, close=created)
 
     return ax

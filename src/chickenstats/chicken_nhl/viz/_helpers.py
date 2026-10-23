@@ -13,6 +13,9 @@ from chickenstats.utilities.utilities import charts_directory
 # Fallback colors for teams missing a TEAM_COLORS entry.
 DEFAULT_EVENT_COLORS = {"GOAL": "#000000", "SHOT": "#808080", "MISS": "#D3D3D3"}
 
+# Saved charts keep the resolution they always had
+SAVE_DPI = 650
+
 
 def _setup_rink(rotation: int = 90) -> NHLRink:
     """Return a fresh NHLRink instance, rotated for horizontal display by default."""
@@ -20,17 +23,22 @@ def _setup_rink(rotation: int = 90) -> NHLRink:
 
 
 def _ensure_fig_ax(ax: plt.Axes | None) -> tuple[plt.Figure, plt.Axes]:
-    """Return ``(fig, ax)``, creating a new figure/axes pair if ``ax`` is None."""
+    """Return ``(fig, ax)``, creating a new figure/axes pair if ``ax`` is None.
+
+    A new figure uses matplotlib's dpi, so a notebook does not embed a 650-dpi image; saving
+    still writes at ``SAVE_DPI``.
+    """
     if ax is None:
-        return plt.subplots(dpi=650, figsize=(8, 5))
+        return plt.subplots(figsize=(8, 5))
     return cast(plt.Figure, ax.get_figure()), ax
 
 
-def _save_or_return(fig: plt.Figure, save_path: str | Path | None) -> None:
-    """Save ``fig`` if ``save_path`` is given; a no-op otherwise.
+def _save_or_return(fig: plt.Figure, save_path: str | Path | None, close: bool = False) -> None:
+    """Save ``fig`` at ``SAVE_DPI`` if ``save_path`` is given, then close it if ``close``; a no-op otherwise.
 
     A bare filename (no parent directory) saves under ``charts_directory()``
-    (``./charts``); any other path is used as-is.
+    (``./charts``); any other path is used as-is. Closing a saved figure keeps a batch job
+    that charts many teams from piling up open figures.
     """
     if save_path is None:
         return
@@ -39,4 +47,6 @@ def _save_or_return(fig: plt.Figure, save_path: str | Path | None) -> None:
     if path.parent == Path("."):
         path = charts_directory() / path
 
-    fig.savefig(path, transparent=False, bbox_inches="tight")
+    fig.savefig(path, dpi=SAVE_DPI, transparent=False, bbox_inches="tight")
+    if close:
+        plt.close(fig)
