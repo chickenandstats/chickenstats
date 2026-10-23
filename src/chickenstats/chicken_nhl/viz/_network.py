@@ -23,12 +23,11 @@ def _create_network_graph(
     stats: pd.DataFrame, team: str, strengths: list[str], toi_min: float, positions: list[str]
 ) -> nx.Graph:
     """Build a teammate-combination graph weighted by shared TOI."""
-    df = stats.loc[
-        (stats.team == team)
-        & (stats.strength_state.isin(strengths))
-        & (stats.toi >= toi_min)
-        & (stats.position.isin(positions))
-    ].reset_index(drop=True)
+    df = stats.loc[(stats.team == team) & (stats.strength_state.isin(strengths)) & (stats.position.isin(positions))]
+
+    # toi_min applies to each player's total, not to each row: with teammates=True a row is one
+    # line combination, often a few minutes, so a per-row minimum rejected one game's data
+    df = df.loc[df.groupby("player").toi.transform("sum") >= toi_min].reset_index(drop=True)
 
     if df.empty:
         raise InvalidInputError(
@@ -102,8 +101,9 @@ def plot_line_network(
             from ``scraper.prep_stats(teammates=True)`` then ``scraper.stats``.
         team (str): Three-letter team code to plot, e.g. ``"NSH"``.
         strengths (list[str] | None): Strength states to include. Defaults to ``["5v5"]``.
-        toi_min (float): Minimum TOI (in the units present in ``stats``) for a player to
-            be included. Default ``15.0``.
+        toi_min (float): Minimum total TOI (in the units present in ``stats``) a player has
+            in ``strengths`` to be included, summed over all of the player's rows. Default
+            ``15.0``.
         positions (list[str] | None): Position codes to include. Defaults to forward
             positions (``C``, ``L``, ``R``, and their combinations).
         ax (plt.Axes | None): Existing axes to draw into. Creates a new figure if ``None``.

@@ -248,6 +248,24 @@ class TestPlotLineNetwork:
         assert isinstance(ax, plt.Axes)
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
+    def test_toi_min_applies_to_a_players_total_ice_time(self):
+        """Each line combination is under 15 minutes, but A and B play 18 in all and C only 10 (R40)."""
+        stats = pd.DataFrame(
+            {
+                "player": ["A", "B", "C", "A", "B"],
+                "team": "NSH",
+                "strength_state": "5v5",
+                "toi": [10.0, 10.0, 10.0, 8.0, 8.0],
+                "position": "C",
+                "forwards": ["A, B, C", "A, B, C", "A, B, C", "A, B", "A, B"],
+                "defense": "",
+            }
+        )
+
+        graph = _create_network_graph(stats, "NSH", ["5v5"], toi_min=15.0, positions=["C"])
+
+        assert sorted(graph.nodes) == ["A", "B"]
+
     def test_edge_weights_are_shared_ice_time(self):
         """A, B and C play 10 minutes together, and A, B and D 4, so A and B share 14 minutes.
 
