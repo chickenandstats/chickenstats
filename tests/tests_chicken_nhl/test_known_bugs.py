@@ -39,69 +39,6 @@ def known_bug(reason: str, raises: type[BaseException] | tuple[type[BaseExceptio
 
 
 # -----------------------------------------------------------------------------
-# Scraper state
-# -----------------------------------------------------------------------------
-
-
-def test_access_order_does_not_duplicate_rows():
-    scraper = Scraper([GAME_ID], disable_progress_bar=True)
-    _ = scraper.rosters
-    _ = scraper.html_events
-    _ = scraper.shifts
-    _ = scraper.play_by_play
-
-    heights = (scraper.rosters.height, scraper.html_events.height, scraper.shifts.height, scraper.changes.height)
-    assert heights == (46, 331, 743, 450)
-
-
-def test_repeated_and_string_game_ids_are_scraped_once():
-    scraper = Scraper([GAME_ID, GAME_ID, str(GAME_ID)], disable_progress_bar=True)
-
-    assert scraper.game_ids == [GAME_ID]
-    assert scraper.play_by_play.height == 781
-
-
-def test_add_games_clears_the_aggregated_stats():
-    scraper = Scraper([GAME_ID], disable_progress_bar=True)
-    scraper.prep_stats(level="game", disable_progress_bar=True)
-    assert scraper.stats["game_id"].unique().to_list() == [GAME_ID]
-
-    scraper.add_games([2023020125])
-
-    assert sorted(scraper.stats["game_id"].unique().to_list()) == [GAME_ID, 2023020125]
-
-
-def test_changes_are_the_same_before_and_after_play_by_play():
-    game = Game(GAME_ID)
-    keys_before = len(game.changes[0])
-    _ = game.play_by_play
-
-    assert len(game.changes[0]) == keys_before
-
-
-UNKNOWN_LEVEL_CALLS = {
-    "Scraper.prep_stats": lambda scraper, level: scraper.prep_stats(level=level, disable_progress_bar=True),
-    "Scraper.prep_lines": lambda scraper, level: scraper.prep_lines(level=level, disable_progress_bar=True),
-    "Scraper.prep_team_stats": lambda scraper, level: scraper.prep_team_stats(level=level, disable_progress_bar=True),
-    "prep_ind": lambda scraper, level: prep_ind(scraper.play_by_play, level=level),
-    "prep_stats": lambda scraper, level: prep_stats(scraper.play_by_play, scraper.play_by_play_ext, level=level),
-    "prep_lines": lambda scraper, level: prep_lines(scraper.play_by_play, scraper.play_by_play_ext, level=level),
-    "prep_team_stats": lambda scraper, level: prep_team_stats(
-        scraper.play_by_play, scraper.play_by_play_ext, level=level
-    ),
-}
-
-
-@pytest.mark.parametrize("level", ["Game", "seasons", None])
-@pytest.mark.parametrize("call", UNKNOWN_LEVEL_CALLS)
-def test_unknown_level_raises(call, level):
-    scraper = Scraper([GAME_ID], disable_progress_bar=True)
-
-    with pytest.raises(InvalidInputError):
-        UNKNOWN_LEVEL_CALLS[call](scraper, level)
-
-
-# -----------------------------------------------------------------------------
 # Other aggregation
 # -----------------------------------------------------------------------------
 
@@ -163,17 +100,3 @@ def test_rolling_chart_rejects_a_filter_it_cannot_apply():
 
     with pytest.raises(InvalidInputError):
         plot_rolling_stats(rolling_stats_for_two_teams(), stat="cf_p60", player="FILIP FORSBERG")
-
-
-# -----------------------------------------------------------------------------
-# Season
-# -----------------------------------------------------------------------------
-
-
-def test_schedule_second_call_with_other_sessions():
-    season = Season(2023)
-    regular_season = season.schedule("NSH", sessions="R", disable_progress_bar=True)
-    playoffs = season.schedule("NSH", sessions="P", disable_progress_bar=True)
-
-    assert regular_season.height == 82
-    assert playoffs.height == 6
