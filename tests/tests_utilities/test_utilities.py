@@ -76,24 +76,31 @@ def test_the_user_agent_names_chickenstats():
 
 
 def test_the_throttle_spaces_out_requests():
-    """With max_requests_per_second, requests start at least that far apart (N110)."""
-    import time
+    """With max_requests_per_second, requests start that far apart (N110).
+
+    The throttle reads a fake clock, so the gaps are exact however busy the machine is.
+    """
+    from types import SimpleNamespace
 
     import requests
 
+    clock = [100.0]
     starts: list[float] = []
 
+    def sleep(seconds):
+        clock[0] += seconds
+
     def record(self, method, url, *args, **kwargs):
-        starts.append(time.monotonic())
+        starts.append(clock[0])
         return MagicMock()
 
+    fake_time = SimpleNamespace(monotonic=lambda: clock[0], sleep=sleep)
     session = ChickenSession(max_requests_per_second=20)
-    with patch.object(requests.Session, "request", record):
+    with patch("chickenstats.utilities.utilities.time", fake_time), patch.object(requests.Session, "request", record):
         for _ in range(4):
             session.request("GET", "https://api-web.nhle.com")
 
-    gaps = [later - earlier for earlier, later in zip(starts, starts[1:], strict=False)]
-    assert min(gaps) >= 0.045
+    assert starts == pytest.approx([100.0, 100.05, 100.1, 100.15])
 
 
 def test_no_throttle_by_default():
