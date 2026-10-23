@@ -1849,8 +1849,9 @@ def prep_rolling_stats(
     """Add trailing rolling-window values for rate-stat columns.
 
     Operates on the output of ``prep_stats`` or ``prep_team_stats`` at ``level='game'``.
-    Sorts by game order within each ``group_cols`` group, then computes each stat over
-    the trailing ``window`` games, appending ``rolling_{stat}`` columns. A ``*_p60``
+    Sorts by game order (``game_date``, then ``game_id``) within each ``group_cols`` group,
+    then computes each stat over the trailing ``window`` games, appending ``rolling_{stat}``
+    columns. A ``*_p60``
     rate is the rolling sum of its count over the rolling sum of ``toi``, and a
     ``*_percent`` column is the rolling sum of the for side over both sides, when those
     columns are in ``df``; either is null when the window has nothing to divide by.
@@ -1882,9 +1883,9 @@ def prep_rolling_stats(
 
     Raises:
         InvalidInputError: If ``df`` lacks ``game_id``/``game_date`` (not game-level
-            output), or if ``group_cols`` plus the game column don't uniquely identify
-            rows (multiple rows per game per group, e.g. unfiltered strength/score-state
-            splits, or ``level='period'`` output).
+            output), or if ``group_cols`` plus ``game_id`` (``game_date`` when there is no
+            ``game_id``) don't uniquely identify rows (multiple rows per game per group, e.g.
+            unfiltered strength/score-state splits, or ``level='period'`` output).
 
     Examples:
         >>> from chickenstats.chicken_nhl import prep_rolling_stats
@@ -1905,8 +1906,10 @@ def prep_rolling_stats(
     if stats is None:
         stats = [c for c in df.columns if c.endswith("_p60") or c.endswith("_percent")]
 
-    game_col = "game_date" if "game_date" in df.columns else "game_id"
-    sort_cols = [*group_cols, game_col]
+    # A game is keyed by game_id when there is one, so a split-squad day with two games on one
+    # date is two games; the games are ordered by date, then by game_id
+    game_col = "game_id" if "game_id" in df.columns else "game_date"
+    sort_cols = [*group_cols, *(c for c in ("game_date", "game_id") if c in df.columns)]
 
     group_key_cols = [*group_cols, game_col]
     if df.select(group_key_cols).is_duplicated().any():

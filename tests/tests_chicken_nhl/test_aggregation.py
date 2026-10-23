@@ -278,6 +278,21 @@ class TestPrepRollingStats:
         with pytest.raises(InvalidInputError):
             prep_rolling_stats(df, group_cols=["team"])
 
+    def test_two_games_on_one_date_are_two_games(self):
+        """A split-squad preseason day has two games for one team on one date (bB-06)."""
+        df = pl.DataFrame(
+            {
+                "team": ["NSH", "NSH", "NSH"],
+                "game_date": ["2023-09-25", "2023-09-25", "2023-09-23"],
+                "game_id": [2023010012, 2023010011, 2023010003],
+                "cf_p60": [30.0, 20.0, 10.0],
+            }
+        )
+        result = prep_rolling_stats(df, window=2, stats=["cf_p60"], group_cols=["team"])
+
+        assert result["game_id"].to_list() == [2023010003, 2023010011, 2023010012]
+        assert result["rolling_cf_p60"].to_list() == pytest.approx([10.0, 15.0, 25.0])
+
     def test_raises_with_duplicate_period_rows(self):
         """level='period' output has multiple rows per game, not meaningful to roll."""
         df = pl.DataFrame({"team": ["NSH", "NSH"], "game_id": [1, 1], "period": [1, 2], "cf_p60": [10.0, 5.0]})
