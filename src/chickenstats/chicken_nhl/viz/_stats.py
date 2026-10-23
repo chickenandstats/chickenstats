@@ -27,7 +27,9 @@ def plot_rolling_stats(
 ) -> plt.Axes:
     """Line chart of a rolling-window stat over game number.
 
-    Plots the ``rolling_{stat}`` column produced by ``prep_rolling_stats()`` against game order.
+    Plots the ``rolling_{stat}`` column produced by ``prep_rolling_stats()`` against game order,
+    one line per player when ``rolling_df`` has a ``player`` column and one per team otherwise.
+    Each line runs in game order, by ``game_date`` and then ``game_id`` when those columns exist.
 
     Parameters:
         rolling_df (pl.DataFrame | pd.DataFrame): Output of ``prep_rolling_stats()``.
@@ -44,8 +46,9 @@ def plot_rolling_stats(
         plt.Axes: The axes the line chart was drawn on.
 
     Raises:
-        InvalidInputError: If ``rolling_{stat}`` is not a column in ``rolling_df``, or if
-            no rows remain after filtering.
+        InvalidInputError: If ``rolling_{stat}`` is not a column in ``rolling_df``, if ``team``
+            or ``player`` is given but ``rolling_df`` has no such column, or if no rows remain
+            after filtering.
 
     Examples:
         >>> from chickenstats.chicken_nhl import prep_rolling_stats
@@ -64,23 +67,34 @@ def plot_rolling_stats(
             obj=rolling_df,
         )
 
-    if team is not None and "team" in df.columns:
-        df = df.filter(pl.col("team") == team)
-
-    if player is not None and "player" in df.columns:
-        df = df.filter(pl.col("player") == player)
+    for column, value in (("team", team), ("player", player)):
+        if value is None:
+            continue
+        if column not in df.columns:
+            raise InvalidInputError(
+                f"{column}={value!r} cannot be applied: rolling_df has no {column!r} column.", obj=rolling_df
+            )
+        df = df.filter(pl.col(column) == value)
 
     if df.is_empty():
         raise InvalidInputError(f"No rows remain for team={team!r}, player={player!r}.", obj=rolling_df)
+
+    # A player's games stay one line even across a trade, so players are split by player, not team
+    line_col = "player" if "player" in df.columns else "team" if "team" in df.columns else None
+    order_cols = [c for c in ("game_date", "game_id") if c in df.columns]
+    if order_cols:
+        df = df.sort(order_cols, maintain_order=True)
 
     fig, ax = _ensure_fig_ax(ax)
 
     color = TEAM_COLORS.get(team, {}).get("GOAL") if team is not None else None
 
-    y = df[rolling_col].to_list()
-    x = list(range(1, len(y) + 1))
-
-    sns.lineplot(x=x, y=y, color=color, ax=ax)
+    lines = df.partition_by(line_col, maintain_order=True, include_key=True) if line_col else [df]
+    for line in lines:
+        y = line[rolling_col].to_list()
+        x = list(range(1, len(y) + 1))
+        label = str(line[line_col][0]) if line_col and len(lines) > 1 else None
+        sns.lineplot(x=x, y=y, color=color, label=label, ax=ax)
 
     ax.set_xlabel("Game number")
     label = f"{window}-game rolling {stat}" if window is not None else f"Rolling {stat}"

@@ -292,6 +292,21 @@ class TestPlotRollingStats:
         assert [np.asarray(line.get_ydata()).tolist() for line in ax.lines] == [[50.0, 55.0, 60.0]]
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
+    def test_one_line_per_player_in_game_order_across_a_trade(self):
+        """A traded player stays one line, ordered by date even when the rows are not."""
+        rolling = pl.DataFrame(
+            {
+                "player": ["A", "B", "A", "B", "A"],
+                "team": ["NSH", "NSH", "TBL", "NSH", "NSH"],
+                "game_date": ["2024-01-05", "2024-01-01", "2024-01-09", "2024-01-05", "2024-01-01"],
+                "game_id": [2, 1, 3, 2, 1],
+                "rolling_cf_p60": [52.0, 40.0, 54.0, 41.0, 50.0],
+            }
+        )
+        ax = plot_rolling_stats(rolling, stat="cf_p60")
+        assert sorted(np.asarray(line.get_ydata()).tolist() for line in ax.lines) == [[40.0, 41.0], [50.0, 52.0, 54.0]]
+        plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
+
     def test_raises_on_missing_rolling_column(self):
         with pytest.raises(InvalidInputError):
             plot_rolling_stats(_make_rolling_stats(), stat="xgf_p60")
