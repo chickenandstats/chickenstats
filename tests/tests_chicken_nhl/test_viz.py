@@ -1,5 +1,6 @@
 import importlib
 import sys
+from unittest.mock import patch
 
 import polars as pl
 import pytest
@@ -12,12 +13,14 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 pytest.importorskip("seaborn", reason="requires the 'plotting' extra")
 pytest.importorskip("hockey_rink", reason="requires the 'plotting' extra")
 pytest.importorskip("networkx", reason="requires the 'plotting' extra")
 
 from chickenstats.chicken_nhl import Scraper
+from chickenstats.chicken_nhl.viz._network import _create_network_graph
 from chickenstats.chicken_nhl.viz._rink import _filter_shots
 from chickenstats.chicken_nhl.viz import (
     plot_density_heatmap,
@@ -32,6 +35,11 @@ from chickenstats.exceptions import InvalidInputError
 def plotted_points(ax) -> list[int]:
     """Return the number of points in each scatter drawn on the axes."""
     return [len(collection.get_offsets()) for collection in ax.collections if len(collection.get_offsets())]
+
+
+def marker_sizes(ax) -> list[list[float]]:
+    """Return the marker sizes of each scatter drawn on the axes; one value when they are all the same."""
+    return [collection.get_sizes().tolist() for collection in ax.collections if len(collection.get_offsets())]
 
 
 @pytest.fixture(scope="module")
@@ -147,8 +155,38 @@ class TestPlotShotChart:
         assert isinstance(ax, plt.Axes)
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
 
+    def test_markers_are_sized_by_pred_goal(self):
+        """Each marker's area is its shot's pred_goal times 500: MISS, then SHOT, then GOAL."""
+        ax = plot_shot_chart(_make_pbp(with_pred_goal=True), team="NSH")
+        assert marker_sizes(ax) == [[15.0], [25.0], [200.0, 175.0]]
+        plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
+
+    def test_markers_are_one_size_without_pred_goal(self):
+        ax = plot_shot_chart(_make_pbp(), team="NSH")
+        assert marker_sizes(ax) == [[40.0], [40.0], [40.0]]
+        plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
+
+
+def kde_weights(pbp: pl.DataFrame, **kwargs) -> list:
+    """The weights each kdeplot layer of plot_density_heatmap receives, None for an unweighted layer."""
+    import seaborn
+
+    with patch.object(seaborn, "kdeplot", wraps=seaborn.kdeplot) as spy:
+        plt.close(plot_density_heatmap(pbp, team="NSH", **kwargs).get_figure())  # ty: ignore[invalid-argument-type]
+    return [None if call.kwargs["weights"] is None else list(call.kwargs["weights"]) for call in spy.call_args_list]
+
 
 class TestPlotDensityHeatmap:
+    def test_weights_by_pred_goal_when_present(self):
+        assert kde_weights(_make_pbp(with_pred_goal=True)) == [[0.05, 0.03, 0.4, 0.35]] * 2
+
+    def test_weights_by_an_explicit_column(self):
+        pbp = _make_pbp().with_columns(pl.Series("custom_weight", [1.0, 2.0, 3.0, 4.0, 5.0]))
+        assert kde_weights(pbp, weight_col="custom_weight") == [[1.0, 2.0, 3.0, 5.0]] * 2
+
+    def test_unweighted_without_pred_goal(self):
+        assert kde_weights(_make_pbp()) == [None, None]
+
     def test_returns_axes(self):
         ax = plot_density_heatmap(_make_pbp(), team="NSH")
         assert isinstance(ax, plt.Axes)
@@ -209,6 +247,38 @@ class TestPlotLineNetwork:
         ax = plot_line_network(real_teammate_stats, team="NSH", toi_min=1.0)
         assert isinstance(ax, plt.Axes)
         plt.close(ax.get_figure())  # ty: ignore[invalid-argument-type]
+
+    def test_edge_weights_are_shared_ice_time(self):
+        """A, B and C play 10 minutes together, and A, B and D 4, so A and B share 14 minutes.
+
+        Each edge is the pair's shared ice time, scaled so the most shared pair is 75.
+        """
+        lines = {"A, B, C": ["A", "B", "C"], "A, B, D": ["A", "B", "D"]}
+        toi = {"A, B, C": 10.0, "A, B, D": 4.0}
+        rows = [(player, line, toi[line]) for line, players in lines.items() for player in players]
+        stats = pd.DataFrame(
+            {
+                "player": [player for player, _, _ in rows],
+                "team": "NSH",
+                "strength_state": "5v5",
+                "toi": [minutes for _, _, minutes in rows],
+                "position": "C",
+                "forwards": [line for _, line, _ in rows],
+                "defense": "",
+            }
+        )
+
+        graph = _create_network_graph(stats, "NSH", ["5v5"], toi_min=1.0, positions=["C"])
+        weights = {tuple(sorted(edge)): round(w, 3) for *edge, w in graph.edges(data="weight") if edge[0] != edge[1]}
+
+        assert weights == {
+            ("A", "B"): 75.0,
+            ("A", "C"): round(10 / 14 * 75, 3),
+            ("B", "C"): round(10 / 14 * 75, 3),
+            ("A", "D"): round(4 / 14 * 75, 3),
+            ("B", "D"): round(4 / 14 * 75, 3),
+            ("C", "D"): 0.0,
+        }
 
 
 class TestPlotRollingStats:
