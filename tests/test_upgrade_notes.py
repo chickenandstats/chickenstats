@@ -74,3 +74,16 @@ def test_check_lists_the_commits_missing_from_the_page():
     on_page, off_page = entry([], sha="11111111"), entry([], sha="22222222")
 
     assert notes.missing([on_page, off_page], "... ([`11111111`](...)) ...") == [off_page]
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("charts close their figures.", "Charts close their figures."),
+        ("prep_stats returns null rates.", "prep_stats returns null rates."),
+        ("bsf, bsa and their adjusted columns change.", "bsf, bsa and their adjusted columns change."),
+        ("Scraper.game_ids holds ints.", "Scraper.game_ids holds ints."),
+    ],
+)
+def test_a_sentence_is_capitalized_unless_it_starts_with_a_name_from_the_code(text, expected):
+    assert notes.capitalize(text) == expected

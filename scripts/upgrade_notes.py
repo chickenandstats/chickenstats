@@ -104,6 +104,12 @@ def entries(commit_range: str) -> list[Entry]:
     return found
 
 
+def capitalize(text: str) -> str:
+    """Capitalize a sentence, unless it starts with a name from the code, such as prep_stats."""
+    first = text.split(" ", 1)[0]
+    return text[0].upper() + text[1:] if first.isalpha() else text
+
+
 def render(found: list[Entry]) -> str:
     """Markdown sections, one per area in AREAS order, each entry linked to its commit."""
     sections = []
@@ -114,8 +120,8 @@ def render(found: list[Entry]) -> str:
         lines = [f"## {name}", ""]
         for e in in_area:
             subject = re.sub(r"^[a-z]+(\([^)]*\))?!?: ", "", e.summary)
-            lines += [f"- **{subject[0].upper() + subject[1:]}** ([`{e.sha}`]({COMMIT_URL}{e.sha}))", ""]
-            lines += [f"    {e.breaking[0].upper() + e.breaking[1:]}", ""]
+            lines += [f"- **{capitalize(subject)}** ([`{e.sha}`]({COMMIT_URL}{e.sha}))", ""]
+            lines += [f"    {capitalize(e.breaking)}", ""]
         sections.append("\n".join(lines))
     return "\n".join(sections)
 

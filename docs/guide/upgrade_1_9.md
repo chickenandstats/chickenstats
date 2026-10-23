@@ -24,19 +24,19 @@ Each entry links to the commit that made the change.
 
 - **Give the shootout winner one goal in the running score** ([`e140f967`](https://github.com/chickenstats/chickenstats/commit/e140f967))
 
-    Home_score, away_score, the score differences and the score states change on shootout rows. The last row of a game decided in a shootout now has the official final score.
+    home_score, away_score, the score differences and the score states change on shootout rows. The last row of a game decided in a shootout now has the official final score.
 
 - **Set the other team's strength state on penalty shots and shootouts** ([`1c6f09cf`](https://github.com/chickenstats/chickenstats/commit/1c6f09cf))
 
-    Opp_strength_state changes on penalty-shot and shootout rows (0v1) and on rows with an illegal skater count (ILLEGAL). On-ice stats split by strength state have new 0v1 rows for the defending team, and its 5v5 goals against drop by the penalty-shot goals.
+    opp_strength_state changes on penalty-shot and shootout rows (0v1) and on rows with an illegal skater count (ILLEGAL). On-ice stats split by strength state have new 0v1 rows for the defending team, and its 5v5 goals against drop by the penalty-shot goals.
 
 - **Use the roster name for a player in shifts and changes** ([`bd73d79d`](https://github.com/chickenstats/chickenstats/commit/bd73d79d))
 
-    Player_name in shifts and changes, and in the CHANGE rows of play_by_play, now matches the roster spelling.
+    player_name in shifts and changes, and in the CHANGE rows of play_by_play, now matches the roster spelling.
 
 - **Score-adjust a blocked shot by the shooting team's strength** ([`08b14a15`](https://github.com/chickenstats/chickenstats/commit/08b14a15))
 
-    Block_adj, corsi_adj and the adjusted columns built from them change for blocked shots on special teams.
+    block_adj, corsi_adj and the adjusted columns built from them change for blocked shots on special teams.
 
 - **Read event and roster reports as UTF-8** ([`1d481dfc`](https://github.com/chickenstats/chickenstats/commit/1d481dfc))
 
@@ -52,7 +52,7 @@ Each entry links to the commit that made the change.
 
 - **Say a game has not started instead of failing on its response** ([`4235d4ed`](https://github.com/chickenstats/chickenstats/commit/4235d4ed))
 
-    Play_by_play for a game that has not started raises GameNotStartedError instead of KeyError or an empty result, and Scraper lists it in failed_games.
+    play_by_play for a game that has not started raises GameNotStartedError instead of KeyError or an empty result, and Scraper lists it in failed_games.
 
 - **Fail a finished game when one of its reports cannot be read** ([`9baac73f`](https://github.com/chickenstats/chickenstats/commit/9baac73f))
 
@@ -68,7 +68,7 @@ Each entry links to the commit that made the change.
 
 - **Store each game's frames once, and together** ([`5b8a99eb`](https://github.com/chickenstats/chickenstats/commit/5b8a99eb))
 
-    Changes, shifts, rosters and the event frames no longer repeat a game's rows when several are read from one Scraper.
+    changes, shifts, rosters and the event frames no longer repeat a game's rows when several are read from one Scraper.
 
 - **Stop play_by_play from rewriting a game's line changes** ([`85d303cd`](https://github.com/chickenstats/chickenstats/commit/85d303cd))
 
@@ -94,7 +94,7 @@ Each entry links to the commit that made the change.
 
 - **Stop counting shootout attempts as shots and goals** ([`cb053f66`](https://github.com/chickenstats/chickenstats/commit/cb053f66))
 
-    Play_by_play has two new columns, shootout_attempt and shootout_goal. Goals, shots, Fenwick and Corsi in play_by_play, prep_stats, prep_lines and prep_team_stats no longer include shootout attempts, so team goals for a game decided in a shootout equal the score after overtime. xg_fields has no shootout rows.
+    play_by_play has two new columns, shootout_attempt and shootout_goal. Goals, shots, Fenwick and Corsi in play_by_play, prep_stats, prep_lines and prep_team_stats no longer include shootout attempts, so team goals for a game decided in a shootout equal the score after overtime. xg_fields has no shootout rows.
 
 - **Put only the shooter and the goalie on ice for a penalty shot** ([`4618a52b`](https://github.com/chickenstats/chickenstats/commit/4618a52b))
 
@@ -102,7 +102,7 @@ Each entry links to the commit that made the change.
 
 - **Keep rows with events but no ice time in aggregated stats** ([`0e884a61`](https://github.com/chickenstats/chickenstats/commit/0e884a61))
 
-    Prep_stats, prep_lines and prep_team_stats return rows with 0 ice time when they hold an event, e.g. 1v0 and 0v1 rows for a penalty shot. Their per-60 rates are not finite until the rates change that follows.
+    prep_stats, prep_lines and prep_team_stats return rows with 0 ice time when they hold an event, e.g. 1v0 and 0v1 rows for a penalty shot. Their per-60 rates are not finite until the rates change that follows.
 
 - **Return null for rates and percentages with nothing to divide by** ([`36ecbcf9`](https://github.com/chickenstats/chickenstats/commit/36ecbcf9))
 
@@ -110,11 +110,11 @@ Each entry links to the commit that made the change.
 
 - **Fill both sides of one-sided team stats before totals** ([`b2a1da4d`](https://github.com/chickenstats/chickenstats/commit/b2a1da4d))
 
-    Prep_team_stats cf, ca, cf_adj, ca_adj and the zone faceoff totals change for groups where only one team has rows, and their percentages with them.
+    prep_team_stats cf, ca, cf_adj, ca_adj and the zone faceoff totals change for groups where only one team has rows, and their percentages with them.
 
 - **Compute rolling rates and percentages from rolling sums** ([`3e9c5d2e`](https://github.com/chickenstats/chickenstats/commit/3e9c5d2e))
 
-    Rolling_*_p60 and rolling_*_percent values change for any window whose games differ in ice time or in event totals.
+    rolling_*_p60 and rolling_*_percent values change for any window whose games differ in ice time or in event totals.
 
 - **Keep float count columns when validating aggregated stats** ([`86faef33`](https://github.com/chickenstats/chickenstats/commit/86faef33))
 
@@ -122,27 +122,27 @@ Each entry links to the commit that made the change.
 
 - **Count a lost faceoff in the loser's zone** ([`5bbdca25`](https://github.com/chickenstats/chickenstats/commit/5bbdca25))
 
-    Prep_ind iozfl and idzfl, and prep_lines and prep_team_stats ozfl, dzfl, ozf and dzf, change for every lost faceoff in an offensive or defensive zone.
+    prep_ind iozfl and idzfl, and prep_lines and prep_team_stats ozfl, dzfl, ozf and dzf, change for every lost faceoff in an offensive or defensive zone.
 
 - **Keep prep_oi rows that only have zone starts** ([`9b3497f2`](https://github.com/chickenstats/chickenstats/commit/9b3497f2))
 
-    Prep_oi, and prep_stats through it, return extra rows when split by strength; 2023020001 goes from 122 to 131 rows.
+    prep_oi, and prep_stats through it, return extra rows when split by strength; 2023020001 goes from 122 to 131 rows.
 
 - **Stop crediting a bench minor's server with drawing it** ([`d50d12e6`](https://github.com/chickenstats/chickenstats/commit/d50d12e6))
 
-    Prep_ind ipend0 through ipend10, and prep_stats through it, no longer count a bench minor for the player serving it.
+    prep_ind ipend0 through ipend10, and prep_stats through it, no longer count a bench minor for the player serving it.
 
 - **Count only penalty rows in the penalty columns** ([`cc1ed339`](https://github.com/chickenstats/chickenstats/commit/cc1ed339))
 
-    Pen0 through pen10 in play_by_play, and the penalty columns built from them, are 0 on DELPEN rows.
+    pen0 through pen10 in play_by_play, and the penalty columns built from them, are 0 on DELPEN rows.
 
 - **Count every blocked attempt in bsf and bsa** ([`0b77c39b`](https://github.com/chickenstats/chickenstats/commit/0b77c39b))
 
-    Bsf, bsa and their adjusted, per-60 and percent columns change in chicken_nhl prep_stats, prep_lines and prep_team_stats, as does teammate_block in prep_stats. In 2023020001 Tampa Bay goes from 10 and 17 to 11 and 19. bsf and bsa trade places in the evolving_hockey prep_team_stats. opp_teammate_block and its versions are new columns.
+    bsf, bsa and their adjusted, per-60 and percent columns change in chicken_nhl prep_stats, prep_lines and prep_team_stats, as does teammate_block in prep_stats. In 2023020001 Tampa Bay goes from 10 and 17 to 11 and 19. bsf and bsa trade places in the evolving_hockey prep_team_stats. opp_teammate_block and its versions are new columns.
 
 - **Make identity_columns a key of each aggregated frame** ([`e64b104a`](https://github.com/chickenstats/chickenstats/commit/e64b104a))
 
-    Identity_columns returns forwards or defense for lines whatever the teammates flag, adds position for stats, and drops opp_team for team stats at season and session level when opposition is off. It has a new position argument.
+    identity_columns returns forwards or defense for lines whatever the teammates flag, adds position for stats, and drops opp_team for team stats at season and session level when opposition is off. It has a new position argument.
 
 - **Leave out xG columns when play-by-play has no pred_goal** ([`321f4013`](https://github.com/chickenstats/chickenstats/commit/321f4013))
 
@@ -154,11 +154,11 @@ Each entry links to the commit that made the change.
 
 - **Keep every individual event in prep_stats** ([`1248c553`](https://github.com/chickenstats/chickenstats/commit/1248c553))
 
-    Prep_stats and Scraper.stats return extra rows, with no ice time, for players credited with an event while not on the ice in that group, and their individual totals rise to match prep_ind.
+    prep_stats and Scraper.stats return extra rows, with no ice time, for players credited with an event while not on the ice in that group, and their individual totals rise to match prep_ind.
 
 - **Count events that have no description in prep_ind** ([`58b51f58`](https://github.com/chickenstats/chickenstats/commit/58b51f58))
 
-    Prep_ind, and prep_stats through it, count events whose description is missing, which raises individual totals for games where a report has blank descriptions.
+    prep_ind, and prep_stats through it, count events whose description is missing, which raises individual totals for games where a report has blank descriptions.
 
 - **Count supplied xG only on goals, shots and misses** ([`bcb14902`](https://github.com/chickenstats/chickenstats/commit/bcb14902))
 
@@ -182,7 +182,7 @@ Each entry links to the commit that made the change.
 
 - **Match identity_columns' defaults to the prep functions** ([`8bda05b6`](https://github.com/chickenstats/chickenstats/commit/8bda05b6))
 
-    Identity_columns defaults to level="game", score=False, teammates=False and opposition=False; pass them explicitly to keep the old key.
+    identity_columns defaults to level="game", score=False, teammates=False and opposition=False; pass them explicitly to keep the old key.
 
 ## Saving and the cache
 
@@ -192,7 +192,7 @@ Each entry links to the commit that made the change.
 
 - **List each failed game once until it scrapes** ([`f5a37405`](https://github.com/chickenstats/chickenstats/commit/f5a37405))
 
-    Failed_games no longer repeats a game, drops a game once it scrapes, and returns a copy instead of the Scraper's own list.
+    failed_games no longer repeats a game, drops a game once it scrapes, and returns a copy instead of the Scraper's own list.
 
 - **Write the cache one game at a time, and refuse old caches** ([`94063db7`](https://github.com/chickenstats/chickenstats/commit/94063db7))
 
@@ -206,11 +206,11 @@ Each entry links to the commit that made the change.
 
 - **Give a game that has not started null scores** ([`bfedd45f`](https://github.com/chickenstats/chickenstats/commit/bfedd45f))
 
-    Home_score and away_score in Season.schedule() are null, not 0, for a game that has not started.
+    home_score and away_score in Season.schedule() are null, not 0, for a game that has not started.
 
 - **Return the 4 Nations final, and refuse the 2004 season** ([`19270273`](https://github.com/chickenstats/chickenstats/commit/19270273))
 
-    Sessions="FO" also returns the final, and Season(2004) raises InvalidSeasonError.
+    sessions="FO" also returns the final, and Season(2004) raises InvalidSeasonError.
 
 - **Handle players with no team or no NHL stats** ([`1cd0d06b`](https://github.com/chickenstats/chickenstats/commit/1cd0d06b))
 
@@ -230,17 +230,33 @@ Each entry links to the commit that made the change.
 
     Game.play_by_play no longer wraps errors from building play-by-play in DataMismatchError; the original exception is raised.
 
+- **Flip norm_coords by the end each team attacks** ([`ba527873`](https://github.com/chickenstats/chickenstats/commit/ba527873))
+
+    norm_coords_x and norm_coords_y keep a team's own-half events in its own half, and opponents' events in theirs, so those points move in plot_shot_chart and plot_density_heatmap.
+
 ## Charts
 
 - **Leave shootout attempts out of the shot chart and heatmap** ([`c588cff3`](https://github.com/chickenstats/chickenstats/commit/c588cff3))
 
-    Plot_shot_chart and plot_density_heatmap draw fewer points for games decided in a shootout.
+    plot_shot_chart and plot_density_heatmap draw fewer points for games decided in a shootout.
+
+- **Draw one rolling line per team or player, and reject filters** ([`2c8a3677`](https://github.com/chickenstats/chickenstats/commit/2c8a3677))
+
+    plot_rolling_stats draws a separate line for each team or player in the frame, and raises InvalidInputError when team or player is given but the frame has no such column.
+
+- **Open charts at the default dpi and close saved figures** ([`ef12d58d`](https://github.com/chickenstats/chickenstats/commit/ef12d58d))
+
+    plot_shot_chart, plot_density_heatmap, plot_line_network, plot_rolling_stats and plot_stat_comparison open new figures at matplotlib's dpi instead of 650, and close a figure they created after saving it to save_path; the returned Axes then belongs to a closed figure.
+
+- **Apply plot_line_network's toi_min to each player's total** ([`afeab03e`](https://github.com/chickenstats/chickenstats/commit/afeab03e))
+
+    plot_line_network's toi_min is a minimum on a player's total ice time, not on each row, so more players and lines appear in the graph for the same toi_min.
 
 ## RAPM
 
 - **Give each team its own zone starts in build_rapm_matrix** ([`e7c11bc7`](https://github.com/chickenstats/chickenstats/commit/e7c11bc7))
 
-    Build_rapm_matrix raises InvalidInputError for stints without the four new columns, so stints from an earlier prep_stints need rebuilding, and its zone-start and strength-state columns now differ between a stint's two rows, which changes fitted coefficients.
+    build_rapm_matrix raises InvalidInputError for stints without the four new columns, so stints from an earlier prep_stints need rebuilding, and its zone-start and strength-state columns now differ between a stint's two rows, which changes fitted coefficients.
 
 ## The chickenstats.com API client
 
