@@ -48,9 +48,11 @@ plt.style.use("chickenstats")
 ### **Coordinate normalization**
 
 `norm_coords()` flips shot coordinates so every shot for a reference team travels in the
-same direction on the rink, regardless of which end they were actually shooting at. It adds
-`norm_coords_x` & `norm_coords_y` columns, leaving `coords_x`/`coords_y` untouched, & works
-with Polars, Pandas, or PyArrow input:
+same direction on the rink, regardless of which end they were actually shooting at. It works
+out which end the team attacks in each game & period from the play-by-play's `zone` column,
+so a shot from a team's own half stays in its own half. It adds `norm_coords_x` &
+`norm_coords_y` columns, leaving `coords_x`/`coords_y` untouched, & works with Polars,
+Pandas, or PyArrow input:
 
 ```python
 plot_data = norm_coords(data=pbp, normalization_column="event_team", normalization_value="NSH")

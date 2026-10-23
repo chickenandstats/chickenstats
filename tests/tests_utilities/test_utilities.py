@@ -38,6 +38,7 @@ from chickenstats.utilities.utilities import (
     _to_backend,
     _to_polars,
     add_cs_mplstyles,
+    norm_coords,
 )
 
 
@@ -321,3 +322,45 @@ def test_add_cs_mplstyles_idempotent():
     """Line 469: second call returns early when already registered."""
     add_cs_mplstyles()
     add_cs_mplstyles()  # hits the `if _STYLES_REGISTERED: return` branch
+
+
+# -----------------------------------------------------------------------------
+# norm_coords
+# -----------------------------------------------------------------------------
+
+
+def two_period_game() -> pl.DataFrame:
+    """NSH attacks +x in period 1 and -x in period 2; TBL attacks the other end."""
+    return pl.DataFrame(
+        {
+            "game_id": [1, 1, 1, 1, 1, 1],
+            "period": [1, 1, 1, 2, 2, 2],
+            "event_team": ["NSH", "NSH", "TBL", "NSH", "NSH", "TBL"],
+            "zone": ["OFF", "DEF", "OFF", "OFF", "DEF", "OFF"],
+            "coords_x": [70.0, -80.0, -60.0, -70.0, 85.0, 65.0],
+            "coords_y": [5.0, 1.0, 2.0, 3.0, -4.0, 0.0],
+        }
+    )
+
+
+def test_norm_coords_flips_by_the_end_a_team_attacks():
+    """A shot from a team's own half stays in its own half (R125), in every period."""
+    result = norm_coords(two_period_game(), normalization_column="event_team", normalization_value="NSH")
+
+    assert result["norm_coords_x"].to_list() == [70.0, -80.0, -60.0, 70.0, -85.0, -65.0]
+    assert result["norm_coords_y"].to_list() == [5.0, 1.0, 2.0, -3.0, 4.0, 0.0]
+    assert result.columns == [*two_period_game().columns, "norm_coords_x", "norm_coords_y"]
+
+
+def test_norm_coords_without_game_period_or_zone_flips_by_sign():
+    """Without the columns to find the attacking end, every reference-team event is put in the attacking half."""
+    result = norm_coords(two_period_game().drop("zone"), normalization_column="event_team", normalization_value="NSH")
+
+    assert result["norm_coords_x"].to_list() == [70.0, 80.0, -60.0, 70.0, 85.0, -65.0]
+
+
+@pytest.mark.skipif(not HAS_PANDAS, reason="pandas not installed")
+def test_norm_coords_keeps_a_pandas_frame():
+    result = norm_coords(two_period_game().to_pandas(), normalization_column="event_team", normalization_value="NSH")
+
+    assert result["norm_coords_x"].tolist() == [70.0, -80.0, -60.0, 70.0, -85.0, -65.0]

@@ -428,8 +428,15 @@ def norm_coords(data: pd.DataFrame | pl.DataFrame, normalization_column: str, no
 
     Adds two new columns — ``norm_coords_x`` and ``norm_coords_y`` — that flip the
     sign of ``coords_x`` and ``coords_y`` when needed, leaving the originals intact.
-    After normalization, all offensive-zone events for the reference team have
-    ``norm_coords_x > 0`` and all defensive-zone events have ``norm_coords_x < 0``.
+    After normalization the reference team attacks toward ``norm_coords_x > 0`` and its
+    opponents toward ``norm_coords_x < 0``, so a shot from the team's own half stays in
+    its own half.
+
+    Teams switch ends every period, so the end the reference team attacks is worked out for
+    each game and period, from where the offensive-zone events (``zone == "OFF"``) of both
+    teams were. That needs ``game_id``, ``period`` and ``zone`` columns. Without them, or in a
+    period with no offensive-zone events, an event is flipped by the sign of its ``coords_x``
+    alone, which puts every reference-team event in the attacking half.
 
     Accepts any narwhals-compatible DataFrame (Polars, pandas, PyArrow) and returns
     the same type.
@@ -458,17 +465,30 @@ def norm_coords(data: pd.DataFrame | pl.DataFrame, normalization_column: str, no
     """
     df = nw.from_native(data)
 
-    normalization_conditions = (nw.col(f"{normalization_column}") == normalization_value) & (nw.col("coords_x") < 0)
-    opposition_conditions = (nw.col(f"{normalization_column}") != normalization_value) & (nw.col("coords_x") > 0)
+    reference = nw.col(normalization_column) == normalization_value
+    flip = (reference & (nw.col("coords_x") < 0)) | (~reference & (nw.col("coords_x") > 0))
 
-    test_conditions = normalization_conditions | opposition_conditions
+    keys = ["game_id", "period"]
+    if all(column in df.columns for column in (*keys, "zone")):
+        # The median x of offensive-zone events, the opponents' mirrored, is where the reference
+        # team attacks in that game and period
+        attack = (
+            df.filter(nw.col("zone") == "OFF", ~nw.col("coords_x").is_null())
+            .with_columns(_attack_x=nw.when(reference).then(nw.col("coords_x")).otherwise(nw.col("coords_x") * -1))
+            .group_by(keys)
+            .agg(nw.col("_attack_x").median())
+        )
+        df = df.join(attack, on=keys, how="left")
+        # Where the reference team attacks -x, every event of the period is mirrored, its own and
+        # its opponents', so both keep their side of the rink
+        flip = nw.when(nw.col("_attack_x").is_null()).then(flip).otherwise(nw.col("_attack_x") < 0)
 
     df = df.with_columns(
-        norm_coords_x=nw.when(test_conditions).then(nw.col("coords_x") * -1).otherwise(nw.col("coords_x")),
-        norm_coords_y=nw.when(test_conditions).then(nw.col("coords_y") * -1).otherwise(nw.col("coords_y")),
+        norm_coords_x=nw.when(flip).then(nw.col("coords_x") * -1).otherwise(nw.col("coords_x")),
+        norm_coords_y=nw.when(flip).then(nw.col("coords_y") * -1).otherwise(nw.col("coords_y")),
     )
 
-    return df.to_native()  # ty: ignore[invalid-return-type]
+    return df.drop("_attack_x", strict=False).to_native()  # ty: ignore[invalid-return-type]
 
 
 def _to_polars(frame) -> pl.DataFrame:
